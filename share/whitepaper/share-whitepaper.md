@@ -43,7 +43,7 @@ The diagram above shows the entity relationship between a given decentralized ap
 
 Standard NFT token metadata containing the content URI is read from the NFT by the dApp, however the content which the URI points to is decrypted if and only if the payment transaction event can be found on the blockchain for the address of the viewer.
 
-<img src="access-inversion-animation.gif" width="1500px" align="center>
+<img src="access-inversion-animation.gif" width="1000px" align="center">
 
 The animation above highlights the way in which this architecture is different from solutions which exist today and in the past. In Web2, the terms of access for creator content, e.g. the code which sets the price-per-stream on Spotify, are completely specified and executed on 3rd party centralized infrastructure. Additionally, the ownership terms and content are hosted on the same centralized application service layer.
 
