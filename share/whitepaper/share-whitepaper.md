@@ -38,12 +38,11 @@ To illustrate the power of Web3 (any by extension Share), consider the fact that
 As a result one can run the following code from any server: "Check if entity **N** paid what I've asked for", alongside providing access to the content in memory. Many NFTs today are not exploiting this fact simply because the ERC-721 (Ethereum Request for Comment Number 721) token metadata standard was not explicitly designed for content creators, but rather for maximum flexibility. Many creators are using aggregate ERC-721 contracts specified by their minting platform, rather than their own smart contracts. Share introduces a layer which uses this metadata as a transaction based interlock between producer and consumer at every observable entrypoint of the content.
 
 <img src="fig1.svg">
-
 The diagram above shows the entity relationship between a given decentralized application, the Share protocol contract and creator NFTs. Note that the Solidity code which ultimately confirms the payment transaction for access is housed fully within the creator controlled contract.
 
 Standard NFT token metadata containing the content URI is read from the NFT by the dApp, however the content which the URI points to is decrypted if and only if the payment transaction event can be found on the blockchain for the address of the viewer.
 
-<img src="access-inversion-animation.gif" width="1500px" align="center>
+<img src="access-inversion-animation.gif" width="500px" align="center">
 
 The animation above highlights the way in which this architecture is different from solutions which exist today and in the past. In Web2, the terms of access for creator content, e.g. the code which sets the price-per-stream on Spotify, are completely specified and executed on 3rd party centralized infrastructure. Additionally, the ownership terms and content are hosted on the same centralized application service layer.
 
