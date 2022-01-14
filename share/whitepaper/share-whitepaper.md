@@ -1,6 +1,7 @@
 # Share: Digital Content Access Inversion
 
 author: brandon@formless.xyz<br>
+All rights reserved.
 
 ## Abstract
 
