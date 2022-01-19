@@ -1,6 +1,7 @@
 # Share: Digital Content Access Inversion
 
-author: brandon@formless.xyz<br>
+author: Brandon Tory Thorpe<br>
+brandon@formless.xyz<br>
 All rights reserved.
 
 ## Abstract
@@ -40,9 +41,7 @@ To illustrate the power of Web3 (any by extension Share), consider the fact that
 As a result one can run the following code from any server: "Check if entity **N** paid what I've asked for", alongside providing access to the content in memory. Many NFTs today are not exploiting this fact simply because the ERC-721 (Ethereum Request for Comment Number 721) token metadata standard was not explicitly designed for content creators, but rather for maximum flexibility. Many creators are using aggregate ERC-721 contracts specified by their minting platform, rather than their own smart contracts. Share introduces a layer which uses this metadata as a transaction based interlock between producer and consumer at every observable entrypoint of the content.
 
 <img src="fig1.svg">
-The diagram above shows the entity relationship between a given decentralized application, the Share protocol contract and creator NFTs. Note that the Solidity code which ultimately confirms the payment transaction for access is housed fully within the creator controlled contract.
-
-Standard NFT token metadata containing the content URI is read from the NFT by the dApp, however the content which the URI points to is decrypted if and only if the payment transaction event can be found on the blockchain for the address of the viewer.
+The diagram above shows the entity relationship between a given decentralized application, the Share protocol contract and creator NFTs. Note that the Solidity code which ultimately confirms the payment transaction for access is housed fully within the creator controlled contract. Standard NFT token metadata containing the content URI is read from the NFT by the dApp, however the content which the URI points to is decrypted if and only if the payment transaction event can be found on the blockchain for the address of the viewer.
 
 <img src="access-inversion-animation.gif" width="1000px" align="center">
 
@@ -221,3 +220,15 @@ This model gives artists, curators and consumers maximum flexibility for creatin
 https://www.formless.xyz/team<br>
 © 2022<br>
 formless<br>
+
+## Further Reading
+
+1. <a href="https://blockchainlab.com/pdf/Ethereum_white_paper-a_next_generation_smart_contract_and_decentralized_application_platform-vitalik-buterin.pdf">Ethereum Whitepaper</a>
+2. <a href="https://ethereum.github.io/yellowpaper/paper.pdf">Ethereum Yellowpaper</a>
+3. <a href="https://github.com/maticnetwork/whitepaper">Polygon MATIC Whitepaper</a>
+4. <a href="https://www.digital-cp.com/sites/default/files/resources/HDCP_deciphered_070808.pdf">HDCP Whitepaper</a>
+5. <a href="https://ethereum.org/en/developers/docs/standards/tokens/erc-721/">ERC-721 Non-Fungible Token Standard</a>
+6. <a href="https://github.com/ethereum/EIPs/issues/864">Shared ownership over NFTs</a>
+7. <a href="https://ipfs.io/ipfs/QmR7GSQM93Cx5eAg6a6yRzNde1FQv7uL6X1o4k7zrJa3LX/ipfs.draft3.pdf">IPFS - Content Addressed, Versioned, P2P File System</a>
+8. <a href="https://github.com/graphprotocol/research/blob/master/papers/whitepaper/the-graph-whitepaper.pdf">The Graph: A Decentralized Query Protocol for Blockchains</a>
+9. <a href="https://macdailynews.com/2007/02/06/apple_ceo_steve_jobs_posts_rare_open_letter_thoughts_on_music/">Thoughts on Music by Steve Jobs</a>
