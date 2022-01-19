@@ -70,7 +70,7 @@ We call tokens which conform to the Share protocol "Green NFTs" or G-NFTs. Green
 Applications can also act as agents on behalf of users by paying for the PFA content access using their own revenue and presenting the experience to users for free, or at a surcharge. Share unlocks new business opportunities and market competition for application developers.
 
 ```solidity
-interface GNFT {
+interface PFA {
     /// @dev This emits when the recipient address has successfully been
     /// granted access to the NFT content associated with the tokenId. The content
     /// can be read using the ERC721Metadata standard, e.g. tokenURI. The returned metadata
