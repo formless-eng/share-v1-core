@@ -120,7 +120,7 @@ We use the NFT only as the infrastructure to transact ownership, and the metadat
 
 ## Share Metadata Schema
 
-The code example below show a JSON schema for Share NFT metadata:
+The code example below shows a JSON schema for Share NFT metadata:
 
 ```json
 [
