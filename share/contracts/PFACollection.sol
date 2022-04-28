@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.8.0 <0.9.0;
 
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
@@ -90,8 +91,8 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
         SHARE protocol = SHARE(shareContractAddress());
         address itemAddress = _addresses.value[_currentAddressIndex];
         PFA item = PFA(itemAddress);
+        address owner = owner(); /* collection owner */
         address itemOwner = item.owner();
-        address collectionOwner = owner();
 
         require(msg.value == _pricePerAccess.value, "SHARE010");
 
@@ -121,12 +122,14 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
             );
 
             // Pay the collection owner
-            payable(collectionOwner).call{
+            (bool success, ) = payable(owner).call{
                 value: _pricePerAccess.value - item.pricePerAccess()
             }("");
+            require(success, "SHARE021");
+
             emit Payment(
                 msg.sender,
-                collectionOwner,
+                owner,
                 _currentAddressIndex,
                 _pricePerAccess.value - item.pricePerAccess()
             );

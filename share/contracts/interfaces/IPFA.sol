@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.8.0 <0.9.0;
 
 interface IPFA {
@@ -5,10 +6,7 @@ interface IPFA {
 
     function setPricePerAccess(uint256 pricePerAccess_) external;
 
-    function access(uint256 tokenId, address recipient)
-        external
-        virtual
-        payable;
+    function access(uint256 tokenId, address recipient) external payable;
 
     function supportsLicensing() external view returns (bool);
 
