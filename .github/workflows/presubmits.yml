@@ -1,0 +1,23 @@
+name: presubmits
+on:
+  pull_request:
+    branches:
+      - main
+jobs:
+  # Runs smart contract test code located in
+  # backend/test using Truffle.  
+  smart-contract-tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./share
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+      - run: npm install
+      - run: npm install -g truffle
+      - run: npm install -g ganache-cli
+      - run: ganache-cli --defaultBalanceEther 10000 > /dev/null &
+      - run: truffle test
