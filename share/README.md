@@ -6,7 +6,7 @@
 
 ## Engineering
 
-The easiest way to do iterative smart contract development is by running a local blockchain on your workstation. We use Ganache and Truffle for running a local blockchain:
+We use Ganache and Truffle for running a local blockchain:
 
 1. Install truffle and ganache:
 

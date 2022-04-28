@@ -2,8 +2,6 @@ const SHARE = artifacts.require("SHARE");
 const S2RD = artifacts.require("S2RD");
 const DEFAULT_ADDRESS_INDEX = 0;
 
-const Shared = require("../migrations/Shared");
-
 function normalizeAddress(address) {
   return address.toLowerCase();
 }

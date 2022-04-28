@@ -4,7 +4,7 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./libraries/CodeVerification.sol";
-import "./IPFA.sol";
+import "./interfaces/IPFA.sol";
 
 contract SHARE is Ownable, ReentrancyGuard {
     string public constant VERSION = "1.0.0";

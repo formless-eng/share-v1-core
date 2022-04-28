@@ -7,8 +7,6 @@ const CodeVerification = artifacts.require("CodeVerification");
 const Immutable = artifacts.require("Immutable");
 const MockImmutable = artifacts.require("MockImmutable");
 
-const Shared = require("../migrations/Shared");
-
 module.exports = async (deployer) => {
   await deployer.deploy(Migrations);
 
