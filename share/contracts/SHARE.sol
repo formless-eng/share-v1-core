@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.8.0 <0.9.0;
 
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
@@ -12,6 +13,7 @@ contract SHARE is Ownable, ReentrancyGuard {
         private constant EOA_KECCAK256 = 0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470;
     uint256 public _transactionFeeNumerator = 1;
     uint256 public _transactionFeeDenominator = 20;
+    bool public _codeVerificationEnabled = true;
     uint256 private constant UNIT_TOKEN_INDEX = 0;
     mapping(bytes32 => ApprovedBuild) internal approvedHashes;
 
@@ -122,22 +124,42 @@ contract SHARE is Ownable, ReentrancyGuard {
         );
     }
 
+    function setCodeVerificationEnabled(bool enable)
+        public
+        nonReentrant
+        onlyOwner
+    {
+        _codeVerificationEnabled = enable;
+    }
+
     function isApprovedBuild(
         address address_,
         CodeVerification.BuildType buildType_
-    ) public returns (bool) {
-        bytes32 addressCodeHash = CodeVerification.readCodeHash(address_);
-        if (approvedHashes[addressCodeHash].exists) {
-            return approvedHashes[addressCodeHash].buildType == buildType_;
+    ) public view returns (bool) {
+        if (!_codeVerificationEnabled) {
+            return true;
+        } else {
+            bytes32 codeHash = CodeVerification.readCodeHash(address_);
+            if (approvedHashes[codeHash].exists) {
+                return approvedHashes[codeHash].buildType == buildType_;
+            } else {
+                return false;
+            }
         }
     }
 
     function isApprovedBuildHash(
         bytes32 hash,
         CodeVerification.BuildType buildType_
-    ) public returns (bool) {
-        if (approvedHashes[hash].exists) {
-            return approvedHashes[hash].buildType == buildType_;
+    ) public view returns (bool) {
+        if (!_codeVerificationEnabled) {
+            return true;
+        } else {
+            if (approvedHashes[hash].exists) {
+                return approvedHashes[hash].buildType == buildType_;
+            } else {
+                return false;
+            }
         }
     }
 }

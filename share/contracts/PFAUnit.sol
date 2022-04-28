@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.8.0 <0.9.0;
 
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
@@ -60,15 +61,16 @@ contract PFAUnit is
         afterInit
     {
         require(msg.value == _pricePerAccess.value, "SHARE005");
-        // The grants table contains the timestamp of the grant award.
-        // This is used in determining the expiration of the access
-        // TTL.
-        _grantTimestamps[recipient_] = block.timestamp;
         address owner = owner();
         // Since this contract is a LimitedOwnable, the code which
         // may reside at the owner address is restricted to approved
         // hashes, therefore the following call is explicitly safe.
-        payable(owner).call{value: msg.value}("");
+        (bool success, ) = payable(owner).call{value: msg.value}("");
+        require(success, "SHARE021");
+        // The grants table contains the timestamp of the grant award.
+        // This is used in determining the expiration of the access
+        // TTL.
+        _grantTimestamps[recipient_] = block.timestamp;
         emit PaymentToOwner(owner);
         emit Grant(recipient_, tokenId_);
     }

@@ -56,21 +56,22 @@ truffle test
 - `SHARE003` : `Immutable storage vars may only be set once. Attempt to write immutable variable.`
 - `SHARE004` : `PFA units contain a single token at index 0.`
 - `SHARE005` : `Incorrect price provided. Please use pricePerAccess method to determine correct value.`
-- `SHARE006` : `Address table must have a number of entries less than or equal to the maximum number of shards specified by this contract`
+- `SHARE006` : `Address table must have a number of entries less than or equal to the maximum number of shards specified by this contract.`
 - `SHARE007` : `Addresses must be externally owned accounts, e.g. not contracts or multisig wallets.`
-- `SHARE008` : `Address table must have a number of entries less than or equal to the maximum number of shards specified by this contract`
+- `SHARE008` : `Address table must have a number of entries less than or equal to the maximum number of shards specified by this contract.`
 - `SHARE009` : `PFA collections may only contain PFAs.`
 - `SHARE010` : `Use PFA collection price pricePerAccess to determine price. Attempted price is incorrect`.
 - `SHARE011` : `Attempted price is incorrect. Use grossPricePerAccess method to determine correct price in wei.`
 - `SHARE012` : `Limited ownables may only be constructed using EOAs, not contracts.`
-- `SHARE013` : `SHARE component protocol address must be initialized`
-- `SHARE014` : `This contract has not yet been initialized. Ensure initialize was called after the deployment`
+- `SHARE013` : `SHARE component protocol address must be initialized.`
+- `SHARE014` : `This contract has not yet been initialized. Ensure initialize was called after the deployment.`
 - `SHARE015` : `Collection price per access must be >= the maximum price of any one item in the collection.`
-- `SHARE016` : `You must own this collection in order to license an asset to be included within it`
-- `SHARE017` : `Contract build type must be one of WALLET, SPLIT, PFA_UNIT or PFA_COLLECTION`
+- `SHARE016` : `You must own this collection in order to license an asset to be included within it.`
+- `SHARE017` : `Contract build type must be one of WALLET, SPLIT, PFA_UNIT or PFA_COLLECTION.`
 - `SHARE018` : `This PFA does not support licensing.`
-- `SHARE019` : `PFAs that support licensing must have immutable prices. This is because collections that have already licensed the PFA depend on a stable price to commit to in perpetuity`
+- `SHARE019` : `PFAs that support licensing must have immutable prices. This is because collections that have already licensed the PFA depend on a stable price to commit to in perpetuity.`
 - `SHARE020` : `S2RD split contract must contain at least one address.`
+- `SHARE021` : `Payment to asset owner unsuccessful. Please use an approved build which derives from LimitedOwnable.`
 
 ## Audits and Formal Verification
 
