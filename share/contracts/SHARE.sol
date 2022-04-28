@@ -26,7 +26,6 @@ contract SHARE is Ownable, ReentrancyGuard {
     }
 
     constructor() public {
-        _codeVerificationEnabled = true;
         addApprovedBuild(
             EOA_KECCAK256,
             CodeVerification.BuildType.WALLET,
