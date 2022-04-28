@@ -1,45 +1,13 @@
 {
-  "name": "upload_service",
+  "name": "share",
   "version": "1.0.0",
-  "description": "SHARE content upload service",
-  "main": "index.js",
-  "scripts": {
-    "start": "node server.js",
-    "test": "jest"
-  },
+  "description": "SHARE contracts",
   "author": "brandon@formless.xyz",
   "license": "UNLICENSED",
   "dependencies": {
-    "@ethereumjs/common": "^2.6.3",
-    "@ethereumjs/vm": "^5.8.0",
-    "@google-cloud/firestore": "^5.0.2",
     "@openzeppelin/contracts": "^4.4.2",
     "@truffle/hdwallet-provider": "^2.0.0",
-    "bignumber.js": "^9.0.2",
-    "cors": "^2.8.5",
-    "crypto-js": "^4.1.1",
-    "crypto-price": "^0.0.6",
-    "ethereum-checksum-address": "^0.0.7",
     "ethereumjs-util": "^7.1.4",
-    "express": "^4.17.2",
-    "firebase-admin": "^10.0.2",
-    "json-rpc-2.0": "^1.0.0",
-    "jsonwebtoken": "^8.5.1",
-    "node-fetch": "2.6.6",
-    "ora": "^6.0.1",
-    "prompt-sync": "^4.2.0",
-    "sinon": "^13.0.1",
-    "solc": "^0.8.11",
-    "web3": "^1.6.1",
-    "yargs": "^17.3.1"
-  },
-  "devDependencies": {
-    "@google-cloud/functions-framework": "^3.0.0",
-    "jest": "^27.5.1"
-  },
-  "jest": {
-    "testPathIgnorePatterns": [
-      "contract."
-    ]
+    "web3": "^1.6.1"
   }
 }

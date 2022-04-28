@@ -2,8 +2,8 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import "./libraries/Immutable.sol";
 import "./LimitedOwnable.sol";
-import "./IPFA.sol";
-import "./IPFACollection.sol";
+import "./interfaces/IPFA.sol";
+import "./interfaces/IPFACollection.sol";
 
 abstract contract PFA is IPFA, LimitedOwnable {
     Immutable.UnsignedInt256 internal _pricePerAccess;

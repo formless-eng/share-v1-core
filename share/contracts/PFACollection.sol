@@ -5,7 +5,7 @@ import "./SHARE.sol";
 import "./PFA.sol";
 import "./libraries/CodeVerification.sol";
 import "./libraries/Immutable.sol";
-import "./IPFACollection.sol";
+import "./interfaces/IPFACollection.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
 contract PFACollection is PFA, IPFACollection, ERC721 {
