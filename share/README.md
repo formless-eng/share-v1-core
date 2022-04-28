@@ -48,12 +48,6 @@ npm install
 truffle test
 ```
 
-The following command executes all smart contract unit tests located within `contracts/test/contract.<CONTRACT_NAME>.test.js`:
-
-```
-truffle test --network=development
-```
-
 ## Error Codes
 
 - `SHARE000` : `Licensing this PFA requires the keccak256 hash of runtime build code for the recipient address to map to an approved SHARE PFA collection build.`
