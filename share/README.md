@@ -1,5 +1,7 @@
 # SHARE Contracts
 
+![presubmits](https://github.com/formless-eng/oss/.github/workflows/presubmits.yml/badge.svg)
+
 ## Documentation
 
 - [SHARE Whitepaper](https://formless-eng.s3.us-east-2.amazonaws.com/share+whitepaper+7.pdf)
