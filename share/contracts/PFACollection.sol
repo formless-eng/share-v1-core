@@ -26,7 +26,7 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
         uint256 value
     );
 
-    event ItemNotPaid(address indexed owner, address indexed item);
+    event ItemPaymentSkipped(address indexed owner, address indexed item);
 
     string public constant NAME = "PFA_COLLECTION";
     string public constant SYMBOL = "SHARE";
@@ -144,7 +144,7 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
                     payment
                 );
             } else {
-                emit ItemNotPaid(itemOwner, address(item));
+                emit ItemPaymentSkipped(itemOwner, address(item));
             }
 
             // Pay the collection owner
@@ -163,7 +163,7 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
             _grantTimestamps[recipient_] = block.timestamp;
             emit Grant(recipient_, UNIT_TOKEN_INDEX);
         } else {
-            emit ItemNotPaid(itemOwner, address(item));
+            emit ItemPaymentSkipped(itemOwner, address(item));
         }
     }
 

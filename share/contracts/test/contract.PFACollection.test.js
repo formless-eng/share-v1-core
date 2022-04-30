@@ -648,11 +648,11 @@ contract("PFACollection", (accounts) => {
 
         if (recipientPFA === pfa3) {
           revertingPFAAccessCount++;
-          // the reverting PFA should cause an ItemNotPaid event
+          // the reverting PFA should cause an ItemPaymentSkipped event
           // in the collection
           assert.equal(
             (
-              await collection.getPastEvents("ItemNotPaid", {
+              await collection.getPastEvents("ItemPaymentSkipped", {
                 fromBlock: 0,
                 toBlock: "latest",
                 filter: {
