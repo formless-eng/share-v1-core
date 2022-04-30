@@ -59,7 +59,7 @@ truffle test
 - `SHARE006` : `Address table must have a number of entries less than or equal to the maximum number of shards specified by this contract.`
 - `SHARE007` : `Addresses must be externally owned accounts, e.g. not contracts or multisig wallets.`
 - `SHARE008` : `Address table must have a number of entries less than or equal to the maximum number of shards specified by this contract.`
-- `SHARE009` : `PFA collections may only contain PFAs.`
+- `SHARE009` : `PFA collections may only contain approved PFA builds.`
 - `SHARE010` : `Use PFA collection price pricePerAccess to determine price. Attempted price is incorrect`.
 - `SHARE011` : `Attempted price is incorrect. Use grossPricePerAccess method to determine correct price in wei.`
 - `SHARE012` : `Limited ownables may only be constructed using EOAs, not contracts.`

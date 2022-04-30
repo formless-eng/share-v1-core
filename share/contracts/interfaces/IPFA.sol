@@ -26,7 +26,5 @@ interface IPFA {
 
     function grantTTL() external view returns (uint256);
 
-    function licenseTTL() external view returns (uint256);
-
     function license(address recipient) external;
 }

@@ -54,12 +54,10 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
         uint256 pricePerAccess_,
         uint256 grantTTL_,
         bool supportsLicensing_,
-        uint256 licenseTTL_,
         address shareContractAddress_
     ) public onlyOwner {
         Immutable.setUnsignedInt256(_pricePerAccess, pricePerAccess_);
         Immutable.setUnsignedInt256(_grantTTL, grantTTL_);
-        Immutable.setUnsignedInt256(_licenseTTL, licenseTTL_);
         Immutable.setBoolean(_supportsLicensing, supportsLicensing_);
         _tokenURI = tokenURI_;
         setShareContractAddress(shareContractAddress_);
@@ -103,11 +101,9 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
 
         require(msg.value == _pricePerAccess.value, "SHARE010");
 
-        if (_currentAddressIndex < (_addresses.value.length - 1)) {
-            _currentAddressIndex++;
-        } else {
-            _currentAddressIndex = 0;
-        }
+        _currentAddressIndex =
+            (_currentAddressIndex + 1) %
+            (_addresses.value.length);
 
         if (
             protocol.isApprovedBuild(
@@ -119,13 +115,14 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
                 CodeVerification.BuildType.SPLIT
             )
         ) {
-            // Pay the item owner
-            item.access(tokenId_, recipient_);
+            // Pay for item access
+            uint256 payment = item.pricePerAccess();
+            item.access{value: payment}(tokenId_, recipient_);
             emit Payment(
                 msg.sender,
-                itemOwner,
+                address(item),
                 _currentAddressIndex,
-                item.pricePerAccess()
+                payment
             );
 
             // Pay the collection owner

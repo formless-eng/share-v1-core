@@ -71,7 +71,6 @@ contract("SHARE", (accounts) => {
       "1000000000" /* pricePerAccess (wei) */,
       300 /* grantTTL_ */,
       true /* supportsLicensing */,
-      300 /* licenseTTL */,
       shareContract.address /* shareContractAddress_ */
     );
 
@@ -298,7 +297,6 @@ contract("SHARE", (accounts) => {
       "1000000000" /* pricePerAccess (wei) */,
       300 /* grantTTL_ */,
       true /* supportsLicensing */,
-      300 /* licenseTTL */,
       shareContract.address /* shareContractAddress_ */
     );
     await shareContract.addApprovedBuild(
@@ -383,7 +381,6 @@ contract(
         "2000000000" /* pricePerAccess (wei) */,
         300 /* grantTTL_ */,
         true /* supportsLicensing */,
-        300 /* licenseTTL */,
         shareContract.address /* shareContractAddress_ */
       );
       try {
@@ -393,7 +390,6 @@ contract(
           "1000000000" /* pricePerAccess (wei) */,
           300 /* grantTTL_ */,
           true /* supportsLicensing */,
-          300 /* licenseTTL */,
           shareContract.address /* shareContractAddress_ */
         );
         throw Error("Expected error");
@@ -433,7 +429,6 @@ contract("License denial licensing not supported", (accounts) => {
       "1000000000" /* pricePerAccess (wei) */,
       300 /* grantTTL_ */,
       false /* supportsLicensing */,
-      300 /* licenseTTL */,
       shareContract.address /* shareContractAddress_ */
     );
     await collectionContract.initialize(
@@ -442,7 +437,6 @@ contract("License denial licensing not supported", (accounts) => {
       "2000000000" /* pricePerAccess (wei) */,
       300 /* grantTTL_ */,
       true /* supportsLicensing */,
-      300 /* licenseTTL */,
       shareContract.address /* shareContractAddress_ */
     );
     try {
@@ -489,7 +483,6 @@ contract("License grant", (accounts) => {
       "1000000000" /* pricePerAccess (wei) */,
       300 /* grantTTL_ */,
       true /* supportsLicensing */,
-      300 /* licenseTTL */,
       shareContract.address /* shareContractAddress_ */
     );
     await collectionContract.initialize(
@@ -498,7 +491,6 @@ contract("License grant", (accounts) => {
       "2000000000" /* pricePerAccess (wei) */,
       300 /* grantTTL_ */,
       true /* supportsLicensing */,
-      300 /* licenseTTL */,
       shareContract.address /* shareContractAddress_ */
     );
     await shareContract.license(
