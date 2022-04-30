@@ -17,8 +17,12 @@ import "./libraries/CodeVerification.sol";
 import "./interfaces/IPFA.sol";
 
 contract SHARE is Ownable, ReentrancyGuard {
-    event Grant(address indexed recipient, uint256 indexed tokenId);
-    event License(address indexed recipient);
+    event Grant(
+        address indexed recipient,
+        address indexed contractAddress,
+        uint256 indexed tokenId
+    );
+    event License(address indexed licensor, address indexed licensee);
 
     string public constant VERSION = "1.0.0";
     bytes32
@@ -29,8 +33,8 @@ contract SHARE is Ownable, ReentrancyGuard {
     uint256 private constant UNIT_TOKEN_INDEX = 0;
 
     mapping(bytes32 => ApprovedBuild) internal _approvedHashes;
-    mapping(address => uint256) internal _grantTimestamps;
-    mapping(address => uint256) internal _licenseTimestamps;
+    mapping(address => mapping(address => uint256)) internal _grantTimestamps;
+    mapping(address => mapping(address => uint256)) internal _licenseTimestamps;
 
     struct ApprovedBuild {
         CodeVerification.BuildType buildType;
@@ -97,8 +101,8 @@ contract SHARE is Ownable, ReentrancyGuard {
         uint256 grossPrice = grossPricePerAccess(contractAddress_, tokenId_);
         require(msg.value == grossPrice, "SHARE011");
         asset.access{value: asset.pricePerAccess()}(tokenId_, msg.sender);
-        _grantTimestamps[msg.sender] = block.timestamp;
-        emit Grant(msg.sender, tokenId_);
+        _grantTimestamps[msg.sender][contractAddress_] = block.timestamp;
+        emit Grant(msg.sender, contractAddress_, tokenId_);
     }
 
     function license(address licensorContract_, address licenseeContract_)
@@ -109,8 +113,9 @@ contract SHARE is Ownable, ReentrancyGuard {
         require(msg.sender == Ownable(licenseeContract_).owner(), "SHARE016");
         IPFA asset = IPFA(licensorContract_);
         asset.license(licenseeContract_);
-        _grantTimestamps[msg.sender] = block.timestamp;
-        emit License(msg.sender);
+        _licenseTimestamps[licenseeContract_][licensorContract_] = block
+            .timestamp;
+        emit License(licensorContract_, licenseeContract_);
     }
 
     /**
