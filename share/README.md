@@ -31,10 +31,10 @@ development: {
 ```
 
 ```
-ganache-cli --defaultBalanceEther 10000 -m $TEST_MNEMONIC
+ganache-cli --defaultBalanceEther 10000
 ```
 
-**$TEST_MNEMONIC** is an environemnt variable set to a deterministic _test_ seed phrase used to generate the accounts on the local blockchain. To generate the first seed phrase automatically, run the same command without the `-m` flag. We recommend using tmux or a separate terminal for running ganache so that you can monitor logging in the console while also running additional commands to interact with the chain in a separate terminal window.
+We recommend using tmux or a separate terminal for running ganache so that you can monitor logging in the console while also running additional commands to interact with the chain in a separate terminal window.
 
 ## Unit Tests
 
