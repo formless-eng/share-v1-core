@@ -18,6 +18,10 @@ import "../libraries/Immutable.sol";
 
 contract MockPFARevertsOnAccess is PFA, ERC721 {
     event PaymentToOwner(address indexed owner, uint256 value);
+    event MockPFARevertsOnAccessCall(
+        uint256 indexed tokenId,
+        address indexed recipient
+    );
     uint256 private constant UNIT_TOKEN_INDEX = 0;
 
     constructor()
@@ -34,7 +38,6 @@ contract MockPFARevertsOnAccess is PFA, ERC721 {
     }
 
     function initialize(
-        string memory tokenURI_,
         uint256 pricePerAccess_,
         uint256 grantTTL_,
         bool supportsLicensing_,
@@ -51,9 +54,9 @@ contract MockPFARevertsOnAccess is PFA, ERC721 {
         public
         override
         payable
-        nonReentrant
         afterInit
     {
+        emit MockPFARevertsOnAccessCall(tokenId_, recipient_);
         revert("forced revert");
     }
 }
