@@ -173,8 +173,8 @@ contract("SHARE", (accounts) => {
     );
 
     const grantTimestamp = await shareContract.grantTimestamp(
-      accounts[NON_OWNER_ADDRESS_INDEX],
-      assetContract.address
+      assetContract.address,
+      accounts[NON_OWNER_ADDRESS_INDEX]
     );
 
     assert.isBelow(

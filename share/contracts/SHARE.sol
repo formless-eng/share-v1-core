@@ -121,7 +121,7 @@ contract SHARE is Ownable, ReentrancyGuard {
     /**
      * @dev Returns timestamp as a Unix epoch in seconds for the access grant award.
      */
-    function grantTimestamp(address recipient_, address contractAddress_)
+    function grantTimestamp(address contractAddress_, address recipient_)
         public
         view
         returns (uint256)
