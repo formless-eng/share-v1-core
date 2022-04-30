@@ -10,6 +10,8 @@
 //
 pragma solidity >=0.8.0 <0.9.0;
 
+/// @title Immutable state variable library.
+/// @author brandon@formless.xyz
 /// @notice Library for contracts to implement write-once
 /// post initialization immutable variables. This enables immutable
 /// variables that are not initialized in Solidity constructors.

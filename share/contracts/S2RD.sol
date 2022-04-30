@@ -29,9 +29,7 @@ contract S2RD is LimitedOwnable {
         public
         LimitedOwnable(
             true, /* WALLET */
-            false, /* SPLIT */
-            false, /* PFA_UNIT */
-            false /* PFA_COLLECTION */
+            false /* SPLIT */
         )
     {}
 

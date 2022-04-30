@@ -29,9 +29,7 @@ contract MockPFARevertsOnAccess is PFA, ERC721 {
         ERC721("SHARE", "MOCK_PFA")
         LimitedOwnable(
             true, /* WALLET */
-            true, /* SPLIT */
-            false, /* PFA_UNIT */
-            false /* PFA_COLLECTION */
+            true /* SPLIT */
         )
     {
         _safeMint(msg.sender, UNIT_TOKEN_INDEX);

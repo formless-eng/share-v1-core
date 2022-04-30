@@ -11,6 +11,7 @@
 pragma solidity >=0.8.0 <0.9.0;
 
 /// @title Standard pay-for-access (PFA) collection contract
+/// @author brandon@formless.xyz
 /// interface for Share.
 interface IPFACollection {
     /// @notice Returns true if `account_` address is included in the

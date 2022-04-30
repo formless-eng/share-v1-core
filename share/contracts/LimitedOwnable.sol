@@ -16,6 +16,24 @@ import "./libraries/CodeVerification.sol";
 import "./libraries/Immutable.sol";
 import "./SHARE.sol";
 
+/// @title Limited ownable abstract base contract.
+/// @author brandon@formless.xyz
+/// @notice Contracts which derive from the abstract LimitedOwnable
+/// base contract have limitations on owners. At construction time
+/// contract creators may specify valid owner classes, e.g. one of:
+///
+/// `CodeVerification.BuildType.WALLET`
+/// `CodeVerification.BuildType.SPLIT`
+///
+/// Wallets are those addresses which have a code hash that is either /// an externally owned account (EOA) or an approved wallet code hash /// stored in the Share protocol contract. Splits are those
+/// addresses which correspond to approved builds of Share
+/// royalty split contract implementations. LimitedOwnable contract
+/// creators must be EOAs to prevent arbitrary contracts from
+/// establishing initial ownership.
+/// @dev LimitedOwnables limit potential risk associated with
+/// sending ether to contract owners, particulary where it is
+/// critical that the caller complete a state transition and not
+/// revert during the call.
 abstract contract LimitedOwnable is Ownable, ReentrancyGuard {
     string public constant VERSION = "1.0.0";
     CodeVerification.BuildType[] private _validBuildTypes;
@@ -27,12 +45,10 @@ abstract contract LimitedOwnable is Ownable, ReentrancyGuard {
         _;
     }
 
-    constructor(
-        bool allowWallet_,
-        bool allowSplit_,
-        bool allowPFAUnit_,
-        bool allowPFACollection_
-    ) internal {
+    constructor(bool allowWallet_, bool allowSplit_) internal {
+        // Note that we do not use tx.origin here for authorization,
+        // only to assert that the sender is an EOA, independent of
+        // the address of the EOA.
         require(tx.origin == msg.sender, "SHARE012");
         if (allowWallet_) {
             _validBuildTypes.push(CodeVerification.BuildType.WALLET);
@@ -42,13 +58,6 @@ abstract contract LimitedOwnable is Ownable, ReentrancyGuard {
             _validBuildTypes.push(CodeVerification.BuildType.SPLIT);
         }
 
-        if (allowPFAUnit_) {
-            _validBuildTypes.push(CodeVerification.BuildType.PFA_UNIT);
-        }
-
-        if (allowPFACollection_) {
-            _validBuildTypes.push(CodeVerification.BuildType.PFA_COLLECTION);
-        }
         _transferOwnership(_msgSender());
     }
 
