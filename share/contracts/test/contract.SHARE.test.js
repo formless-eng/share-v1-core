@@ -28,7 +28,7 @@ contract("SHARE", (accounts) => {
   });
 
   specify("Only owner sets transaction fee", async () => {
-    const shareContract = await SHARE.deployed();
+    const shareContract = await SHARE.new();
 
     try {
       await shareContract.setTransactionFee(1, 10, {
@@ -41,7 +41,7 @@ contract("SHARE", (accounts) => {
   });
 
   specify("Owner can change transaction fee", async () => {
-    const shareContract = await SHARE.deployed();
+    const shareContract = await SHARE.new();
 
     try {
       await shareContract.setTransactionFee(1, 10, {
@@ -136,11 +136,6 @@ contract("SHARE", (accounts) => {
   specify("Access grant", async () => {
     const shareContract = await SHARE.deployed();
     const assetContract = await PFAUnit.deployed();
-    // NOTE: We explicitly set the transaction fee here since other
-    // tests can modify contract state.
-    await shareContract.setTransactionFee(1, 20, {
-      from: accounts[DEFAULT_ADDRESS_INDEX],
-    });
 
     await shareContract.access(
       assetContract.address,
@@ -198,12 +193,6 @@ contract("SHARE", (accounts) => {
     // S2RD split contract is pre-initialized with recipient addresses.
     await assetContract.transferOwnership(splitContract.address);
 
-    // NOTE: We explicitly set the transaction fee here since other
-    // tests can modify contract state.
-    await shareContract.setTransactionFee(1, 20, {
-      from: accounts[DEFAULT_ADDRESS_INDEX],
-    });
-
     for (let i = 0; i < uniformCollaborators.length; i++) {
       const recipientAddress = uniformCollaborators[i];
       await shareContract.access(
@@ -235,12 +224,6 @@ contract("SHARE", (accounts) => {
   specify("Access grant TTL", async () => {
     const shareContract = await SHARE.deployed();
     const assetContract = await PFAUnit.deployed();
-    // NOTE: We explicitly set the transaction fee here since other
-    // tests can modify contract state.
-    await shareContract.setTransactionFee(1, 20, {
-      from: accounts[DEFAULT_ADDRESS_INDEX],
-    });
-
     await shareContract.access(
       assetContract.address,
       UNIT_TOKEN_INDEX,
