@@ -6,6 +6,8 @@
 // ⣿⣿⠀⠀⠀⠀⠀⣿⣿⠀⢸⣿⡇⠀⠀⣿⣿⠈⣿⣷⠀⠀⠀⣿⣿⢸⣿⣿⠈⣿⡇⠀⠀⣿⣿⠀⠀⠀⠀⢸⣿⡇⠀⠀⠀⠀⢀⣀⠀⠙⣿⣧⠀⠀⣀⣀⠀⠻⣿⡆
 // ⣿⣿⠀⠀⠀⠀⠀⢿⣿⣤⣾⣿⠇⠀⠀⣿⣿⠀⣿⣿⠀⠀⠀⣿⣿⠀⣿⡇⠈⣿⡇⠀⠀⣿⣿⣤⣤⡄⠀⢸⣿⣧⣤⣤⡄⠀⢸⣿⣆⠀⣿⣿⠀⠀⣿⣿⡀⢀⣿⣿
 // ⠛⠛⠀⠀⠀⠀⠀⠈⠛⠿⠿⠛⠀⠀⠀⠛⠛⠀⠘⠛⠃⠀⠀⠛⠛⠀⠛⠀⠈⠛⠃⠀⠀⠛⠛⠛⠛⠃⠀⠘⠛⠛⠛⠛⠃⠀⠀⠙⠿⠿⠟⠁⠀⠀⠀⠛⠿⠿⠛⠀
+// https://formless.xyz/opportunities
+//
 pragma solidity >=0.8.0 <0.9.0;
 
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
@@ -24,16 +26,18 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
         uint256 value
     );
 
-    event IllegalItemOwner(address indexed owner);
+    event ItemNotPaid(address indexed owner, address indexed item);
 
     string public constant NAME = "PFA_COLLECTION";
     string public constant SYMBOL = "SHARE";
     uint256 private constant MAX_SIZE = 200;
+    uint256 private constant UNIT_TOKEN_INDEX = 0;
 
     Immutable.AddressArray private _addresses;
     Immutable.AddressToBooleanMap private _addressMap;
 
     uint256 private _currentAddressIndex = 0;
+    string internal _tokenURI;
 
     constructor()
         public
@@ -116,20 +120,38 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
             )
         ) {
             // Pay for item access
+            // We use call with encodeWithSignature here to guarantee
+            // that a revert in the callee does not prevent the
+            // caller state from updating, e.g. the counter
+            // (_currentAddressIndex) must increment in this
+            // transaction.
             uint256 payment = item.pricePerAccess();
-            item.access{value: payment}(tokenId_, recipient_);
-            emit Payment(
-                msg.sender,
-                address(item),
-                _currentAddressIndex,
-                payment
+            (bool itemPaymentSuccess, ) = payable(address(item)).call{
+                value: payment
+            }(
+                abi.encodeWithSignature(
+                    "access(uint256,address)",
+                    tokenId_,
+                    recipient_
+                )
             );
 
+            if (itemPaymentSuccess) {
+                emit Payment(
+                    msg.sender,
+                    address(item),
+                    _currentAddressIndex,
+                    payment
+                );
+            } else {
+                emit ItemNotPaid(itemOwner, address(item));
+            }
+
             // Pay the collection owner
-            (bool success, ) = payable(owner).call{
+            (bool ownerPaymentSuccess, ) = payable(owner).call{
                 value: _pricePerAccess.value - item.pricePerAccess()
             }("");
-            require(success, "SHARE021");
+            require(ownerPaymentSuccess, "SHARE021");
 
             emit Payment(
                 msg.sender,
@@ -141,17 +163,13 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
             _grantTimestamps[recipient_] = block.timestamp;
             emit Grant(recipient_, UNIT_TOKEN_INDEX);
         } else {
-            emit IllegalItemOwner(itemOwner);
+            emit ItemNotPaid(itemOwner, address(item));
         }
     }
 
     function contains(address account_) public view afterInit returns (bool) {
         return _addressMap.value[account_];
     }
-
-    uint256 private constant UNIT_TOKEN_INDEX = 0;
-
-    string internal _tokenURI;
 
     /**
      * @dev Returns the token URI for the asset.
