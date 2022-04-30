@@ -123,7 +123,6 @@ contract SHARE is Ownable, ReentrancyGuard {
      */
     function grantTimestamp(address recipient_, address contractAddress_)
         public
-        override
         view
         returns (uint256)
     {
@@ -133,7 +132,7 @@ contract SHARE is Ownable, ReentrancyGuard {
     function licenseTimestamp(
         address licenseeAddress_,
         address licensorAddress_
-    ) external view returns (uint256) {
+    ) external returns (uint256) {
         return _licenseTimestamps[licenseeAddress_][licensorAddress_];
     }
 
