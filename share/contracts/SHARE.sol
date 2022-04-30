@@ -121,23 +121,20 @@ contract SHARE is Ownable, ReentrancyGuard {
     /**
      * @dev Returns timestamp as a Unix epoch in seconds for the access grant award.
      */
-    function grantTimestamp(address recipient_)
+    function grantTimestamp(address recipient_, address contractAddress_)
         public
         override
         view
-        afterInit
         returns (uint256)
     {
-        return _grantTimestamps[recipient_];
+        return _grantTimestamps[recipient_][contractAddress_];
     }
 
-    function licenseTimestamp(address recipient_)
-        external
-        view
-        afterInit
-        returns (uint256)
-    {
-        return _licenseTimestamps[recipient_];
+    function licenseTimestamp(
+        address licenseeAddress_,
+        address licensorAddress_
+    ) external view returns (uint256) {
+        return _licenseTimestamps[licenseeAddress_][licensorAddress_];
     }
 
     /**
