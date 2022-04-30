@@ -62,11 +62,9 @@ contract S2RD is LimitedOwnable {
     receive() external payable nonReentrant afterInit {
         address recipient = _addresses.value[_currentAddressIndex];
         emit Payment(msg.sender, recipient, _currentAddressIndex, msg.value);
-        if (_currentAddressIndex < (_addresses.value.length - 1)) {
-            _currentAddressIndex++;
-        } else {
-            _currentAddressIndex = 0;
-        }
+        _currentAddressIndex =
+            (_currentAddressIndex + 1) %
+            (_addresses.value.length);
         payable(recipient).transfer(msg.value); // max 2300 gas
     }
 }

@@ -14,9 +14,11 @@ import "./interfaces/IPFA.sol";
 import "./interfaces/IPFACollection.sol";
 
 abstract contract PFA is IPFA, LimitedOwnable {
+    event Grant(address indexed recipient, uint256 indexed tokenId);
+    event License(address indexed recipient);
+
     Immutable.UnsignedInt256 internal _pricePerAccess;
     Immutable.UnsignedInt256 internal _grantTTL;
-    Immutable.UnsignedInt256 internal _licenseTTL;
     Immutable.Boolean internal _supportsLicensing;
 
     mapping(address => uint256) internal _grantTimestamps;
@@ -88,10 +90,6 @@ abstract contract PFA is IPFA, LimitedOwnable {
         return _grantTTL.value;
     }
 
-    function licenseTTL() external view afterInit returns (uint256) {
-        return _licenseTTL.value;
-    }
-
     function license(address recipient_) public nonReentrant afterInit {
         require(_supportsLicensing.value, "SHARE018");
         // PFAs issue licenses to collections because they have proof
@@ -112,7 +110,4 @@ abstract contract PFA is IPFA, LimitedOwnable {
         _licenseTimestamps[recipient_] = block.timestamp;
         emit License(recipient_);
     }
-
-    event Grant(address indexed recipient, uint256 indexed tokenId);
-    event License(address indexed recipient);
 }

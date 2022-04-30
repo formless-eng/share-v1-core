@@ -18,7 +18,7 @@ contract PFAUnit is
     PFA,
     ERC721 /* G_NFT */
 {
-    event PaymentToOwner(address indexed owner);
+    event PaymentToOwner(address indexed owner, uint256 value);
 
     string public constant NAME = "SHARE";
     string public constant SYMBOL = "PFA";
@@ -44,12 +44,10 @@ contract PFAUnit is
         uint256 pricePerAccess_,
         uint256 grantTTL_,
         bool supportsLicensing_,
-        uint256 licenseTTL_,
         address shareContractAddress_
     ) public onlyOwner {
         Immutable.setUnsignedInt256(_pricePerAccess, pricePerAccess_);
         Immutable.setUnsignedInt256(_grantTTL, grantTTL_);
-        Immutable.setUnsignedInt256(_licenseTTL, licenseTTL_);
         Immutable.setBoolean(_supportsLicensing, supportsLicensing_);
         setShareContractAddress(shareContractAddress_);
         _tokenURI = tokenURI_;
@@ -78,7 +76,7 @@ contract PFAUnit is
         // This is used in determining the expiration of the access
         // TTL.
         _grantTimestamps[recipient_] = block.timestamp;
-        emit PaymentToOwner(owner);
+        emit PaymentToOwner(owner, msg.value);
         emit Grant(recipient_, tokenId_);
     }
 

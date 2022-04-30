@@ -1,4 +1,3 @@
-const Migrations = artifacts.require("Migrations");
 const SHARE = artifacts.require("SHARE");
 const PFAUnit = artifacts.require("PFAUnit");
 const PFACollection = artifacts.require("PFACollection");
@@ -6,10 +5,11 @@ const S2RD = artifacts.require("S2RD");
 const CodeVerification = artifacts.require("CodeVerification");
 const Immutable = artifacts.require("Immutable");
 const MockImmutable = artifacts.require("MockImmutable");
+const MockPFARevertsOnAccess = artifacts.require(
+  "MockPFARevertsOnAccess"
+);
 
 module.exports = async (deployer) => {
-  await deployer.deploy(Migrations);
-
   // Deploy library contracts
   await deployer.deploy(CodeVerification);
   await deployer.deploy(Immutable);
@@ -22,7 +22,9 @@ module.exports = async (deployer) => {
 
   // Deploy PFAUnit (PFA implementation e.g. `G_NFT`) contract
   await deployer.link(Immutable, PFAUnit);
+  await deployer.link(Immutable, MockPFARevertsOnAccess);
   await deployer.deploy(PFAUnit);
+  await deployer.deploy(MockPFARevertsOnAccess);
 
   // Deploy S2RD royalty split contract.
   await deployer.link(Immutable, S2RD);

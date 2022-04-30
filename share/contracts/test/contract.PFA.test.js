@@ -14,7 +14,6 @@ contract("PFAUnit", (accounts) => {
       "1000000000" /* pricePerAccess_ */,
       300 /* grantTTL_ */,
       false /* supportsLicensing_ */,
-      0 /* licenseTTL_ */,
       shareContract.address /* shareContractAddress_ */
     );
 
