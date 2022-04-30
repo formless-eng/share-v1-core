@@ -17,7 +17,7 @@ import "./interfaces/IPFACollection.sol";
 
 abstract contract PFA is IPFA, LimitedOwnable {
     event Grant(address indexed recipient, uint256 indexed tokenId);
-    event License(address indexed recipient);
+    event License(address indexed licensee);
 
     Immutable.UnsignedInt256 internal _pricePerAccess;
     Immutable.UnsignedInt256 internal _grantTTL;

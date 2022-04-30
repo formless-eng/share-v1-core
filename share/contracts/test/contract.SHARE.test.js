@@ -159,6 +159,30 @@ contract("SHARE", (accounts) => {
     );
   });
 
+  specify("Access grant recorded on SHARE contract", async () => {
+    const shareContract = await SHARE.new();
+    const assetContract = await PFAUnit.deployed();
+
+    await shareContract.access(
+      assetContract.address,
+      UNIT_TOKEN_INDEX,
+      {
+        from: accounts[NON_OWNER_ADDRESS_INDEX],
+        value: "1050000000",
+      }
+    );
+
+    const grantTimestamp = await shareContract.grantTimestamp(
+      accounts[NON_OWNER_ADDRESS_INDEX],
+      assetContract.address
+    );
+
+    assert.isBelow(
+      Math.abs(grantTimestamp - Math.round(Date.now() / 1000)),
+      GRANT_TTL_PRECISION_SEC
+    );
+  });
+
   specify("Access grant with S2RD royalty splits", async () => {
     const shareContract = await SHARE.deployed();
     const assetContract = await PFAUnit.deployed();
@@ -492,6 +516,64 @@ contract("License grant", (accounts) => {
         })
       ).length,
       1
+    );
+  });
+
+  specify("License grant recorded on SHARE contract", async () => {
+    const shareContract = await SHARE.new();
+    const assetContract = await PFAUnit.new();
+    const collectionContract = await PFACollection.new();
+    await shareContract.setCodeVerificationEnabled(false);
+    await assetContract.initialize(
+      "/test/token/uri" /* tokenURI_ */,
+      "1000000000" /* pricePerAccess (wei) */,
+      300 /* grantTTL_ */,
+      true /* supportsLicensing */,
+      shareContract.address /* shareContractAddress_ */
+    );
+    await collectionContract.initialize(
+      [assetContract.address] /* addresses_ */,
+      "/test/token/uri" /* tokenURI_ */,
+      "2000000000" /* pricePerAccess (wei) */,
+      300 /* grantTTL_ */,
+      true /* supportsLicensing */,
+      shareContract.address /* shareContractAddress_ */
+    );
+    await shareContract.license(
+      assetContract.address /* licensor */,
+      collectionContract.address /* licensee */,
+      {
+        from: accounts[DEFAULT_ADDRESS_INDEX],
+      }
+    );
+    assert.equal(
+      (
+        await assetContract.getPastEvents("License", {
+          filter: {
+            licensee: collectionContract.address,
+          },
+        })
+      ).length,
+      1
+    );
+    assert.equal(
+      (
+        await shareContract.getPastEvents("License", {
+          filter: {
+            licensee: collectionContract.address,
+            licensor: assetContract.address,
+          },
+        })
+      ).length,
+      1
+    );
+    const licenseTimestamp = await shareContract.licenseTimestamp(
+      assetContract.address,
+      collectionContract.address
+    );
+    assert.isBelow(
+      Math.abs(licenseTimestamp - Math.round(Date.now() / 1000)),
+      LICENSE_TTL_PRECISION_SEC
     );
   });
 
