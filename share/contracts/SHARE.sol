@@ -17,6 +17,9 @@ import "./libraries/CodeVerification.sol";
 import "./interfaces/IPFA.sol";
 
 contract SHARE is Ownable, ReentrancyGuard {
+    event Grant(address indexed recipient, uint256 indexed tokenId);
+    event License(address indexed recipient);
+
     string public constant VERSION = "1.0.0";
     bytes32
         private constant EOA_KECCAK256 = 0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470;
@@ -24,7 +27,10 @@ contract SHARE is Ownable, ReentrancyGuard {
     uint256 public _transactionFeeDenominator = 20;
     bool public _codeVerificationEnabled = true;
     uint256 private constant UNIT_TOKEN_INDEX = 0;
-    mapping(bytes32 => ApprovedBuild) internal approvedHashes;
+
+    mapping(bytes32 => ApprovedBuild) internal _approvedHashes;
+    mapping(address => uint256) internal _grantTimestamps;
+    mapping(address => uint256) internal _licenseTimestamps;
 
     struct ApprovedBuild {
         CodeVerification.BuildType buildType;
@@ -91,6 +97,8 @@ contract SHARE is Ownable, ReentrancyGuard {
         uint256 grossPrice = grossPricePerAccess(contractAddress_, tokenId_);
         require(msg.value == grossPrice, "SHARE011");
         asset.access{value: asset.pricePerAccess()}(tokenId_, msg.sender);
+        _grantTimestamps[msg.sender] = block.timestamp;
+        emit Grant(msg.sender, tokenId_);
     }
 
     function license(address licensorContract_, address licenseeContract_)
@@ -101,6 +109,30 @@ contract SHARE is Ownable, ReentrancyGuard {
         require(msg.sender == Ownable(licenseeContract_).owner(), "SHARE016");
         IPFA asset = IPFA(licensorContract_);
         asset.license(licenseeContract_);
+        _grantTimestamps[msg.sender] = block.timestamp;
+        emit License(msg.sender);
+    }
+
+    /**
+     * @dev Returns timestamp as a Unix epoch in seconds for the access grant award.
+     */
+    function grantTimestamp(address recipient_)
+        public
+        override
+        view
+        afterInit
+        returns (uint256)
+    {
+        return _grantTimestamps[recipient_];
+    }
+
+    function licenseTimestamp(address recipient_)
+        external
+        view
+        afterInit
+        returns (uint256)
+    {
+        return _licenseTimestamps[recipient_];
     }
 
     /**
@@ -124,7 +156,7 @@ contract SHARE is Ownable, ReentrancyGuard {
                 buildType_ == CodeVerification.BuildType.PFA_COLLECTION),
             "SHARE017"
         );
-        approvedHashes[codeHash] = ApprovedBuild(
+        _approvedHashes[codeHash] = ApprovedBuild(
             buildType_,
             compilerBinaryTarget_,
             compilerVersion_,
@@ -149,8 +181,8 @@ contract SHARE is Ownable, ReentrancyGuard {
             return true;
         } else {
             bytes32 codeHash = CodeVerification.readCodeHash(address_);
-            if (approvedHashes[codeHash].exists) {
-                return approvedHashes[codeHash].buildType == buildType_;
+            if (_approvedHashes[codeHash].exists) {
+                return _approvedHashes[codeHash].buildType == buildType_;
             } else {
                 return false;
             }
@@ -164,8 +196,8 @@ contract SHARE is Ownable, ReentrancyGuard {
         if (!_codeVerificationEnabled) {
             return true;
         } else {
-            if (approvedHashes[hash].exists) {
-                return approvedHashes[hash].buildType == buildType_;
+            if (_approvedHashes[hash].exists) {
+                return _approvedHashes[hash].buildType == buildType_;
             } else {
                 return false;
             }
