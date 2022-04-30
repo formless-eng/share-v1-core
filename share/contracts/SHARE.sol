@@ -89,7 +89,7 @@ contract SHARE is Ownable, ReentrancyGuard {
 
     /**
      * @dev Instantiates the creator contract and calls the access
-     * method. If successfuly, this transaction produces a Grant
+     * method. If successful, this transaction produces a Grant
      * event awarded to the sender.
      */
     function access(address contractAddress_, uint256 tokenId_)
@@ -101,7 +101,7 @@ contract SHARE is Ownable, ReentrancyGuard {
         uint256 grossPrice = grossPricePerAccess(contractAddress_, tokenId_);
         require(msg.value == grossPrice, "SHARE011");
         asset.access{value: asset.pricePerAccess()}(tokenId_, msg.sender);
-        _grantTimestamps[msg.sender][contractAddress_] = block.timestamp;
+        _grantTimestamps[contractAddress_][msg.sender] = block.timestamp;
         emit Grant(msg.sender, contractAddress_, tokenId_);
     }
 
@@ -113,7 +113,7 @@ contract SHARE is Ownable, ReentrancyGuard {
         require(msg.sender == Ownable(licenseeContract_).owner(), "SHARE016");
         IPFA asset = IPFA(licensorContract_);
         asset.license(licenseeContract_);
-        _licenseTimestamps[licenseeContract_][licensorContract_] = block
+        _licenseTimestamps[licensorContract_][licenseeContract_] = block
             .timestamp;
         emit License(licensorContract_, licenseeContract_);
     }
@@ -121,19 +121,19 @@ contract SHARE is Ownable, ReentrancyGuard {
     /**
      * @dev Returns timestamp as a Unix epoch in seconds for the access grant award.
      */
-    function grantTimestamp(address recipient_, address contractAddress_)
+    function grantTimestamp(address contractAddress_, address recipient_)
         public
         view
         returns (uint256)
     {
-        return _grantTimestamps[recipient_][contractAddress_];
+        return _grantTimestamps[contractAddress_][recipient_];
     }
 
     function licenseTimestamp(
-        address licenseeAddress_,
-        address licensorAddress_
-    ) external returns (uint256) {
-        return _licenseTimestamps[licenseeAddress_][licensorAddress_];
+        address licensorAddress_,
+        address licenseeAddress_
+    ) public view returns (uint256) {
+        return _licenseTimestamps[licensorAddress_][licenseeAddress_];
     }
 
     /**
