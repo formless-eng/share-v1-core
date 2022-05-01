@@ -25,7 +25,9 @@ import "./SHARE.sol";
 /// `CodeVerification.BuildType.WALLET`
 /// `CodeVerification.BuildType.SPLIT`
 ///
-/// Wallets are those addresses which have a code hash that is either /// an externally owned account (EOA) or an approved wallet code hash /// stored in the Share protocol contract. Splits are those
+/// Wallets are those addresses which have a code hash that is either
+/// an externally owned account (EOA) or an approved wallet code hash
+/// stored in the Share protocol contract. Splits are those
 /// addresses which correspond to approved builds of Share
 /// royalty split contract implementations. LimitedOwnable contract
 /// creators must be EOAs to prevent arbitrary contracts from
