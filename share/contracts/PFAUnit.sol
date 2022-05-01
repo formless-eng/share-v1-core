@@ -33,9 +33,7 @@ contract PFAUnit is
         ERC721(NAME, SYMBOL)
         LimitedOwnable(
             true, /* WALLET */
-            true, /* SPLIT */
-            false, /* PFA_UNIT */
-            false /* PFA_COLLECTION */
+            true /* SPLIT */
         )
     {
         _safeMint(msg.sender, UNIT_TOKEN_INDEX);
