@@ -88,7 +88,7 @@ abstract contract PFA is IPFA, LimitedOwnable {
     }
 
     /// @notice Returns the timestamp in seconds of the award of a
-    /// grant recorded on chain for the access of the content
+    /// grant recorded on chain for the licensing of the content
     /// associated with this PFA.
     function licenseTimestamp(address recipient_)
         external
@@ -109,10 +109,10 @@ abstract contract PFA is IPFA, LimitedOwnable {
     /// @notice If called with a `recipient` (licensee) contract which
     /// has proof of inclusion of this PFA (licensor) address in its
     /// payout distribution table, records a license timestamp on
-    /// chain which is read by decentralized distribution (DDN)
-    /// microservices to decrypt and serve the associated content for
-    /// the tokenURI to users who have paid to access the licensee
-    /// contract.
+    /// chain which is read by decentralized distribution network
+    /// (DDN) microservices to decrypt and serve the associate
+    /// content for the tokenURI to users who have paid to access
+    /// the licensee contract.
     /// @dev Proof of inclusion is in the form of source code
     /// verification of the licensee, as well as the assertion of
     /// immutable state of the licensee contract payout distribution

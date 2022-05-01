@@ -16,12 +16,23 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./libraries/CodeVerification.sol";
 import "./interfaces/IPFA.sol";
 
+/// @title SHARE protocol contract.
+/// @author brandon@formless.xyz
+/// @notice A protocol which works in conjunction with SHARE
+/// decentralized distribution network (DDN) microservice endpoints
+/// to perform content distribtion on blockchain with creator
+/// controlled pay-for-access (PFA) micro-transactions.
 contract SHARE is Ownable, ReentrancyGuard {
+    /// @notice Emitted when a successful access grant is awarded
+    /// to a recipient address for a given PFA contract.
     event Grant(
         address indexed recipient,
         address indexed contractAddress,
         uint256 indexed tokenId
     );
+
+    /// @notice Emitted when a successful license grant is awarded
+    /// to a recipient (licensee) address for a given PFA (licensor) contract.
     event License(address indexed licensor, address indexed licensee);
 
     string public constant VERSION = "1.0.0";
@@ -54,10 +65,12 @@ contract SHARE is Ownable, ReentrancyGuard {
         );
     }
 
-    /**
-     * @dev Used to set the transaction fee for the protocol. Calculated
-     * using provided _numerator / _denominator.
-     */
+    /// @notice Used to set the transaction fee for the protocol.
+    /// Calculated using provided _numerator / _denominator. Note that
+    /// SHARE PFA contracts can (optionally) be accessed _without_
+    /// using the SHARE protocol contract if the URI microservice
+    /// endpoint is self-hosted, however the use of SHARE provided
+    /// DDN endpoints requires an associated payment to the protocol.
     function setTransactionFee(uint256 numerator_, uint256 denominator_)
         public
         nonReentrant
@@ -67,11 +80,9 @@ contract SHARE is Ownable, ReentrancyGuard {
         _transactionFeeDenominator = denominator_;
     }
 
-    /**
-     * @dev Returns the consumer facing gross price to access the
-     * the asset. This price is calculated using `creator price` +
-     * `creator price` * `transaction fee`.
-     */
+    /// @notice Returns the consumer facing gross price to access the
+    /// the asset. This price is calculated using `creator price` +
+    ///`creator price` * `transaction fee`.
     function grossPricePerAccess(address contractAddress_, uint256 tokenId_)
         public
         view
@@ -87,11 +98,9 @@ contract SHARE is Ownable, ReentrancyGuard {
         return SafeMath.add(pricePerAccess, protocolFee);
     }
 
-    /**
-     * @dev Instantiates the creator contract and calls the access
-     * method. If successful, this transaction produces a Grant
-     * event awarded to the sender.
-     */
+    /// @notice Instantiates the creator contract and calls the
+    /// access method. If successful, this transaction produces a
+    /// grant awarded to the sender with a corresponding TTL.
     function access(address contractAddress_, uint256 tokenId_)
         public
         payable
@@ -105,6 +114,13 @@ contract SHARE is Ownable, ReentrancyGuard {
         emit Grant(msg.sender, contractAddress_, tokenId_);
     }
 
+    /// @notice If called with a `licenseeContract_` contract which
+    /// has proof of inclusion of the supplied `licensorContract_`
+    /// PFA address in its payout distribution table, records a
+    /// license timestamp on chain which is read by decentralized
+    /// distribution network (DDN) microservices to decrypt and serve
+    /// the associated content for the tokenURI to users who have
+    /// paid to access the licensee contract.
     function license(address licensorContract_, address licenseeContract_)
         public
         payable
@@ -118,9 +134,9 @@ contract SHARE is Ownable, ReentrancyGuard {
         emit License(licensorContract_, licenseeContract_);
     }
 
-    /**
-     * @dev Returns timestamp as a Unix epoch in seconds for the access grant award.
-     */
+    /// @notice Returns the timestamp in seconds of the award of a
+    /// grant recorded on chain for the access of the content
+    /// associated with the supplied PFA and recipient address.
     function grantTimestamp(address contractAddress_, address recipient_)
         public
         view
@@ -129,6 +145,9 @@ contract SHARE is Ownable, ReentrancyGuard {
         return _grantTimestamps[contractAddress_][recipient_];
     }
 
+    /// @notice Returns the timestamp in seconds of the award of a
+    /// grant recorded on chain for the licensing of the content
+    /// associated with the supplied PFA and recipient address.
     function licenseTimestamp(
         address licensorAddress_,
         address licenseeAddress_
@@ -136,13 +155,26 @@ contract SHARE is Ownable, ReentrancyGuard {
         return _licenseTimestamps[licensorAddress_][licenseeAddress_];
     }
 
-    /**
-     * @dev Withdraws contract balance.
-     */
+    /// @notice Withdraws contract balance.
     function withdraw() public nonReentrant onlyOwner {
         payable(msg.sender).transfer(address(this).balance);
     }
 
+    /// @notice Enables or disables protocol source code verification
+    /// for contracts interacting with the protocol.
+    function setCodeVerificationEnabled(bool enable)
+        public
+        nonReentrant
+        onlyOwner
+    {
+        _codeVerificationEnabled = enable;
+    }
+
+    /// @notice Adds the keccak256 hash of the runtime bytecode of
+    /// an approved source code build for a SHARE protocol
+    /// interoperable contract. If source code verification is turned
+    /// on, the system will revert upon attempt to send ether to
+    /// a contract built from non-approved source code.
     function addApprovedBuild(
         bytes32 codeHash,
         CodeVerification.BuildType buildType_,
@@ -166,14 +198,9 @@ contract SHARE is Ownable, ReentrancyGuard {
         );
     }
 
-    function setCodeVerificationEnabled(bool enable)
-        public
-        nonReentrant
-        onlyOwner
-    {
-        _codeVerificationEnabled = enable;
-    }
-
+    /// @notice Returns true if the keccak256 hash of the runtime
+    /// bytecode stored at the given `address_` corresponds to a build
+    /// of approved source code for SHARE protocol interoperability.
     function isApprovedBuild(
         address address_,
         CodeVerification.BuildType buildType_
@@ -190,6 +217,9 @@ contract SHARE is Ownable, ReentrancyGuard {
         }
     }
 
+    /// @notice Returns true if the supplied keccak256
+    /// hash corresponds to a build of approved source code for SHARE
+    /// protocol interoperability.
     function isApprovedBuildHash(
         bytes32 hash,
         CodeVerification.BuildType buildType_

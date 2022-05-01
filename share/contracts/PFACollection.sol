@@ -207,7 +207,7 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
     /// @dev Table for storing addresses is write-once (immutable
     /// post initialization). This means the return value of
     /// `contains` is stable in perpetuity after the initialization of
-    /// a Share PFA collection.
+    /// a SHARE PFA collection.
     function contains(address account_) public view afterInit returns (bool) {
         return _addressMap.value[account_];
     }

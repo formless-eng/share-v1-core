@@ -10,7 +10,7 @@
 //⠀
 pragma solidity >=0.8.0 <0.9.0;
 
-/// @title Standard pay-for-access (PFA) contract interface for Share.
+/// @title Standard pay-for-access (PFA) contract interface for SHARE.
 /// @author brandon@formless.xyz
 interface IPFA {
     /// @notice Returns the price per access in wei for content backed
