@@ -19,7 +19,7 @@ interface IPFACollection {
     /// @dev Note that the standard implementation of this interface
     /// has a write-once (immutable post initialization) table
     /// for storing addresses. This means the return value of
-    /// contains is stable in perpetuity after the initialization of
+    /// `contains` is stable in perpetuity after the initialization of
     /// a Share PFA collection.
     function contains(address account_) external view returns (bool);
 }
