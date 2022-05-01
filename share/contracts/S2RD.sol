@@ -13,7 +13,18 @@ pragma solidity >=0.8.0 <0.9.0;
 import "./libraries/Immutable.sol";
 import "./LimitedOwnable.sol";
 
+/// @title Swift Rotating Royalty Distributor (S2RD).
+/// @author brandon@formless.xyz
+/// @notice This contract implements efficient royalty splitting by
+/// shuffling recipients off chain into a random distribution and
+/// dealing transactions to those recipients on-chain atomically, e.g.
+/// royalties are "dealt" in a rotating fashion rather than "split".
+/// This results in immense gas savings and as the number of
+/// transactions approaches infinity the delta between revenue
+/// received and revenue owed by each recipient approaches zero.
 contract S2RD is LimitedOwnable {
+    /// @notice Emitted when a payment is sent to a stakeholder
+    /// listed within this royalty distribution contract.
     event Payment(
         address indexed from,
         address indexed recipient,
@@ -33,6 +44,18 @@ contract S2RD is LimitedOwnable {
         )
     {}
 
+    /// @notice Initializes this contract.
+    /// @dev Recipient address table is constructed off-chain and is
+    /// constructed as follows:
+    /// 1. A number of slots are allocated in an array corresponding
+    /// to 1 / minimum percentage of any stakeholder in this asset.
+    /// 2. Addresses are assigned to slots such that the probability
+    /// of an iterator pointing to a given address is equal to that
+    /// address's ownership stake in the asset.
+    /// 3. Additionally, the layout specified in (2) is randomized
+    /// such that primary stakeholders have no advantage in payment
+    /// time given that the iterator increments linearly through the
+    /// address table.
     function initialize(
         address[] memory addresses_,
         address shareContractAddress_
@@ -42,6 +65,8 @@ contract S2RD is LimitedOwnable {
         setShareContractAddress(shareContractAddress_);
         SHARE protocol = SHARE(shareContractAddress_);
         for (uint256 i = 0; i < addresses_.length; i++) {
+            // All addresses in the table are SHARE approved wallets,
+            // e.g. EOAs or wallets with approved code hashes.
             require(
                 protocol.isApprovedBuild(
                     addresses_[i],
@@ -55,10 +80,16 @@ contract S2RD is LimitedOwnable {
         setInitialized();
     }
 
+    /// @notice Returns the index of the address in the table which
+    /// is the next address to receive payment on the reception of
+    /// ether by this contract.
     function addressIndex() public view afterInit returns (uint256) {
         return _currentAddressIndex;
     }
 
+    /// @notice Receives ether and distributes it among stakeholders
+    /// specified in this contract using the S2RD method described
+    /// above.
     receive() external payable nonReentrant afterInit {
         address recipient = _addresses.value[_currentAddressIndex];
         emit Payment(msg.sender, recipient, _currentAddressIndex, msg.value);
