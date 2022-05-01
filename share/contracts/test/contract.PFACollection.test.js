@@ -599,7 +599,6 @@ contract("PFACollection", (accounts) => {
         shareContract.address /* shareContractAddress_ */
       );
       await pfa3.initialize(
-        "/test/asset/uri" /* tokenURI_ */,
         "7000000000" /* pricePerAccess_ */,
         300 /* grantTTL_ */,
         true /* supportsLicensing_ */,

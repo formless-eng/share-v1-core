@@ -12,6 +12,9 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import "../libraries/Immutable.sol";
 
+/// @title Mock contract which links to the Immutable library. For
+/// testing purposes only.
+/// @author brandon@formless.xyz
 contract MockImmutable {
     Immutable.UnsignedInt256 public _mockUnsignedInt256;
     Immutable.Address public _mockAddress;

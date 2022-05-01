@@ -18,7 +18,13 @@ import "./libraries/Immutable.sol";
 import "./interfaces/IPFACollection.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
+/// @title Standard pay-for-access (PFA) collection contract.
+/// @author brandon@formless.xyz
+/// @notice This contract can be used to implement PFA contract
+/// playlisting and licensing.
 contract PFACollection is PFA, IPFACollection, ERC721 {
+    /// @notice Emitted when a payment is sent to a PFA item within
+    /// this collection.
     event Payment(
         address indexed from,
         address indexed recipient,
@@ -26,6 +32,15 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
         uint256 value
     );
 
+    /// @notice Emitted when a payment to a PFA item within this
+    /// collection is skipped. Payment is skipped if and only if
+    /// the `call` on the item PFA results in failure. Rather than
+    /// reverting the transaction, the collection state is updated
+    /// and the event is emitted.
+    /// @dev It is critical that independent of the success of an
+    /// individual PFA payment within this collection that the
+    /// collection counter increment such that a valid state is
+    /// always maintained for the lifetime of the collection.
     event ItemPaymentSkipped(address indexed owner, address indexed item);
 
     string public constant NAME = "PFA_COLLECTION";
@@ -44,14 +59,27 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
         ERC721(NAME, SYMBOL)
         LimitedOwnable(
             true, /* WALLET */
-            false, /* SPLIT */
-            false, /* PFA_UNIT */
-            false /* PFA_COLLECTION */
+            false /* SPLIT */
         )
     {
         _safeMint(msg.sender, UNIT_TOKEN_INDEX);
     }
 
+    /// @notice Initializes this collection with a set of PFA
+    /// items specified by `addresses_`. The `tokenURI_` is a DDN
+    /// microservice endpoint that returns PFA collection metadata,
+    /// conditionally, based on the presence of a grant or license
+    /// recorded on chain. On access of a collection, the collection
+    /// price per access is sent to the collection owner and the
+    /// remaining value is forwarded to the current child item. On
+    /// each transaction the child item index is incremented such that
+    /// as the number of transactions approaches infinity, revenues
+    /// are proportionally distributed among all items in the
+    /// collection. Collection price per access must be greater than
+    /// or equal to the maximum price per access of any item within
+    /// the collection. If a PFA supports licensing, e.g. it may be
+    /// added to a collection, then the PFAs TTL is upgraded to the
+    /// the grant TTL of the collection.
     function initialize(
         address[] memory addresses_,
         string memory tokenURI_,
@@ -86,10 +114,17 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
         setInitialized();
     }
 
+    /// @notice Returns the index of the item in the collection which
+    /// is the next item to receive payment on an access of this
+    /// collection.
     function addressIndex() public view afterInit returns (uint256) {
         return _currentAddressIndex;
     }
 
+    /// @notice If called with a value equal to the price per access
+    /// of this contract, records a grant timestamp on chain which is
+    /// read by decentralized distribution network (DDN) microservices
+    /// to decrypt and serve the associated content for the tokenURI.
     function access(uint256 tokenId_, address recipient_)
         public
         override
@@ -123,7 +158,7 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
             // We use call with encodeWithSignature here to guarantee
             // that a revert in the callee does not prevent the
             // caller state from updating, e.g. the counter
-            // (_currentAddressIndex) must increment in this
+            // (_currentAddressIndex) _must_ increment in this
             // transaction.
             uint256 payment = item.pricePerAccess();
             (bool itemPaymentSuccess, ) = payable(address(item)).call{
@@ -167,13 +202,20 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
         }
     }
 
+    /// @notice Returns true if `account_` address is included in the
+    /// payout distribution table of the collection.
+    /// @dev Table for storing addresses is write-once (immutable
+    /// post initialization). This means the return value of
+    /// `contains` is stable in perpetuity after the initialization of
+    /// a SHARE PFA collection.
     function contains(address account_) public view afterInit returns (bool) {
         return _addressMap.value[account_];
     }
 
-    /**
-     * @dev Returns the token URI for the asset.
-     */
+    /// @notice Returns the token URI (ERC-721) for the asset.
+    /// @dev In SHARE, this URI corresponds to a decentralized
+    /// distribution network (DDN) microservice endpoint which
+    /// conditionally renders token metadata based on contract state.
     function tokenURI(uint256 tokenId_)
         public
         override
@@ -184,9 +226,10 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
         return _tokenURI;
     }
 
-    /**
-     * @dev Sets the asset token URI.
-     */
+    /// @notice Sets the token URI (ERC-721) for the asset.
+    /// @dev In SHARE, this URI corresponds to a decentralized
+    /// distribution network (DDN) microservice endpoint which
+    /// conditionally renders token metadata based on contract state.
     function setTokenURI(string memory tokenURI_)
         public
         nonReentrant

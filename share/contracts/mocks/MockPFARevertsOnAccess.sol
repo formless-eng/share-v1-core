@@ -16,8 +16,15 @@ import "..//PFA.sol";
 import "../libraries/CodeVerification.sol";
 import "../libraries/Immutable.sol";
 
+/// @title Mock PFA contract which unconditionally reverts on access.
+/// For testing purposes only.
+/// @author brandon@formless.xyz
 contract MockPFARevertsOnAccess is PFA, ERC721 {
     event PaymentToOwner(address indexed owner, uint256 value);
+    event MockPFARevertsOnAccessCall(
+        uint256 indexed tokenId,
+        address indexed recipient
+    );
     uint256 private constant UNIT_TOKEN_INDEX = 0;
 
     constructor()
@@ -25,16 +32,13 @@ contract MockPFARevertsOnAccess is PFA, ERC721 {
         ERC721("SHARE", "MOCK_PFA")
         LimitedOwnable(
             true, /* WALLET */
-            true, /* SPLIT */
-            false, /* PFA_UNIT */
-            false /* PFA_COLLECTION */
+            true /* SPLIT */
         )
     {
         _safeMint(msg.sender, UNIT_TOKEN_INDEX);
     }
 
     function initialize(
-        string memory tokenURI_,
         uint256 pricePerAccess_,
         uint256 grantTTL_,
         bool supportsLicensing_,
@@ -51,9 +55,9 @@ contract MockPFARevertsOnAccess is PFA, ERC721 {
         public
         override
         payable
-        nonReentrant
         afterInit
     {
+        emit MockPFARevertsOnAccessCall(tokenId_, recipient_);
         revert("forced revert");
     }
 }

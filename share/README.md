@@ -3,6 +3,7 @@
 ## Documentation
 
 - [SHARE Whitepaper](https://formless-eng.s3.us-east-2.amazonaws.com/share+whitepaper+7.pdf)
+- Source level documentation is done in accordance with the Ethereum Natural Langauge Specification (<a href="https://docs.soliditylang.org/en/develop/natspec-format.html">NatSpec</a>).
 
 ## Engineering
 
@@ -31,7 +32,7 @@ development: {
 ```
 
 ```
-ganache-cli --defaultBalanceEther 10000 -m $TEST_MNEMONIC
+ganache-cli --defaultBalanceEther 10000
 ```
 
 We recommend using tmux or a separate terminal for running ganache so that you can monitor logging in the console while also running additional commands to interact with the chain in a separate terminal window.

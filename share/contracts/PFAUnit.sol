@@ -16,10 +16,15 @@ import "./libraries/CodeVerification.sol";
 import "./libraries/Immutable.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
+/// @title Standard pay-for-access (PFA) contract. Also implements
+/// ERC-721 standard (G_NFT).
+/// @author brandon@formless.xyz
 contract PFAUnit is
     PFA,
     ERC721 /* G_NFT */
 {
+    /// @notice Emitted when a payment is sent to the owner of this
+    /// PFA.
     event PaymentToOwner(address indexed owner, uint256 value);
 
     string public constant NAME = "SHARE";
@@ -33,14 +38,13 @@ contract PFAUnit is
         ERC721(NAME, SYMBOL)
         LimitedOwnable(
             true, /* WALLET */
-            true, /* SPLIT */
-            false, /* PFA_UNIT */
-            false /* PFA_COLLECTION */
+            true /* SPLIT */
         )
     {
         _safeMint(msg.sender, UNIT_TOKEN_INDEX);
     }
 
+    /// @notice Initializes this contract.
     function initialize(
         string memory tokenURI_,
         uint256 pricePerAccess_,
@@ -56,10 +60,10 @@ contract PFAUnit is
         setInitialized();
     }
 
-    /**
-     * @dev Pays the price per access and emits a Grant event upon
-     * success.
-     */
+    /// @notice If called with a value equal to the price per access
+    /// of this contract, records a grant timestamp on chain which is
+    /// read by decentralized distribution network (DDN) microservices
+    /// to decrypt and serve the associated content for the tokenURI.
     function access(uint256 tokenId_, address recipient_)
         public
         override
@@ -82,9 +86,10 @@ contract PFAUnit is
         emit Grant(recipient_, tokenId_);
     }
 
-    /**
-     * @dev Returns the token URI for the asset.
-     */
+    /// @notice Returns the token URI (ERC-721) for the asset.
+    /// @dev In SHARE, this URI corresponds to a decentralized
+    /// distribution network (DDN) microservice endpoint which
+    /// conditionally renders token metadata based on contract state.
     function tokenURI(uint256 tokenId_)
         public
         override
@@ -95,9 +100,10 @@ contract PFAUnit is
         return _tokenURI;
     }
 
-    /**
-     * @dev Sets the asset token URI.
-     */
+    /// @notice Sets the token URI (ERC-721) for the asset.
+    /// @dev In SHARE, this URI corresponds to a decentralized
+    /// distribution network (DDN) microservice endpoint which
+    /// conditionally renders token metadata based on contract state.
     function setTokenURI(string memory tokenURI_)
         public
         nonReentrant
