@@ -61,22 +61,35 @@ abstract contract LimitedOwnable is Ownable, ReentrancyGuard {
         _transferOwnership(_msgSender());
     }
 
+    /// @notice Sets the contract state to initialized.
+    /// @dev Functions with the modifer `afterInit` will revert if
+    /// called before initialized is set to true in this contract.
     function setInitialized() internal onlyOwner {
         _initialized = true;
     }
 
+    /// @notice Returns true if and only if the contract has been
+    /// initialized by invoking the `initialize` function.
     function initialized() public view returns (bool) {
         return _initialized;
     }
 
+    /// @notice Sets the address of the SHARE protocol contract.
+    /// @dev Used to verify approved runtime bytecode keccak256
+    /// hashes.
     function setShareContractAddress(address address_) internal {
         Immutable.setAddress(_shareContractAddress, address_);
     }
 
+    /// @notice Returns the address of the SHARE protocol contract.
     function shareContractAddress() internal view afterInit returns (address) {
         return _shareContractAddress.value;
     }
 
+    /// @notice Transfers ownership of the contract to `newOwner` if
+    /// and only if `newOwner` satisfies the limited ownership
+    /// requirements established in the constructor, otherwise,
+    /// reverts the transaction.
     function transferOwnership(address newOwner)
         public
         override

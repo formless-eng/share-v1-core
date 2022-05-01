@@ -15,32 +15,45 @@ pragma solidity >=0.8.0 <0.9.0;
 /// @notice Library for contracts to implement write-once
 /// post initialization immutable variables. This enables immutable
 /// variables that are not initialized in Solidity constructors.
+/// By not using parameterized constructors, stable construction
+/// parameter invariant runtime bytecode can be generated for the
+/// _source code_ associated with all SHARE contracts.
 /// @dev Assumes users of the `Immutable` library perform writes using
 /// the setters exposed in this contract and not by directly
 /// accessing the underlying state variables.
 library Immutable {
     string public constant VERSION = "1.0.0";
 
+    /// @notice Lockable uint256 type. Write-once state variable
+    /// that does not use the Solidity `immutable` keyword.
     struct UnsignedInt256 {
         uint256 value;
         bool locked;
     }
 
+    /// @notice Lockable address type. Write-once state variable
+    /// that does not use the Solidity `immutable` keyword.
     struct Address {
         address value;
         bool locked;
     }
 
+    /// @notice Lockable bool type. Write-once state variable
+    /// that does not use the Solidity `immutable` keyword.
     struct Boolean {
         bool value;
         bool locked;
     }
 
+    /// @notice Lockable address[] type. Write-once state variable
+    /// that does not use the Solidity `immutable` keyword.
     struct AddressArray {
         address[] value;
         bool locked;
     }
 
+    /// @notice Lockable mapping(address => bool) type. Write-once state variable
+    /// that does not use the Solidity `immutable` keyword.
     struct AddressToBooleanMap {
         mapping(address => bool) value;
         bool locked;
