@@ -16,6 +16,9 @@ import "..//PFA.sol";
 import "../libraries/CodeVerification.sol";
 import "../libraries/Immutable.sol";
 
+/// @title Mock PFA contract which unconditionally reverts on access.
+/// For testing purposes only.
+/// @author brandon@formless.xyz
 contract MockPFARevertsOnAccess is PFA, ERC721 {
     event PaymentToOwner(address indexed owner, uint256 value);
     event MockPFARevertsOnAccessCall(
