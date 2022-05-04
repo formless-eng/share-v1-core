@@ -17,6 +17,7 @@ jobs:
         with:
           node-version: '14'
       - run: npm install
+      - run: npm install -g babel-runtime
       - run: npm install -g truffle
       - run: npm install -g ganache-cli
       - run: ganache-cli --defaultBalanceEther 10000 > /dev/null &
