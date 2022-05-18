@@ -185,4 +185,30 @@ contract("PFAUnit", (accounts) => {
       GRANT_TTL_PRECISION_SEC
     );
   });
+
+  specify("PFA transaction count increment", async () => {
+    const shareContract = await SHARE.deployed();
+    const assetContract = await PFAUnit.new();
+    await assetContract.initialize(
+      "/test/asset/uri" /* tokenURI_ */,
+      "1000000000" /* pricePerAccess_ */,
+      300 /* grantTTL_ */,
+      true /* supportsLicensing_ */,
+      shareContract.address /* shareContractAddress_ */
+    );
+
+    for (let i = 0; i < 10; i++) {
+      await assetContract.access(
+        DEFAULT_TOKEN_ID,
+        accounts[NON_OWNER_ADDRESS_INDEX],
+        {
+          from: accounts[NON_OWNER_ADDRESS_INDEX],
+          value: 1000000000,
+        }
+      );
+      const txCount = await assetContract._transactionCount.call();
+      console.log(`tx count: ${txCount}`);
+      assert.equal(txCount, i + 1);
+    }
+  });
 });

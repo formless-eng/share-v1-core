@@ -593,4 +593,23 @@ contract("License grant", (accounts) => {
       LICENSE_TTL_PRECISION_SEC
     );
   });
+
+  specify("Protocol transaction count increment", async () => {
+    const shareContract = await SHARE.new();
+    const assetContract = await PFAUnit.deployed();
+
+    for (let i = 0; i < 50; i++) {
+      await shareContract.access(
+        assetContract.address,
+        UNIT_TOKEN_INDEX,
+        {
+          from: accounts[NON_OWNER_ADDRESS_INDEX],
+          value: "1050000000",
+        }
+      );
+      const txCount = await shareContract._transactionCount.call();
+      console.log(`tx count: ${txCount}`);
+      assert.equal(txCount, i + 1);
+    }
+  });
 });
