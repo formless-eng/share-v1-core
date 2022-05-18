@@ -10,7 +10,6 @@
 //
 pragma solidity >=0.8.0 <0.9.0;
 
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./libraries/CodeVerification.sol";
@@ -92,11 +91,12 @@ contract SHARE is Ownable, ReentrancyGuard {
         require(tokenId_ == UNIT_TOKEN_INDEX, "SHARE004");
         IPFA asset = IPFA(contractAddress_);
         uint256 pricePerAccess = asset.pricePerAccess();
-        uint256 protocolFee = SafeMath.div(
-            SafeMath.mul(pricePerAccess, _transactionFeeNumerator),
-            _transactionFeeDenominator
-        );
-        return SafeMath.add(pricePerAccess, protocolFee);
+        // Note that this contract is implemented with Solidity
+        // version >=0.8.0 which has built-in overflow checks,
+        // therefore using SafeMath is not required.
+        uint256 protocolFee = (pricePerAccess * _transactionFeeNumerator) /
+            _transactionFeeDenominator;
+        return pricePerAccess + protocolFee;
     }
 
     /// @notice Instantiates the creator contract and calls the
