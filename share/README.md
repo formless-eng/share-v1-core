@@ -7,7 +7,7 @@
 
 ## Engineering
 
-We use Ganache and Truffle for running a local blockchain:
+We use Ganache for running a local blockchain:
 
 1. Install truffle and ganache:
 
