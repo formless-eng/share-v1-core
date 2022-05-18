@@ -31,6 +31,7 @@ abstract contract PFA is IPFA, LimitedOwnable {
     Immutable.UnsignedInt256 internal _pricePerAccess;
     Immutable.UnsignedInt256 internal _grantTTL;
     Immutable.Boolean internal _supportsLicensing;
+    uint256 public _transactionCount = 0;
 
     mapping(address => uint256) internal _grantTimestamps;
     mapping(address => uint256) internal _licenseTimestamps;

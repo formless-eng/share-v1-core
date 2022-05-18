@@ -40,6 +40,7 @@ contract SHARE is Ownable, ReentrancyGuard {
         private constant EOA_KECCAK256 = 0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470;
     uint256 public _transactionFeeNumerator = 1;
     uint256 public _transactionFeeDenominator = 20;
+    uint256 public _transactionCount = 0;
     bool public _codeVerificationEnabled = true;
     uint256 private constant UNIT_TOKEN_INDEX = 0;
 
@@ -112,6 +113,7 @@ contract SHARE is Ownable, ReentrancyGuard {
         asset.access{value: asset.pricePerAccess()}(tokenId_, msg.sender);
         _grantTimestamps[contractAddress_][msg.sender] = block.timestamp;
         emit Grant(msg.sender, contractAddress_, tokenId_);
+        _transactionCount++;
     }
 
     /// @notice If called with a `licenseeContract_` contract which
