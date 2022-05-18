@@ -84,6 +84,7 @@ contract PFAUnit is
         _grantTimestamps[recipient_] = block.timestamp;
         emit PaymentToOwner(owner, msg.value);
         emit Grant(recipient_, tokenId_);
+        _transactionCount++;
     }
 
     /// @notice Returns the token URI (ERC-721) for the asset.

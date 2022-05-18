@@ -201,6 +201,7 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
         } else {
             emit ItemPaymentSkipped(itemOwner, address(item));
         }
+        _transactionCount++;
     }
 
     /// @notice Returns true if `account_` address is included in the

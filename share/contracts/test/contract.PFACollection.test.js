@@ -751,4 +751,46 @@ contract("PFACollection", (accounts) => {
       }
     }
   );
+
+  specify("PFACollection transaction count increment", async () => {
+    const collection = await PFACollection.new();
+    const shareContract = await SHARE.deployed();
+    await shareContract.setCodeVerificationEnabled(false);
+    const pfa = await PFAUnit.new();
+    await pfa.initialize(
+      "/test/asset/uri" /* tokenURI_ */,
+      "1000000000" /* pricePerAccess_ */,
+      300 /* grantTTL_ */,
+      true /* supportsLicensing_ */,
+      shareContract.address /* shareContractAddress_ */
+    );
+
+    await collection.initialize(
+      [pfa.address] /* addresses_ */,
+      "/test/collection/uri" /* tokenURI_ */,
+      "2000000000" /* pricePerAccess_ */,
+      300 /* grantTTL_ */,
+      false /* supportsLicensing_ */,
+      shareContract.address /* shareContractAddress_ */
+    );
+
+    await pfa.license(collection.address);
+
+    for (let i = 0; i < 10; i++) {
+      await collection.access(
+        UNIT_TOKEN_INDEX,
+        accounts[DEFAULT_ADDRESS_INDEX],
+        {
+          from: accounts[DEFAULT_ADDRESS_INDEX],
+          value: "2000000000",
+        }
+      );
+      const collectionTxCount = await collection._transactionCount.call();
+      const pfaTxCount = await pfa._transactionCount.call();
+      console.log(`collection tx count: ${collectionTxCount}`);
+      console.log(`pfa tx count: ${pfaTxCount}`);
+      assert.equal(collectionTxCount, i + 1);
+      assert.equal(pfaTxCount, i + 1);
+    }
+  });
 });
