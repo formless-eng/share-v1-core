@@ -73,6 +73,7 @@ truffle test
 - `SHARE019` : `PFAs that support licensing must have immutable prices. This is because collections that have already licensed the PFA depend on a stable price to commit to in perpetuity.`
 - `SHARE020` : `S2RD split contract must contain at least one address.`
 - `SHARE021` : `Payment to asset owner unsuccessful. Please use an approved build which derives from LimitedOwnable.`
+- `SHARE022` : `A PFA which does not support licensing was supplied to this collection.`
 
 ## Audits and Formal Verification
 

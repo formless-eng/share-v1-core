@@ -107,6 +107,7 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
             );
             PFA item = PFA(itemAddress);
             require(pricePerAccess_ >= item.pricePerAccess(), "SHARE015");
+            require(item.supportsLicensing(), "SHARE022");
             Immutable.pushAddress(_addresses, addresses_[i]);
             Immutable.insertBooleanAtAddress(_addressMap, itemAddress, true);
         }

@@ -715,4 +715,40 @@ contract("PFACollection", (accounts) => {
       }
     }
   );
+
+  specify(
+    "Revert on initialize with PFA that does not support licensing",
+    async () => {
+      const collection = await PFACollection.new();
+      const shareContract = await SHARE.deployed();
+      await shareContract.setCodeVerificationEnabled(false);
+      const pfa1 = await PFAUnit.new();
+      await pfa1.initialize(
+        "/test/asset/uri" /* tokenURI_ */,
+        "1000000000" /* pricePerAccess_ */,
+        300 /* grantTTL_ */,
+        false /* supportsLicensing_ */,
+        shareContract.address /* shareContractAddress_ */
+      );
+
+      try {
+        await collection.initialize(
+          [pfa1.address] /* addresses_ */,
+          "/test/collection/uri" /* tokenURI_ */,
+          "2000000000" /* pricePerAccess_ */,
+          300 /* grantTTL_ */,
+          false /* supportsLicensing_ */,
+          shareContract.address /* shareContractAddress_ */
+        );
+        assert(
+          false,
+          "initialize should revert when given a PFA that does not " +
+            "support licensing."
+        );
+      } catch (error) {
+        console.log(error.message);
+        assert(error.message.includes("SHARE022"));
+      }
+    }
+  );
 });

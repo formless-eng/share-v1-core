@@ -439,7 +439,7 @@ contract("License denial licensing not supported", (accounts) => {
       shareContract.address /* shareContractAddress_ */
     );
     await collectionContract.initialize(
-      [assetContract.address] /* addresses_ */,
+      [] /* addresses_ */,
       "/test/token/uri" /* tokenURI_ */,
       "2000000000" /* pricePerAccess (wei) */,
       300 /* grantTTL_ */,
