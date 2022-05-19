@@ -81,8 +81,8 @@ contract SHARE is Ownable, ReentrancyGuard {
     }
 
     /// @notice Returns the consumer facing gross price to access the
-    /// the asset. This price is calculated using `creator price` +
-    ///`creator price` * `transaction fee`.
+    /// the asset. This price is calculated using `access price` +
+    ///`access price` * `transaction fee`.
     function grossPricePerAccess(address contractAddress_, uint256 tokenId_)
         public
         view
@@ -99,6 +99,9 @@ contract SHARE is Ownable, ReentrancyGuard {
         return pricePerAccess + protocolFee;
     }
 
+    /// @notice Returns the licensee facing gross price to license the
+    /// the asset. This price is calculated using `license price` +
+    ///`license price` * `transaction fee`.
     function grossPricePerLicense(address contractAddress_)
         public
         view
