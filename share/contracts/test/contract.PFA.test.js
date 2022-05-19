@@ -14,6 +14,7 @@ contract("PFAUnit", (accounts) => {
       "1000000000" /* pricePerAccess_ */,
       300 /* grantTTL_ */,
       false /* supportsLicensing_ */,
+      0 /* pricePerLicense_ */,
       shareContract.address /* shareContractAddress_ */
     );
 
@@ -35,6 +36,45 @@ contract("PFAUnit", (accounts) => {
     assert.equal(await assetContract.name(), "SHARE");
     assert.equal(await assetContract.symbol(), "PFA");
   });
+
+  specify(
+    "Contract initialization with zero licensing cost",
+    async () => {
+      const shareContract = await SHARE.deployed();
+      const assetContract = await PFAUnit.new();
+      await assetContract.initialize(
+        "/test/token/uri" /* tokenURI_ */,
+        "1000000000" /* pricePerAccess_ */,
+        300 /* grantTTL_ */,
+        true /* supportsLicensing_ */,
+        0 /* pricePerLicense_ */,
+        shareContract.address /* shareContractAddress_ */
+      );
+
+      assert.equal(await assetContract.pricePerLicense.call(), 0);
+    }
+  );
+
+  specify(
+    "Contract initialization with non-zero licensing cost",
+    async () => {
+      const shareContract = await SHARE.deployed();
+      const assetContract = await PFAUnit.new();
+      await assetContract.initialize(
+        "/test/token/uri" /* tokenURI_ */,
+        "1000000000" /* pricePerAccess_ */,
+        300 /* grantTTL_ */,
+        true /* supportsLicensing_ */,
+        "1000000000" /* pricePerLicense_ */,
+        shareContract.address /* shareContractAddress_ */
+      );
+
+      assert.equal(
+        await assetContract.pricePerLicense.call(),
+        1000000000
+      );
+    }
+  );
 
   specify("Only owner sets price per access", async () => {
     const assetContract = await PFAUnit.deployed();
@@ -194,6 +234,7 @@ contract("PFAUnit", (accounts) => {
       "1000000000" /* pricePerAccess_ */,
       300 /* grantTTL_ */,
       true /* supportsLicensing_ */,
+      0 /* pricePerLicense_ */,
       shareContract.address /* shareContractAddress_ */
     );
 

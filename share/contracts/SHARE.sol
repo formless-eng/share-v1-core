@@ -147,7 +147,7 @@ contract SHARE is Ownable, ReentrancyGuard {
         uint256 grossPrice = grossPricePerLicense(licensorContract_);
         require(msg.value == grossPrice, "SHARE024");
         IPFA asset = IPFA(licensorContract_);
-        asset.license(licenseeContract_);
+        asset.license{value: asset.pricePerLicense()}(licenseeContract_);
         _licenseTimestamps[licensorContract_][licenseeContract_] = block
             .timestamp;
         emit License(licensorContract_, licenseeContract_);

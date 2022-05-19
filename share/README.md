@@ -77,6 +77,8 @@ truffle test
 - `SHARE023` : `Incorrect licensing price provided. Please use pricePerLicense method to determine correct value.`
 - `SHARE024` : `Attempted licensing price is incorrect. Use grossPricePerLicense method to determine correct price in wei.`
 - `SHARE025` : `The supplied asset is not owned by this S2RD split and therefore cannot be reclaimed.`
+- `SHARE026` : `A non-zero licensing price was supplied but this contract does not support licensing.`
+- `SHARE027` : `Collection price per license must be >= the maximum license price of any one item in the collection.`
 
 ## Audits and Formal Verification
 

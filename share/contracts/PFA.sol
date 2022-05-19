@@ -116,7 +116,7 @@ abstract contract PFA is IPFA, LimitedOwnable {
     /// has proof of inclusion of this PFA (licensor) address in its
     /// payout distribution table, records a license timestamp on
     /// chain which is read by decentralized distribution network
-    /// (DDN) microservices to decrypt and serve the associate
+    /// (DDN) microservices to decrypt and serve the associated
     /// content for the tokenURI to users who have paid to access
     /// the licensee contract.
     /// @dev Proof of inclusion is in the form of source code
