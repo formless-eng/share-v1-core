@@ -76,6 +76,7 @@ truffle test
 - `SHARE022` : `A PFA which does not support licensing was supplied to this collection.`
 - `SHARE023` : `Incorrect licensing price provided. Please use pricePerLicense method to determine correct value.`
 - `SHARE024` : `Attempted licensing price is incorrect. Use grossPricePerLicense method to determine correct price in wei.`
+- `SHARE025` : `The supplied asset is not owned by this S2RD split and therefore cannot be reclaimed.`
 
 ## Audits and Formal Verification
 
