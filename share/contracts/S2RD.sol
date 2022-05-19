@@ -98,4 +98,33 @@ contract S2RD is LimitedOwnable {
             (_addresses.value.length);
         payable(recipient).transfer(msg.value); // max 2300 gas
     }
+
+    /// @notice Reclaims a contract owned by this S2RD, e.g. if a PFA
+    /// is owned by this split, the split owner may transfer
+    /// ownership of the PFA back to their account. This is intended
+    /// for maintenance purposes, e.g. the ability for S2RD owners to
+    /// update tokenURIs and prices of PFAs, after which they may
+    /// transfer (restore) ownership of the PFA back to the S2RD.
+    ///
+    /// 1: init  | 2:reclaim | 3: maintain | 4: restore
+    /// -----------------------------------------------
+    /// [Owner]     [Owner]     [Owner]     [Owner]
+    ///   |            |           |           |
+    ///   |            |           |           |
+    ///   |            |           |           |
+    /// [S2RD]       [PFA]       calls       [S2RD]
+    ///   |                  setTokenURI()     |
+    ///   |                                    |
+    ///   |                                    |
+    /// [PFA]                                [PFA]
+    function reclaim(address contractAddress_)
+        public
+        afterInit
+        onlyOwner
+        nonReentrant
+    {
+        Ownable asset = Ownable(contractAddress_);
+        require(asset.owner() == address(this), "SHARE025");
+        asset.transferOwnership(msg.sender);
+    }
 }

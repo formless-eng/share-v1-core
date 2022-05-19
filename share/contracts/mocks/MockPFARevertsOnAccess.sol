@@ -42,11 +42,16 @@ contract MockPFARevertsOnAccess is PFA, ERC721 {
         uint256 pricePerAccess_,
         uint256 grantTTL_,
         bool supportsLicensing_,
+        uint256 pricePerLicense_,
         address shareContractAddress_
     ) public onlyOwner {
         Immutable.setUnsignedInt256(_pricePerAccess, pricePerAccess_);
         Immutable.setUnsignedInt256(_grantTTL, grantTTL_);
         Immutable.setBoolean(_supportsLicensing, supportsLicensing_);
+        if (!supportsLicensing_) {
+            require(pricePerLicense_ == 0, "SHARE026");
+        }
+        Immutable.setUnsignedInt256(_pricePerLicense, pricePerLicense_);
         setShareContractAddress(shareContractAddress_);
         setInitialized();
     }

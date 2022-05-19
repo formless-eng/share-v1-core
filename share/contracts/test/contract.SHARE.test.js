@@ -7,8 +7,8 @@ const PFACollection = artifacts.require("PFACollection");
 const DEFAULT_ADDRESS_INDEX = 0;
 const UNIT_TOKEN_INDEX = 0;
 const NON_OWNER_ADDRESS_INDEX = 1;
-const GRANT_TTL_PRECISION_SEC = 5;
-const LICENSE_TTL_PRECISION_SEC = 5;
+const GRANT_TTL_PRECISION_SEC = 10;
+const LICENSE_TTL_PRECISION_SEC = 10;
 
 contract("SHARE", (accounts) => {
   specify("Contract initialization", async () => {
@@ -71,6 +71,7 @@ contract("SHARE", (accounts) => {
       "1000000000" /* pricePerAccess (wei) */,
       300 /* grantTTL_ */,
       true /* supportsLicensing */,
+      0 /* pricePerLicense_ */,
       shareContract.address /* shareContractAddress_ */
     );
 
@@ -87,6 +88,36 @@ contract("SHARE", (accounts) => {
         await shareContract.grossPricePerAccess(
           assetContract.address,
           UNIT_TOKEN_INDEX
+        )
+      ).toNumber(),
+      1000000000 * (1 + transactionFee)
+    );
+  });
+
+  specify("Gross price per license", async () => {
+    const shareContract = await SHARE.deployed();
+    const assetContract = await PFAUnit.new();
+    await assetContract.initialize(
+      "/test/token/uri" /* tokenURI_ */,
+      "1000000000" /* pricePerAccess (wei) */,
+      300 /* grantTTL_ */,
+      true /* supportsLicensing */,
+      "1000000000" /* pricePerLicense_ */,
+      shareContract.address /* shareContractAddress_ */
+    );
+
+    const transactionFee =
+      (
+        await shareContract._transactionFeeNumerator.call()
+      ).toNumber() /
+      (
+        await shareContract._transactionFeeDenominator.call()
+      ).toNumber();
+
+    assert.equal(
+      (
+        await shareContract.grossPricePerLicense(
+          assetContract.address
         )
       ).toNumber(),
       1000000000 * (1 + transactionFee)
@@ -304,6 +335,7 @@ contract("SHARE", (accounts) => {
       "1000000000" /* pricePerAccess (wei) */,
       300 /* grantTTL_ */,
       true /* supportsLicensing */,
+      0 /* pricePerLicense_ */,
       shareContract.address /* shareContractAddress_ */
     );
     await shareContract.addApprovedBuild(
@@ -388,6 +420,7 @@ contract(
         "2000000000" /* pricePerAccess (wei) */,
         300 /* grantTTL_ */,
         true /* supportsLicensing */,
+        0 /* pricePerLicense_ */,
         shareContract.address /* shareContractAddress_ */
       );
       try {
@@ -397,6 +430,7 @@ contract(
           "1000000000" /* pricePerAccess (wei) */,
           300 /* grantTTL_ */,
           true /* supportsLicensing */,
+          0 /* pricePerLicense_ */,
           shareContract.address /* shareContractAddress_ */
         );
         throw Error("Expected error");
@@ -436,6 +470,7 @@ contract("License denial licensing not supported", (accounts) => {
       "1000000000" /* pricePerAccess (wei) */,
       300 /* grantTTL_ */,
       false /* supportsLicensing */,
+      0 /* pricePerLicense_ */,
       shareContract.address /* shareContractAddress_ */
     );
     await collectionContract.initialize(
@@ -444,6 +479,7 @@ contract("License denial licensing not supported", (accounts) => {
       "2000000000" /* pricePerAccess (wei) */,
       300 /* grantTTL_ */,
       true /* supportsLicensing */,
+      0 /* pricePerLicense_ */,
       shareContract.address /* shareContractAddress_ */
     );
     try {
@@ -490,6 +526,7 @@ contract("License grant", (accounts) => {
       "1000000000" /* pricePerAccess (wei) */,
       300 /* grantTTL_ */,
       true /* supportsLicensing */,
+      0 /* pricePerLicense_ */,
       shareContract.address /* shareContractAddress_ */
     );
     await collectionContract.initialize(
@@ -498,6 +535,7 @@ contract("License grant", (accounts) => {
       "2000000000" /* pricePerAccess (wei) */,
       300 /* grantTTL_ */,
       true /* supportsLicensing */,
+      0 /* pricePerLicense_ */,
       shareContract.address /* shareContractAddress_ */
     );
     await shareContract.license(
@@ -505,6 +543,52 @@ contract("License grant", (accounts) => {
       collectionContract.address /* licensee */,
       {
         from: accounts[DEFAULT_ADDRESS_INDEX],
+      }
+    );
+    assert.equal(
+      (
+        await assetContract.getPastEvents("License", {
+          filter: {
+            recipient: collectionContract.address,
+          },
+        })
+      ).length,
+      1
+    );
+  });
+
+  specify("License grant with non-zero licensing cost", async () => {
+    const shareContract = await SHARE.deployed();
+    const assetContract = await PFAUnit.new();
+    const collectionContract = await PFACollection.new();
+    await shareContract.setCodeVerificationEnabled(false);
+
+    await assetContract.initialize(
+      "/test/token/uri" /* tokenURI_ */,
+      "1000000000" /* pricePerAccess (wei) */,
+      300 /* grantTTL_ */,
+      true /* supportsLicensing */,
+      99999999999 /* pricePerLicense_ */,
+      shareContract.address /* shareContractAddress_ */
+    );
+    await collectionContract.initialize(
+      [assetContract.address] /* addresses_ */,
+      "/test/token/uri" /* tokenURI_ */,
+      "2000000000" /* pricePerAccess (wei) */,
+      300 /* grantTTL_ */,
+      true /* supportsLicensing */,
+      999999999999 /* pricePerLicense_ */,
+      shareContract.address /* shareContractAddress_ */
+    );
+    const grossPricePerLicense = await shareContract.grossPricePerLicense(
+      assetContract.address
+    );
+    await shareContract.license(
+      assetContract.address /* licensor */,
+      collectionContract.address /* licensee */,
+      {
+        from: accounts[DEFAULT_ADDRESS_INDEX],
+        value: grossPricePerLicense,
       }
     );
     assert.equal(
@@ -529,6 +613,7 @@ contract("License grant", (accounts) => {
       "1000000000" /* pricePerAccess (wei) */,
       300 /* grantTTL_ */,
       true /* supportsLicensing */,
+      0 /* pricePerLicense_ */,
       shareContract.address /* shareContractAddress_ */
     );
     await collectionContract.initialize(
@@ -537,6 +622,7 @@ contract("License grant", (accounts) => {
       "2000000000" /* pricePerAccess (wei) */,
       300 /* grantTTL_ */,
       true /* supportsLicensing */,
+      0 /* pricePerLicense_ */,
       shareContract.address /* shareContractAddress_ */
     );
     await shareContract.license(

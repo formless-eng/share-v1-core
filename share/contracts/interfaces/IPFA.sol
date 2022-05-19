@@ -45,6 +45,10 @@ interface IPFA {
     /// of a collection of PFAs.
     function supportsLicensing() external view returns (bool);
 
+    /// @notice Returns the price per license in wei for content
+    /// backed by this contract.
+    function pricePerLicense() external view returns (uint256);
+
     /// @notice If called with a `recipient` (licensee) contract which
     /// has proof of inclusion of this PFA (licensor) address in its
     /// payout distribution table, records a license timestamp on
@@ -59,7 +63,7 @@ interface IPFA {
     /// keccak256 hash of the runtime bytecode of the source code
     /// for approved licensees which implement a write-once
     /// distribution address table.
-    function license(address recipient) external;
+    function license(address recipient) external payable;
 
     /// @notice Returns the timestamp in seconds of the award of a
     /// grant recorded on chain for the access of the content

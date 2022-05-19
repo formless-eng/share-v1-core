@@ -62,7 +62,7 @@ truffle test
 - `SHARE008` : `Address table must have a number of entries less than or equal to the maximum number of shards specified by this contract.`
 - `SHARE009` : `PFA collections may only contain approved PFA builds.`
 - `SHARE010` : `Use PFA collection price pricePerAccess to determine price. Attempted price is incorrect`.
-- `SHARE011` : `Attempted price is incorrect. Use grossPricePerAccess method to determine correct price in wei.`
+- `SHARE011` : `Attempted access price is incorrect. Use grossPricePerAccess method to determine correct price in wei.`
 - `SHARE012` : `Limited ownables may only be constructed using EOAs, not contracts.`
 - `SHARE013` : `SHARE component protocol address must be initialized.`
 - `SHARE014` : `This contract has not yet been initialized. Ensure initialize was called after the deployment.`
@@ -74,6 +74,11 @@ truffle test
 - `SHARE020` : `S2RD split contract must contain at least one address.`
 - `SHARE021` : `Payment to asset owner unsuccessful. Please use an approved build which derives from LimitedOwnable.`
 - `SHARE022` : `A PFA which does not support licensing was supplied to this collection.`
+- `SHARE023` : `Incorrect licensing price provided. Please use pricePerLicense method to determine correct value.`
+- `SHARE024` : `Attempted licensing price is incorrect. Use grossPricePerLicense method to determine correct price in wei.`
+- `SHARE025` : `The supplied asset is not owned by this S2RD split and therefore cannot be reclaimed.`
+- `SHARE026` : `A non-zero licensing price was supplied but this contract does not support licensing.`
+- `SHARE027` : `Collection price per license must be >= the maximum license price of all items in the collection.`
 
 ## Audits and Formal Verification
 

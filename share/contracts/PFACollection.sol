@@ -86,11 +86,16 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
         uint256 pricePerAccess_,
         uint256 grantTTL_,
         bool supportsLicensing_,
+        uint256 pricePerLicense_,
         address shareContractAddress_
     ) public onlyOwner {
         Immutable.setUnsignedInt256(_pricePerAccess, pricePerAccess_);
         Immutable.setUnsignedInt256(_grantTTL, grantTTL_);
         Immutable.setBoolean(_supportsLicensing, supportsLicensing_);
+        if (!supportsLicensing_) {
+            require(pricePerLicense_ == 0, "SHARE026");
+        }
+        Immutable.setUnsignedInt256(_pricePerLicense, pricePerLicense_);
         _tokenURI = tokenURI_;
         setShareContractAddress(shareContractAddress_);
         SHARE protocol = SHARE(shareContractAddress_);
@@ -108,6 +113,13 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
             PFA item = PFA(itemAddress);
             require(pricePerAccess_ >= item.pricePerAccess(), "SHARE015");
             require(item.supportsLicensing(), "SHARE022");
+            // If this collection supports licensing, the price
+            // to sub-license the collection must be greater than or
+            // equal to the maximum price to license any single item
+            // within the collection.
+            if (supportsLicensing_) {
+                require(pricePerLicense_ >= item.pricePerLicense(), "SHARE027");
+            }
             Immutable.pushAddress(_addresses, addresses_[i]);
             Immutable.insertBooleanAtAddress(_addressMap, itemAddress, true);
         }

@@ -29,6 +29,7 @@ abstract contract PFA is IPFA, LimitedOwnable {
     event License(address indexed licensee);
 
     Immutable.UnsignedInt256 internal _pricePerAccess;
+    Immutable.UnsignedInt256 internal _pricePerLicense;
     Immutable.UnsignedInt256 internal _grantTTL;
     Immutable.Boolean internal _supportsLicensing;
     uint256 public _transactionCount = 0;
@@ -37,9 +38,16 @@ abstract contract PFA is IPFA, LimitedOwnable {
     mapping(address => uint256) internal _licenseTimestamps;
 
     /// @notice Returns non-zero value if this asset requires
-    /// payment for access. Zero otherwise
+    /// payment for access. Zero otherwise.
     function pricePerAccess() public view afterInit returns (uint256) {
         return _pricePerAccess.value;
+    }
+
+    /// @notice Returns non-zero value if this asset requires
+    /// payment for licensing. Zero otherwise. This value is immutable
+    /// after contract initialization.
+    function pricePerLicense() public view afterInit returns (uint256) {
+        return _pricePerLicense.value;
     }
 
     /// @notice Sets the price per access in wei for content backed
@@ -111,7 +119,7 @@ abstract contract PFA is IPFA, LimitedOwnable {
     /// has proof of inclusion of this PFA (licensor) address in its
     /// payout distribution table, records a license timestamp on
     /// chain which is read by decentralized distribution network
-    /// (DDN) microservices to decrypt and serve the associate
+    /// (DDN) microservices to decrypt and serve the associated
     /// content for the tokenURI to users who have paid to access
     /// the licensee contract.
     /// @dev Proof of inclusion is in the form of source code
@@ -121,8 +129,9 @@ abstract contract PFA is IPFA, LimitedOwnable {
     /// keccak256 hash of the runtime bytecode of the source code
     /// for approved licensees which implement a write-once
     /// distribution address table.
-    function license(address recipient_) public nonReentrant afterInit {
+    function license(address recipient_) public payable nonReentrant afterInit {
         require(_supportsLicensing.value, "SHARE018");
+        require(msg.value == _pricePerLicense.value, "SHARE023");
         SHARE protocol = SHARE(shareContractAddress());
         require(
             protocol.isApprovedBuild(

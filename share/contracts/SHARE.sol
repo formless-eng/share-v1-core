@@ -81,8 +81,8 @@ contract SHARE is Ownable, ReentrancyGuard {
     }
 
     /// @notice Returns the consumer facing gross price to access the
-    /// the asset. This price is calculated using `creator price` +
-    ///`creator price` * `transaction fee`.
+    /// the asset. This price is calculated using `access price` +
+    ///`access price` * `transaction fee`.
     function grossPricePerAccess(address contractAddress_, uint256 tokenId_)
         public
         view
@@ -97,6 +97,24 @@ contract SHARE is Ownable, ReentrancyGuard {
         uint256 protocolFee = (pricePerAccess * _transactionFeeNumerator) /
             _transactionFeeDenominator;
         return pricePerAccess + protocolFee;
+    }
+
+    /// @notice Returns the licensee facing gross price to license the
+    /// the asset. This price is calculated using `license price` +
+    ///`license price` * `transaction fee`.
+    function grossPricePerLicense(address contractAddress_)
+        public
+        view
+        returns (uint256)
+    {
+        IPFA asset = IPFA(contractAddress_);
+        uint256 pricePerLicense = asset.pricePerLicense();
+        // Note that this contract is implemented with Solidity
+        // version >=0.8.0 which has built-in overflow checks,
+        // therefore using SafeMath is not required.
+        uint256 protocolFee = (pricePerLicense * _transactionFeeNumerator) /
+            _transactionFeeDenominator;
+        return pricePerLicense + protocolFee;
     }
 
     /// @notice Instantiates the creator contract and calls the
@@ -129,8 +147,10 @@ contract SHARE is Ownable, ReentrancyGuard {
         nonReentrant
     {
         require(msg.sender == Ownable(licenseeContract_).owner(), "SHARE016");
+        uint256 grossPrice = grossPricePerLicense(licensorContract_);
+        require(msg.value == grossPrice, "SHARE024");
         IPFA asset = IPFA(licensorContract_);
-        asset.license(licenseeContract_);
+        asset.license{value: asset.pricePerLicense()}(licenseeContract_);
         _licenseTimestamps[licensorContract_][licenseeContract_] = block
             .timestamp;
         emit License(licensorContract_, licenseeContract_);
