@@ -112,8 +112,8 @@ contract S2RD is LimitedOwnable {
     ///   |            |           |           |
     ///   |            |           |           |
     ///   |            |           |           |
-    /// [S2RD]       [PFA]   setTokenURI()   [S2RD]
-    ///   |                                    |
+    /// [S2RD]       [PFA]       calls       [S2RD]
+    ///   |                  setTokenURI()     |
     ///   |                                    |
     ///   |                                    |
     /// [PFA]                                [PFA]
