@@ -7,8 +7,8 @@ const PFACollection = artifacts.require("PFACollection");
 const DEFAULT_ADDRESS_INDEX = 0;
 const UNIT_TOKEN_INDEX = 0;
 const NON_OWNER_ADDRESS_INDEX = 1;
-const GRANT_TTL_PRECISION_SEC = 5;
-const LICENSE_TTL_PRECISION_SEC = 5;
+const GRANT_TTL_PRECISION_SEC = 10;
+const LICENSE_TTL_PRECISION_SEC = 10;
 
 contract("SHARE", (accounts) => {
   specify("Contract initialization", async () => {
