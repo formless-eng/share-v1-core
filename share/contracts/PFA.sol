@@ -128,6 +128,7 @@ abstract contract PFA is IPFA, LimitedOwnable {
     /// distribution address table.
     function license(address recipient_) public payable nonReentrant afterInit {
         require(_supportsLicensing.value, "SHARE018");
+        require(msg.value == _pricePerLicense.value, "SHARE023");
         SHARE protocol = SHARE(shareContractAddress());
         require(
             protocol.isApprovedBuild(

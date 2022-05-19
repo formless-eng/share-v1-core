@@ -99,6 +99,21 @@ contract SHARE is Ownable, ReentrancyGuard {
         return pricePerAccess + protocolFee;
     }
 
+    function grossPricePerLicense(address contractAddress_)
+        public
+        view
+        returns (uint256)
+    {
+        IPFA asset = IPFA(contractAddress_);
+        uint256 pricePerLicense = asset.pricePerLicense();
+        // Note that this contract is implemented with Solidity
+        // version >=0.8.0 which has built-in overflow checks,
+        // therefore using SafeMath is not required.
+        uint256 protocolFee = (pricePerLicense * _transactionFeeNumerator) /
+            _transactionFeeDenominator;
+        return pricePerLicense + protocolFee;
+    }
+
     /// @notice Instantiates the creator contract and calls the
     /// access method. If successful, this transaction produces a
     /// grant awarded to the sender with a corresponding TTL.
@@ -129,6 +144,8 @@ contract SHARE is Ownable, ReentrancyGuard {
         nonReentrant
     {
         require(msg.sender == Ownable(licenseeContract_).owner(), "SHARE016");
+        uint256 grossPrice = grossPricePerLicense(licensorContract_);
+        require(msg.value == grossPrice, "SHARE024");
         IPFA asset = IPFA(licensorContract_);
         asset.license(licenseeContract_);
         _licenseTimestamps[licensorContract_][licenseeContract_] = block
