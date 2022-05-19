@@ -63,7 +63,6 @@ interface IPFA {
     /// keccak256 hash of the runtime bytecode of the source code
     /// for approved licensees which implement a write-once
     /// distribution address table.
-    /// TODO(brandon): update docs w/ payable license function.
     function license(address recipient) external payable;
 
     /// @notice Returns the timestamp in seconds of the award of a
