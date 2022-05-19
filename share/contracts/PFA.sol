@@ -43,6 +43,9 @@ abstract contract PFA is IPFA, LimitedOwnable {
         return _pricePerAccess.value;
     }
 
+    /// @notice Returns non-zero value if this asset requires
+    /// payment for licensing. Zero otherwise. This value is immutable
+    /// after contract initialization.
     function pricePerLicense() public view afterInit returns (uint256) {
         return _pricePerLicense.value;
     }
