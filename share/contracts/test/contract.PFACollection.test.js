@@ -1192,7 +1192,8 @@ contract("PFACollection", (accounts) => {
       console.log(`collection tx count: ${collectionTxCount}`);
       console.log(`pfa tx count: ${pfaTxCount}`);
       assert.equal(collectionTxCount, i + 1);
-      assert.equal(pfaTxCount, i + 1);
+      // NOTE: the call to license increments the tx count on the PFA
+      assert.equal(pfaTxCount, i + 2);
     }
   });
 });
