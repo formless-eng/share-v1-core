@@ -143,5 +143,6 @@ abstract contract PFA is IPFA, LimitedOwnable {
         require(IPFACollection(recipient_).contains(address(this)), "SHARE001");
         _licenseTimestamps[recipient_] = block.timestamp;
         emit License(recipient_);
+        _transactionCount++;
     }
 }
