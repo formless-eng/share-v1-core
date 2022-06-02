@@ -82,7 +82,7 @@ truffle test
 
 ## Audits and Formal Verification
 
-- Solidity Finance <a href="https://solidity.finance/audits/SHARE/">Audit</a> completed and <b>PASSED</b>.
+- Solidity Finance <a href="https://solidity.finance/audits/SHARE/">Audit</a> completed. No external threats were identified.
 
 ## Security and Liability
 
