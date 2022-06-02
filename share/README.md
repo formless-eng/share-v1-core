@@ -82,7 +82,7 @@ truffle test
 
 ## Audits and Formal Verification
 
-- Solidity Finance 4-30-2022 <a href="https://solidity.finance/">Scheduled.</a>
+- Solidity Finance <a href="https://solidity.finance/audits/SHARE/">Audit</a> completed. No external threats were identified.
 
 ## Security and Liability
 
