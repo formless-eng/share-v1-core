@@ -36,6 +36,51 @@ contract("S2RD", (accounts) => {
     assert.equal(await assetContract.addressIndex(), 0);
   });
 
+  specify("Contract initialization with 200 splits", async () => {
+    const shareContract = await SHARE.deployed();
+    const split = await S2RD.new();
+    let uniformCollaborators = [];
+    for (let i = 0; i < 191; i += 1) {
+      uniformCollaborators.push(
+        accounts[Math.floor(Math.random() * 3)]
+      );
+    }
+    try {
+      await split.initialize(
+        uniformCollaborators /* addresses_ */,
+        shareContract.address /* shareContractAddress_ */
+      );
+    } catch (error) {
+      console.log(error);
+      console.log(error.message);
+      assert(false, "Initialization with 200 splits failed");
+    }
+  });
+
+  specify(
+    "Contract initialization with splits greater than max",
+    async () => {
+      const shareContract = await SHARE.deployed();
+      const split = await S2RD.new();
+      const uniformCollaborators = [];
+      for (let i = 0; i < 500; i += 1) {
+        uniformCollaborators.push(
+          accounts[Math.floor(Math.random() * 3)]
+        );
+      }
+      try {
+        await split.initialize(
+          uniformCollaborators /* addresses_ */,
+          shareContract.address /* shareContractAddress_ */
+        );
+        assert(false, "Expected initialization exception not thrown");
+      } catch (error) {
+        console.log(error.message);
+        assert(error.message.includes("SHARE006"));
+      }
+    }
+  );
+
   specify("Payable with rotating recipient", async () => {
     const NUM_TRANSACTIONS = 50;
     const assetContract = await S2RD.deployed();
