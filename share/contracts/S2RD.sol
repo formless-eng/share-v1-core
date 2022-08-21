@@ -60,7 +60,7 @@ contract S2RD is LimitedOwnable {
         address[] memory addresses_,
         address shareContractAddress_
     ) public onlyOwner {
-        require(addresses_.length < MAX_SPLIT_COUNT, "SHARE006");
+        require(addresses_.length <= MAX_SPLIT_COUNT, "SHARE006");
         require(addresses_.length >= 1, "SHARE020");
         setShareContractAddress(shareContractAddress_);
         SHARE protocol = SHARE(shareContractAddress_);

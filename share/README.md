@@ -27,12 +27,13 @@ Modify `truffle-config.js` to enable the development stanza:
 development: {
   host: "127.0.0.1",
   port: 8545,
-  network_id: "*"
+  network_id: "*",
+  gas: 8000000
 }
 ```
 
 ```
-ganache-cli --defaultBalanceEther 10000
+ganache-cli --defaultBalanceEther 10000 -l 8000000
 ```
 
 We recommend using tmux or a separate terminal for running ganache so that you can monitor logging in the console while also running additional commands to interact with the chain in a separate terminal window.
