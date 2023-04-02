@@ -59,7 +59,7 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
         ERC721(NAME, SYMBOL)
         LimitedOwnable(
             true, /* WALLET */
-            false /* SPLIT */
+            true /* SPLIT */
         )
     {
         _safeMint(msg.sender, UNIT_TOKEN_INDEX);
