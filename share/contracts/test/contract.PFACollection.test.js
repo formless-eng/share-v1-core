@@ -1128,8 +1128,17 @@ contract("PFACollection", (accounts) => {
         "1000000000" /* pricePerAccess_ */,
         300 /* grantTTL_ */,
         true /* supportsLicensing_ */,
-        "7000000000" /* pricePerLicense_ */,
+        0 /* pricePerLicense_ */,
         shareContract.address /* shareContractAddress_ */
+      );
+      await shareContract.addApprovedBuild(
+        await verifier.readCodeHash(
+          split.address
+        ) /* codeHash = keccak256(S2RD code) */,
+        1 /* buildType_ = PFA_UNIT  */,
+        "solc" /* compilerBinaryTarget_ */,
+        "0.8.11+commit.d7f03943" /* compilerVersion_ */,
+        accounts[DEFAULT_ADDRESS_INDEX] /* authorAddress_ */
       );
       await shareContract.addApprovedBuild(
         await verifier.readCodeHash(
@@ -1142,9 +1151,9 @@ contract("PFACollection", (accounts) => {
       );
       await shareContract.addApprovedBuild(
         await verifier.readCodeHash(
-          split.address
+          collection.address
         ) /* codeHash = keccak256(S2RD code) */,
-        1 /* buildType_ = PFA_UNIT  */,
+        3 /* buildType_ = PFA_COLLECTION  */,
         "solc" /* compilerBinaryTarget_ */,
         "0.8.11+commit.d7f03943" /* compilerVersion_ */,
         accounts[DEFAULT_ADDRESS_INDEX] /* authorAddress_ */
@@ -1159,12 +1168,19 @@ contract("PFACollection", (accounts) => {
         shareContract.address /* shareContractAddress_ */
       );
       await collection.transferOwnership(split.address);
-      try {
-        await pfa1.license(collection.address);
-      } catch (error) {
-        console.log(error.message);
-        assert(error.message.includes("SHARE023"));
-      }
+      await pfa1.license(collection.address);
+      assert.equal(
+        (
+          await pfa1.getPastEvents("License", {
+            fromBlock: 0,
+            toBlock: "latest",
+            filter: {
+              recipient: collection.address,
+            },
+          })
+        ).length,
+        1
+      );
     }
   );
 
