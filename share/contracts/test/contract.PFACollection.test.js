@@ -1115,6 +1115,60 @@ contract("PFACollection", (accounts) => {
   );
 
   specify(
+    "PFA collection supports S2RD split contract as owner",
+    async () => {
+      const collection = await PFACollection.new();
+      const shareContract = await SHARE.deployed();
+      const split = await S2RD.new();
+      const verifier = await CodeVerification.deployed();
+      await shareContract.setCodeVerificationEnabled(true);
+      const pfa1 = await PFAUnit.new();
+      await pfa1.initialize(
+        "/test/asset/uri" /* tokenURI_ */,
+        "1000000000" /* pricePerAccess_ */,
+        300 /* grantTTL_ */,
+        true /* supportsLicensing_ */,
+        "7000000000" /* pricePerLicense_ */,
+        shareContract.address /* shareContractAddress_ */
+      );
+      await shareContract.addApprovedBuild(
+        await verifier.readCodeHash(
+          pfa1.address
+        ) /* codeHash = keccak256(PFA code) */,
+        2 /* buildType_ = PFA_UNIT  */,
+        "solc" /* compilerBinaryTarget_ */,
+        "0.8.11+commit.d7f03943" /* compilerVersion_ */,
+        accounts[DEFAULT_ADDRESS_INDEX] /* authorAddress_ */
+      );
+      await shareContract.addApprovedBuild(
+        await verifier.readCodeHash(
+          split.address
+        ) /* codeHash = keccak256(S2RD code) */,
+        1 /* buildType_ = PFA_UNIT  */,
+        "solc" /* compilerBinaryTarget_ */,
+        "0.8.11+commit.d7f03943" /* compilerVersion_ */,
+        accounts[DEFAULT_ADDRESS_INDEX] /* authorAddress_ */
+      );
+      await collection.initialize(
+        [pfa1.address] /* addresses_ */,
+        "/test/collection/uri" /* tokenURI_ */,
+        "2000000000" /* pricePerAccess_ */,
+        300 /* grantTTL_ */,
+        false /* supportsLicensing_ */,
+        0 /* pricePerLicense_ */,
+        shareContract.address /* shareContractAddress_ */
+      );
+      await collection.transferOwnership(split.address);
+      try {
+        await pfa1.license(collection.address);
+      } catch (error) {
+        console.log(error.message);
+        assert(error.message.includes("SHARE023"));
+      }
+    }
+  );
+
+  specify(
     "Revert on initialize with PFA that does not support licensing",
     async () => {
       const collection = await PFACollection.new();
@@ -1196,4 +1250,182 @@ contract("PFACollection", (accounts) => {
       assert.equal(pfaTxCount, i + 2);
     }
   });
+
+  specify(
+    "License 3 PFAs with 10 transactions and S2RD royalty split as contract owner",
+    async () => {
+      const NUM_TRANSACTIONS = 10;
+      const collection = await PFACollection.new();
+      const split = await S2RD.new();
+      const shareContract = await SHARE.deployed();
+      const verifier = await CodeVerification.deployed();
+      const uniformCollaborators = [
+        accounts[0],
+        accounts[1],
+        accounts[2],
+      ];
+
+      await split.initialize(
+        uniformCollaborators /* addresses_ */,
+        shareContract.address /* shareContractAddress_ */
+      );
+
+      await shareContract.setCodeVerificationEnabled(true);
+      const pfa1 = await PFAUnit.new();
+      const pfa2 = await PFAUnit.new();
+      const pfa3 = await PFAUnit.new();
+      const pfas = [pfa1, pfa2, pfa3];
+      const pfaPayments = [1000000000, 1000000000, 1000000000];
+      await pfa1.initialize(
+        "/test/asset/uri" /* tokenURI_ */,
+        "1000000000" /* pricePerAccess_ */,
+        300 /* grantTTL_ */,
+        true /* supportsLicensing_ */,
+        0 /* pricePerLicense_ */,
+        shareContract.address /* shareContractAddress_ */
+      );
+      await pfa2.initialize(
+        "/test/asset/uri" /* tokenURI_ */,
+        "1000000000" /* pricePerAccess_ */,
+        300 /* grantTTL_ */,
+        true /* supportsLicensing_ */,
+        0 /* pricePerLicense_ */,
+        shareContract.address /* shareContractAddress_ */
+      );
+      await pfa3.initialize(
+        "/test/asset/uri" /* tokenURI_ */,
+        "1000000000" /* pricePerAccess_ */,
+        300 /* grantTTL_ */,
+        true /* supportsLicensing_ */,
+        0 /* pricePerLicense_ */,
+        shareContract.address /* shareContractAddress_ */
+      );
+      await shareContract.addApprovedBuild(
+        await verifier.readCodeHash(
+          split.address
+        ) /* codeHash = keccak256(S2RD code) */,
+        1 /* buildType_ = SPLIT  */,
+        "solc" /* compilerBinaryTarget_ */,
+        "0.8.11+commit.d7f03943" /* compilerVersion_ */,
+        accounts[DEFAULT_ADDRESS_INDEX] /* authorAddress_ */
+      );
+      await shareContract.addApprovedBuild(
+        await verifier.readCodeHash(
+          pfa1.address
+        ) /* codeHash = keccak256(PFA code) */,
+        2 /* buildType_ = PFA_UNIT  */,
+        "solc" /* compilerBinaryTarget_ */,
+        "0.8.11+commit.d7f03943" /* compilerVersion_ */,
+        accounts[DEFAULT_ADDRESS_INDEX] /* authorAddress_ */
+      );
+      await shareContract.addApprovedBuild(
+        await verifier.readCodeHash(
+          collection.address
+        ) /* codeHash = keccak256(S2RD code) */,
+        3 /* buildType_ = PFA_COLLECTION  */,
+        "solc" /* compilerBinaryTarget_ */,
+        "0.8.11+commit.d7f03943" /* compilerVersion_ */,
+        accounts[DEFAULT_ADDRESS_INDEX] /* authorAddress_ */
+      );
+      await collection.initialize(
+        [pfa1.address, pfa2.address, pfa3.address] /* addresses_ */,
+        "/test/collection/uri" /* tokenURI_ */,
+        "2000000000" /* pricePerAccess_ */,
+        300 /* grantTTL_ */,
+        false /* supportsLicensing_ */,
+        0 /* pricePerLicense_ */,
+        shareContract.address /* shareContractAddress_ */
+      );
+
+      await collection.transferOwnership(split.address);
+      await pfa1.license(collection.address);
+      await pfa2.license(collection.address);
+      await pfa3.license(collection.address);
+
+      for (let i = 0; i < NUM_TRANSACTIONS; i++) {
+        await collection.access(
+          UNIT_TOKEN_INDEX,
+          accounts[DEFAULT_ADDRESS_INDEX],
+          {
+            from: accounts[DEFAULT_ADDRESS_INDEX],
+            value: "2000000000",
+          }
+        );
+        const recipientPFA = pfas[i % pfas.length];
+        const recipientSplitAddress =
+          uniformCollaborators[i % uniformCollaborators.length];
+        const pfaPaymentAmount = pfaPayments[i % pfas.length];
+        const pfaPaymentEvents = await recipientPFA.getPastEvents(
+          "PaymentToOwner",
+          {
+            fromBlock: 0,
+            toBlock: "latest",
+          }
+        );
+        const collectionEvents = await collection.getPastEvents(
+          "Payment",
+          {
+            fromBlock: 0,
+            toBlock: "latest",
+          }
+        );
+        const splitEvents = await split.getPastEvents("Payment", {
+          fromBlock: 0,
+          toBlock: "latest",
+        });
+        console.log(popEventLIFO(collectionEvents, 0));
+        console.log(popEventLIFO(pfaPaymentEvents, 0));
+        console.log(popEventLIFO(splitEvents, 0));
+        assert.equal(
+          popEventLIFO(pfaPaymentEvents, 0).returnValues.value,
+          pfaPaymentAmount
+        );
+        assert.equal(
+          popEventLIFO(collectionEvents, 0).returnValues.value,
+          2000000000 - pfaPaymentAmount
+        );
+        assert.equal(
+          popEventLIFO(collectionEvents, 0).returnValues.recipient,
+          split.address
+        );
+        assert.equal(
+          popEventLIFO(collectionEvents, 1).returnValues.value,
+          pfaPaymentAmount
+        );
+        assert.equal(
+          popEventLIFO(collectionEvents, 1).returnValues.recipient,
+          recipientPFA.address
+        );
+        assert.equal(
+          popEventLIFO(splitEvents, 0).returnValues.recipient,
+          recipientSplitAddress
+        );
+        assert.equal(
+          (
+            await collection.getPastEvents("Grant", {
+              fromBlock: 0,
+              toBlock: "latest",
+              filter: {
+                recipient: accounts[DEFAULT_ADDRESS_INDEX],
+                tokenId: UNIT_TOKEN_INDEX,
+              },
+            })
+          ).length,
+          i + 1
+        );
+        assert.equal(
+          (
+            await recipientPFA.getPastEvents("License", {
+              fromBlock: 0,
+              toBlock: "latest",
+              filter: {
+                recipient: collection.address,
+              },
+            })
+          ).length,
+          1
+        );
+      }
+    }
+  );
 });
