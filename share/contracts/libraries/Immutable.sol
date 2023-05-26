@@ -52,6 +52,13 @@ library Immutable {
         bool locked;
     }
 
+    /// @notice Lockable uint256[] type. Write-once state variable
+    /// that does not use the Solidity `immutable` keyword.
+    struct Unsigned256IntArray {
+        uint256[] value;
+        bool locked;
+    }
+
     /// @notice Lockable mapping(address => bool) type. Write-once state variable
     /// that does not use the Solidity `immutable` keyword.
     struct AddressToBooleanMap {
@@ -61,9 +68,10 @@ library Immutable {
 
     /// @notice Sets the value of a uint256 and locks it such
     /// that subsequent attempts to write revert.
-    function setUnsignedInt256(UnsignedInt256 storage object, uint256 value)
-        public
-    {
+    function setUnsignedInt256(
+        UnsignedInt256 storage object,
+        uint256 value
+    ) public {
         require(!object.locked, "SHARE003");
         object.value = value;
         object.locked = true;
@@ -89,6 +97,17 @@ library Immutable {
     /// the associated lock for the array is set, subsequent attempts
     /// to push revert.
     function pushAddress(AddressArray storage object, address value) public {
+        require(!object.locked, "SHARE003");
+        object.value.push(value);
+    }
+
+    /// @notice Pushes an unsigned 256 integer value onto an unsigned 256
+    /// integer array. Once the associated lock for the array is set,
+    /// subsequent attempts to push revert.
+    function pushUnsigned256Int(
+        Unsigned256IntArray storage object,
+        uint256 value
+    ) public {
         require(!object.locked, "SHARE003");
         object.value.push(value);
     }
