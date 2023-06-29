@@ -52,13 +52,9 @@ abstract contract PFA is IPFA, LimitedOwnable {
 
     /// @notice Sets the price per access in wei for content backed
     /// by this contract.
-    function setPricePerAccess(uint256 pricePerAccess_)
-        public
-        override
-        nonReentrant
-        onlyOwner
-        afterInit
-    {
+    function setPricePerAccess(
+        uint256 pricePerAccess_
+    ) public override nonReentrant onlyOwner afterInit {
         require(!_supportsLicensing.value, "SHARE019");
         _pricePerAccess.locked = false;
         Immutable.setUnsignedInt256(_pricePerAccess, pricePerAccess_);
@@ -68,10 +64,10 @@ abstract contract PFA is IPFA, LimitedOwnable {
     /// of this contract, records a grant timestamp on chain which is
     /// read by decentralized distribution network (DDN) microservices
     /// to decrypt and serve the associated content for the tokenURI.
-    function access(uint256 tokenId, address recipient)
-        external
-        virtual
-        payable;
+    function access(
+        uint256 tokenId,
+        address recipient
+    ) external payable virtual;
 
     /// @notice Returns true if this PFA supports licensing, where
     /// licensing is the ability for a separate contract to forward
@@ -86,25 +82,18 @@ abstract contract PFA is IPFA, LimitedOwnable {
     /// @notice Returns the timestamp in seconds of the award of a
     /// grant recorded on chain for the access of the content
     /// associated with this PFA.
-    function grantTimestamp(address recipient_)
-        public
-        override
-        view
-        afterInit
-        returns (uint256)
-    {
+    function grantTimestamp(
+        address recipient_
+    ) public view override afterInit returns (uint256) {
         return _grantTimestamps[recipient_];
     }
 
     /// @notice Returns the timestamp in seconds of the award of a
     /// grant recorded on chain for the licensing of the content
     /// associated with this PFA.
-    function licenseTimestamp(address recipient_)
-        external
-        view
-        afterInit
-        returns (uint256)
-    {
+    function licenseTimestamp(
+        address recipient_
+    ) external view afterInit returns (uint256) {
         return _licenseTimestamps[recipient_];
     }
 
@@ -144,5 +133,6 @@ abstract contract PFA is IPFA, LimitedOwnable {
         _licenseTimestamps[recipient_] = block.timestamp;
         emit License(recipient_);
         _transactionCount++;
+        payable(owner()).transfer(msg.value);
     }
 }
