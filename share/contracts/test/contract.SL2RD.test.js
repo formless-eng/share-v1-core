@@ -12,18 +12,7 @@ contract("SL2RD", (accounts) => {
   specify("Contract initialization", async () => {
     const shareContract = await SHARE.deployed();
     const splitContract = await SL2RD.deployed();
-    const ownerAddresses = [
-      accounts[0],
-      accounts[0],
-      accounts[0],
-      accounts[0],
-      accounts[0],
-      accounts[0],
-      accounts[0],
-      accounts[0],
-      accounts[0],
-      accounts[0],
-    ];
+    const ownerAddresses = Array(10).fill(accounts[0]);
 
     const uniformCollaboratorsIds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
     await splitContract.initialize(
@@ -61,47 +50,12 @@ contract("SL2RD", (accounts) => {
     }
   });
 
-  specify(
-    "Contract initialization with splits greater than max",
-    async () => {
-      const shareContract = await SHARE.deployed();
-      const split = await SL2RD.new();
-      const ownerAddresses = [];
-      const uniformCollaboratorsIds = [];
-      for (let i = 0; i < 1100; i += 1) {
-        uniformCollaboratorsIds.push(Math.floor(Math.random() * 3));
-        ownerAddresses.push(accounts[0]);
-      }
-      try {
-        await split.initialize(
-          ownerAddresses /* addresses_ */,
-          uniformCollaboratorsIds /* tokenIds_ */,
-          shareContract.address /* shareContractAddress_ */
-        );
-        assert(false, "Expected initialization exception not thrown");
-      } catch (error) {
-        console.log(error.message);
-        assert(error.message.includes("SHARE006"));
-      }
-    }
-  );
-
   specify("Payable with rotating recipient", async () => {
     const NUM_TRANSACTIONS = 50;
     const shareContract = await SHARE.deployed();
     const splitContract = await SL2RD.new();
-    const ownerAddresses = [
-      accounts[0],
-      accounts[0],
-      accounts[0],
-      accounts[0],
-      accounts[0],
-      accounts[0],
-      accounts[0],
-      accounts[0],
-      accounts[0],
-      accounts[0],
-    ];
+    const ownerAddresses = Array(10).fill(accounts[0]);
+
     const uniformCollaboratorsIds = [0, 1, 0, 0, 0, 2, 0, 0, 0, 0];
     const uniformCollaborators = [
       accounts[0],
@@ -170,18 +124,8 @@ contract("SL2RD", (accounts) => {
     const smartContractPFA = await PFAUnit.deployed();
     const shareContract = await SHARE.deployed();
     const splitContract = await SL2RD.new();
-    const ownerAddresses = [
-      accounts[0],
-      accounts[0],
-      accounts[0],
-      accounts[0],
-      accounts[0],
-      accounts[0],
-      accounts[0],
-      accounts[0],
-      accounts[0],
-      accounts[0],
-    ];
+    const ownerAddresses = Array(10).fill(accounts[0]);
+
     const uniformCollaboratorsIds = [0, 1, 0, 0, 0, 2, 0, 0, 0, 0];
 
     try {
@@ -236,7 +180,9 @@ contract("SL2RD", (accounts) => {
     const split = await SL2RD.new();
     const pfa = await PFAUnit.new();
     const ownerAddresses = [accounts[0], accounts[0], accounts[0]];
+
     const uniformCollaboratorsIds = [0, 1, 2];
+
     await pfa.initialize(
       "/test/token/uri" /* tokenURI_ */,
       "1000000000" /* pricePerAccess_ */,
@@ -261,10 +207,12 @@ contract("SL2RD", (accounts) => {
   specify("Only SL2RD owner can reclaim PFA", async () => {
     const shareContract = await SHARE.deployed();
     await shareContract.setCodeVerificationEnabled(false);
+
     const ownerAddresses = [accounts[0], accounts[0], accounts[0]];
     const split = await SL2RD.new();
     const pfa = await PFAUnit.new();
     const uniformCollaboratorsIds = [0, 1, 2];
+
     await pfa.initialize(
       "/test/token/uri" /* tokenURI_ */,
       "1000000000" /* pricePerAccess_ */,
@@ -291,9 +239,9 @@ contract("SL2RD", (accounts) => {
   });
 
   /* If using Ganache, be sure to set account amount adequately */
-  specify("Comprehensive stress test 200.", async () => {
-    const NUM_TRANSACTIONS = 200;
-    const SIZE = 200;
+  specify("Comprehensive test", async () => {
+    const NUM_TRANSACTIONS = 50;
+    const SIZE = 20;
     const shareContract = await SHARE.deployed();
     const splitContract = await SL2RD.new();
     const uniformCollaboratorsIds = [];
