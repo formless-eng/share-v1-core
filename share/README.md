@@ -34,7 +34,7 @@ development: {
 ```
 
 ```
-ganache-cli --accounts 250 --defaultBalanceEther 10000 -l 80000000000000
+ganache-cli --defaultBalanceEther 10000 -l 80000000000000 --accounts 21 -m "pave trigger reduce glass cram famous still web glare mechanic train next"
 ```
 
 We recommend using tmux or a separate terminal for running ganache so that you can monitor logging in the console while also running additional commands to interact with the chain in a separate terminal window.
