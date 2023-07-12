@@ -1,5 +1,6 @@
 const SHARE = artifacts.require("SHARE");
 const PFAUnit = artifacts.require("PFAUnit");
+const PFACollection = artifacts.require("PFACollection");
 const DEFAULT_ADDRESS_INDEX = 0;
 const NON_OWNER_ADDRESS_INDEX = 1;
 const DEFAULT_TOKEN_ID = 0;
@@ -75,6 +76,55 @@ contract("PFAUnit", (accounts) => {
       );
     }
   );
+
+  specify("Licensing fee sent to owner", async () => {
+    const shareContract = await SHARE.deployed();
+    const assetContract = await PFAUnit.new();
+    const collection = await PFACollection.new();
+    await shareContract.setCodeVerificationEnabled(false);
+    await assetContract.initialize(
+      "/test/asset/uri" /* tokenURI_ */,
+      "1000000000" /* pricePerAccess_ */,
+      300 /* grantTTL_ */,
+      true /* supportsLicensing_ */,
+      "2000000000" /* pricePerLicense_ */,
+      shareContract.address /* shareContractAddress_ */
+    );
+    await collection.initialize(
+      [assetContract.address] /* addresses_ */,
+      "/test/collection/uri" /* tokenURI_ */,
+      "2000000000" /* pricePerAccess_ */,
+      300 /* grantTTL_ */,
+      false /* supportsLicensing_ */,
+      0 /* pricePerLicense_ */,
+      shareContract.address /* shareContractAddress_ */
+    );
+
+    // Initial owner balance
+    let initialOwnerBalance = await web3.eth.getBalance(
+      accounts[DEFAULT_ADDRESS_INDEX]
+    );
+
+    // License
+    await assetContract.license(collection.address, {
+      from: accounts[NON_OWNER_ADDRESS_INDEX],
+      value: "2000000000",
+    });
+
+    // Final owner balance
+    let finalOwnerBalance = await web3.eth.getBalance(
+      accounts[DEFAULT_ADDRESS_INDEX]
+    );
+
+    // Verify owner's increased balance
+    assert.equal(
+      finalOwnerBalance,
+      web3.utils
+        .toBN(initialOwnerBalance)
+        .add(web3.utils.toBN("2000000000"))
+        .toString()
+    );
+  });
 
   specify("Only owner sets price per access", async () => {
     const assetContract = await PFAUnit.deployed();
