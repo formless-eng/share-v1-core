@@ -29,12 +29,12 @@ development: {
   host: "127.0.0.1",
   port: 8545,
   network_id: "*",
-  gas: 8000000
+  gas: 800000000,
 }
 ```
 
 ```
-ganache-cli --defaultBalanceEther 10000 -l 8000000
+ganache-cli --defaultBalanceEther 10000 -l 80000000000000 --accounts 21 -m "pave trigger reduce glass cram famous still web glare mechanic train next"
 ```
 
 We recommend using tmux or a separate terminal for running ganache so that you can monitor logging in the console while also running additional commands to interact with the chain in a separate terminal window.
@@ -81,6 +81,7 @@ truffle test
 - `SHARE025` : `The supplied asset is not owned by this S2RD split and therefore cannot be reclaimed.`
 - `SHARE026` : `A non-zero licensing price was supplied but this contract does not support licensing.`
 - `SHARE027` : `Collection price per license must be >= the maximum license price of all items in the collection.`
+- `SHARE028` : `The tokenId and addresses liquid split arrays must be the same length.`
 
 ## Audits and Formal Verification
 
