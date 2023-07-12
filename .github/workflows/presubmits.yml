@@ -20,5 +20,5 @@ jobs:
       - run: npm install -g babel-runtime
       - run: npm install -g truffle
       - run: npm install -g ganache-cli
-      - run: ganache-cli --defaultBalanceEther 10000 -l 8000000 > /dev/null &
+      - run: ganache-cli --accounts 21 --defaultBalanceEther 10000 -l 80000000000000 > /dev/null &
       - run: truffle test
