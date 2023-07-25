@@ -51,6 +51,77 @@ npm install
 truffle test
 ```
 
+## Truffle interactive blockchain console
+
+To interact with deployed contracts you can use the truffle console:
+
+```
+MNEMONIC_PHRASE=$MNEMONIC RPC_OPTIMISM_GOERLI=$RPC_OPTIMISM_GOERLI RPC_POLYGON_MUMBAI=$RPC_POLYGON_MUMBAI truffle console --network=mumbai
+```
+
+From the console you can then call "migrate" which will execute the code in `migrations/1_initial_migration.js` and deploy the respective contracts to the selected blockchain. From the console you can instantiate a reference to the contract using:
+
+```javascript
+let instance = await GNFT.at(
+  "0xF3f95d49D5205d0aD811ebdadA1c106aef7D69f2"
+);
+```
+
+```shell
+truffle(mumbai)> instance.initialize("", "1000000000", 300)
+```
+
+```json
+{
+  "tx": "0xb7c1a87906db829cdc2b03b97dfd358b575aceb13cd16c823d2ffb5d98e3b135",
+  "receipt": {
+    "transactionHash": "0xb7c1a87906db829cdc2b03b97dfd358b575aceb13cd16c823d2ffb5d98e3b135",
+    "blockHash": "0x930ac2506de1c8ad41f0f513e02fcea0fbcf4599650e0deaaf0982448a74b713",
+    "blockNumber": 25890999,
+    "contractAddress": null,
+    "cumulativeGasUsed": 6593718,
+    "effectiveGasPrice": "0x9ce41e76",
+    "from": "0xd433e00e15ab2b2cbfb451a8e73946f14fd80b2c",
+    "gasUsed": 72030,
+    "logs": [],
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000408000000000000000000000000000000000000000000000000020000000800000000000000000000100000000004000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000080000000000000000000200000000000000000000000000000000000000000000000000000000000004000000000000000000001000000000000000000000000000008100040000000000000000000000000000000000000000000000000000000000000000000100000",
+    "status": true,
+    "to": "0xf3f95d49d5205d0ad811ebdada1c106aef7d69f2",
+    "transactionIndex": 26,
+    "type": "0x0",
+    "rawLogs": [[Object]]
+  },
+  "logs": []
+}
+```
+
+```shell
+truffle(mumbai)> instance.setTokenURI("https://us-central1-share-336018.cloudfunctions.net/share-pfa-0x542896F9FEEBEE3E22C648AA28990C18C08575DC")
+```
+
+```json
+{
+  "tx": "0x22f0b292c5efee71691ecee436dfea2019c886a7572fdbecb07b0f235400fcde",
+  "receipt": {
+    "transactionHash": "0x22f0b292c5efee71691ecee436dfea2019c886a7572fdbecb07b0f235400fcde",
+    "blockHash": "0x03705345bb0c7879a9537d16f018d981b7e59909ac3060aed8bb956a542f8396",
+    "blockNumber": 25891123,
+    "contractAddress": null,
+    "cumulativeGasUsed": 2911922,
+    "effectiveGasPrice": "0x9280ac60",
+    "from": "0xd433e00e15ab2b2cbfb451a8e73946f14fd80b2c",
+    "gasUsed": 139992,
+    "logs": [],
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000408000000000000000000000000000000000000000000000000020000000800000000000000000000100000000004000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000080000000000000000000200000000000000000000000000000000000000000000000000000000000004000000000000000000001000000000000000000000000000008100040000000000000000000000000000000000000000000000000000000000000000000100000",
+    "status": true,
+    "to": "0xf3f95d49d5205d0ad811ebdada1c106aef7d69f2",
+    "transactionIndex": 20,
+    "type": "0x0",
+    "rawLogs": [[Object]]
+  },
+  "logs": []
+}
+
 ## Error Codes
 
 - `SHARE000` : `Licensing this PFA requires the keccak256 hash of runtime build code for the recipient address to map to an approved SHARE PFA collection build.`
@@ -94,3 +165,4 @@ All contracts are WITHOUT ANY WARRANTY; without even the implied warranty of MER
 ## Licensing
 
 - All files in `contracts` are unlicensed.
+```
