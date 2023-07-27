@@ -51,6 +51,53 @@ npm install
 truffle test
 ```
 
+## Truffle interactive blockchain console
+
+To interact with deployed contracts you can use the truffle console:
+
+```
+MNEMONIC_PHRASE=$MNEMONIC RPC_ENDPIONT_OPTIMISM_GOERLI=$RPC_ENDPOINT_OPTIMISM_GOERLI RPC_ENDPOINT_POLYGON_MUMBAI=$RPC_ENDPOINT_POLYGON_MUMBAI truffle console --network=optimism_goerli
+```
+
+From the console you can then call "migrate" which will execute the code in `migrations/1_initial_migration.js` and deploy the respective contracts to the selected blockchain. From the console you can instantiate a reference to the contract using:
+
+```javascript
+truffle(optimism_goerli)> let share_instance = await SHARE.at("0x02C4C02247a7bEA0A27825FBE7a11B0C1eA5e7bc");
+
+```
+
+```shell
+truffle(optimism_goerli)> share_instance.addApprovedBuild("0x0000000000000000000000000000000000000000000000000000000000000000", 0, "solc", "0.8.11+commit.d7f03943", "0x005D2246cE91890DbdeD3195a94095c560d5c363");
+```
+
+```json
+{
+  "tx": "0x238717f96f7687abf5fc770f7f129b3503d6986e8ab7ddd06617ba1182735ecd",
+  "receipt": {
+    "transactionHash": "0x238717f96f7687abf5fc770f7f129b3503d6986e8ab7ddd06617ba1182735ecd",
+    "blockHash": "0x064327efbee848e67635108e6547d44d51c4a6b41c53eb8240185f584ab84584",
+    "blockNumber": 12274171,
+    "logs": [],
+    "contractAddress": null,
+    "effectiveGasPrice": 2500000050,
+    "cumulativeGasUsed": 145299,
+    "from": "0x005d2246ce91890dbded3195a94095c560d5c363",
+    "gasUsed": 98398,
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "status": true,
+    "to": "0x02c4c02247a7bea0a27825fbe7a11b0c1ea5e7bc",
+    "transactionIndex": 1,
+    "type": "0x2",
+    "l1Fee": "0xd6b1ae67990",
+    "l1FeeScalar": "1",
+    "l1GasPrice": "0x996ac804",
+    "l1GasUsed": "0x1664",
+    "rawLogs": []
+  },
+  "logs": []
+}
+```
+
 ## Error Codes
 
 - `SHARE000` : `Licensing this PFA requires the keccak256 hash of runtime build code for the recipient address to map to an approved SHARE PFA collection build.`
@@ -94,3 +141,7 @@ All contracts are WITHOUT ANY WARRANTY; without even the implied warranty of MER
 ## Licensing
 
 - All files in `contracts` are unlicensed.
+
+```
+
+```
