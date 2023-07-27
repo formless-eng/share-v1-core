@@ -1,7 +1,9 @@
 const HDWalletProvider = require("@truffle/hdwallet-provider");
 const mnemonicPhrase = process.env.MNEMONIC_PHRASE;
-const RPC_OPTIMISM_GOERLI = process.env.RPC_OPTIMISM_GOERLI;
-const RPC_POLYGON_MUMBAI = process.env.RPC_POLYGON_MUMBAI;
+const RPC_ENDPOINT_OPTIMISM_GOERLI =
+  process.env.RPC_ENDPOIN_OPTIMISM_GOERLI;
+const RPC_ENDPOINT_POLYGON_MUMBAI =
+  process.env.RPC_ENDPOINT_POLYGON_MUMBAI;
 const SOLIDITY_COMPILER_VERSION = "0.8.11";
 
 module.exports = {

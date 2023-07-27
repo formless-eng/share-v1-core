@@ -96,7 +96,7 @@ truffle(mumbai)> instance.initialize("", "1000000000", 300)
 ```
 
 ```shell
-truffle(mumbai)> instance.setTokenURI("https://us-central1-share-336018.cloudfunctions.net/share-pfa-0x542896F9FEEBEE3E22C648AA28990C18C08575DC")
+truffle(mumbai)> instance.setTokenURI("mock/token/uri")
 ```
 
 ```json
