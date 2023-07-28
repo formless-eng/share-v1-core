@@ -144,6 +144,5 @@ abstract contract PFA is IPFA, LimitedOwnable {
         _licenseTimestamps[recipient_] = block.timestamp;
         emit License(recipient_);
         _transactionCount++;
-        payable(owner()).transfer(msg.value);
     }
 }
