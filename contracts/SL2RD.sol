@@ -131,7 +131,7 @@ contract SL2RD is
 
     /// @notice This function provides access to the initial distribution table of
     /// addresses.
-    function splitInitializationDistributionTable()
+    function initialSplitDistributionTable()
         public
         view
         returns (address[] memory)
@@ -140,15 +140,25 @@ contract SL2RD is
     }
 
     /// @notice This function provides access to the live distribution table of
-    /// addresses.
-    function liveSplitDistributionTable()
-        public
-        view
-        returns (address[] memory)
-    {
-        address[] memory owners = new address[](_tokenIds.value.length);
-        for (uint256 i = 0; i < _tokenIds.value.length; i++) {
-            owners[i] = ownerOf(_tokenIds.value[i]);
+    /// addresses. Since slots have canonical token IDs, the corresponding tokenIs
+    /// for the returned addresses array is simply its index.
+    /// @dev This function can be called with a specific set of token IDs, or if
+    /// called with no arguments, then all owner addresses will be returned
+    /// canonically.
+    function liveSplitDistributionTable(
+        uint256[] memory tokenIds
+    ) public view returns (address[] memory) {
+        address[] memory owners;
+        if (tokenIds.length > 0) {
+            owners = new address[](tokenIds.length);
+            for (uint256 i = 0; i < tokenIds.length; i++) {
+                owners[i] = ownerOf(tokenIds[i]);
+            }
+        } else {
+            owners = new address[](_tokenIds.value.length);
+            for (uint256 i = 0; i < _tokenIds.value.length; i++) {
+                owners[i] = ownerOf(_tokenIds.value[i]);
+            }
         }
         return owners;
     }
