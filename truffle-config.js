@@ -1,9 +1,12 @@
 const HDWalletProvider = require("@truffle/hdwallet-provider");
 const mnemonicPhrase = process.env.MNEMONIC_PHRASE;
 const RPC_ENDPOINT_OPTIMISM_GOERLI =
-  process.env.RPC_ENDPOIN_OPTIMISM_GOERLI;
+  process.env.RPC_ENDPOINT_OPTIMISM_GOERLI;
 const RPC_ENDPOINT_POLYGON_MUMBAI =
   process.env.RPC_ENDPOINT_POLYGON_MUMBAI;
+const RPC_ENDPOINT_POLYGON_MAINNET =
+  process.env.RPC_ENDPOINT_POLYGON_MAINNET;
+
 const SOLIDITY_COMPILER_VERSION = "0.8.11";
 
 module.exports = {
@@ -16,7 +19,10 @@ module.exports = {
     },
     optimism_goerli: {
       provider: () =>
-        new HDWalletProvider(mnemonicPhrase, RPC_OPTIMISM_GOERLI),
+        new HDWalletProvider(
+          mnemonicPhrase,
+          RPC_ENDPOINT_OPTIMISM_GOERLI
+        ),
       network_id: 420,
       gas: 5500000,
       confirmations: 2,
@@ -27,12 +33,29 @@ module.exports = {
 
     mumbai: {
       provider: () =>
-        new HDWalletProvider(mnemonicPhrase, RPC_POLYGON_MUMBAI),
+        new HDWalletProvider(
+          mnemonicPhrase,
+          RPC_ENDPOINT_POLYGON_MUMBAI
+        ),
       network_id: 80001,
       gas: 5500000,
       confirmations: 2,
       timeoutBlocks: 200,
       networkCheckTimeout: 1000000,
+      skipDryRun: true,
+    },
+
+    polygon: {
+      provider: () =>
+        new HDWalletProvider(
+          mnemonicPhrase,
+          RPC_ENDPOINT_POLYGON_MAINNET
+        ),
+      network_id: 137,
+      gas: 100000,
+      gasPrice: 150000000000,
+      timeoutBlocks: 200,
+      networkCheckTimeout: 10000,
       skipDryRun: true,
     },
   },

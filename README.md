@@ -141,7 +141,3 @@ All contracts are WITHOUT ANY WARRANTY; without even the implied warranty of MER
 ## Licensing
 
 - All files in `contracts` are unlicensed.
-
-```
-
-```
