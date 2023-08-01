@@ -129,6 +129,9 @@ truffle(optimism_goerli)> share_instance.addApprovedBuild("0x0000000000000000000
 - `SHARE026` : `A non-zero licensing price was supplied but this contract does not support licensing.`
 - `SHARE027` : `Collection price per license must be >= the maximum license price of all items in the collection.`
 - `SHARE028` : `The tokenId and addresses liquid split arrays must be the same length.`
+- `SHARE029` : `Community splits initialization percentage cannot exceed 10000 basis points (100%).`
+- `SHARE030` : `Caller is not owner or operator.`
+- `SHARE031` : `All community apportioned splits are allocated.`
 
 ## Audits and Formal Verification
 
