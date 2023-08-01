@@ -50,11 +50,11 @@ contract SL2RD is
 
     SHARE private _protocol;
 
-    // Modifier to allow only the owner or a verified operator to call the function
-    modifier onlyOwnerOrOperator() {
-        require(ShareOperatorRegistry.isOperator(msg.sender), "SHARE030");
-        _;
-    }
+    // // Modifier to allow only the owner or a verified operator to call the function
+    // modifier onlyOwnerOrOperator() {
+    //     require(ShareOperatorRegistry.isOperator(msg.sender), "SHARE030");
+    //     _;
+    // }
 
     constructor() public LimitedOwnable(true /* WALLET */, false /* SPLIT */) {}
 
@@ -74,6 +74,9 @@ contract SL2RD is
     /// owner for each tokenId. This is prefilled with the owner's
     /// address for each token, but designed with flexibilty to include
     /// others during initialization if they are known.
+    /// The communitySplitsInitializationPercentage is a const denoted in
+    /// basis points for how much of the slots the creator initially wants
+    /// to allocate for everyone else.
     function initialize(
         address[] memory addresses_,
         uint256[] memory tokenIds_,
@@ -256,22 +259,22 @@ contract SL2RD is
         return timestamps;
     }
 
-    /// @notice Function to transfer the next available slot to a specified address.
-    /// This function keeps track of the available community splits and the next available slot.
-    /// It reverts if all community apportioned splits are allocated.
-    function transferNextAvailable(
-        address to,
-        uint256 tokenId
-    ) public onlyOwnerOrOperator nonReentrant {
-        require(
-            _nextAvailableCommunitySlot <= _totalCommunitySlots,
-            "SHARE031"
-        );
+    // /// @notice Function to transfer the next available slot to a specified address.
+    // /// This function keeps track of the available community splits and the next available slot.
+    // /// It reverts if all community apportioned splits are allocated.
+    // function transferNextAvailable(
+    //     address to,
+    //     uint256 tokenId
+    // ) public onlyOwnerOrOperator nonReentrant {
+    //     require(
+    //         _nextAvailableCommunitySlot <= _totalCommunitySlots,
+    //         "SHARE031"
+    //     );
 
-        safeTransferFrom(owner(), to, _nextAvailableCommunitySlot);
+    //     safeTransferFrom(owner(), to, _nextAvailableCommunitySlot);
 
-        _nextAvailableCommunitySlot++;
-    }
+    //     _nextAvailableCommunitySlot++;
+    // }
 
     /// @notice Reclaims a contract owned by this SL2RD, e.g. if a PFA
     /// is owned by this split, the split owner may transfer

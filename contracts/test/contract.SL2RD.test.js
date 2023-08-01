@@ -18,7 +18,8 @@ contract("SL2RD", (accounts) => {
     await splitContract.initialize(
       ownerAddresses /* addresses_ */,
       uniformCollaboratorsIds /* tokenIds_ */,
-      shareContract.address /* shareContractAddress_ */
+      shareContract.address /* shareContractAddress_ */,
+      0 /* communitySplitsInitializationPercentage_ */
     );
     assert.equal(
       accounts[DEFAULT_ADDRESS_INDEX],
@@ -32,6 +33,7 @@ contract("SL2RD", (accounts) => {
     const split = await SL2RD.new();
     const uniformCollaboratorsIds = [];
     const ownerAddresses = [];
+
     for (let i = 0; i < 200; i += 1) {
       uniformCollaboratorsIds.push(Math.floor(Math.random() * 3));
       ownerAddresses.push(accounts[0]);
@@ -41,7 +43,8 @@ contract("SL2RD", (accounts) => {
       await split.initialize(
         ownerAddresses /* addresses_ */,
         uniformCollaboratorsIds /* tokenIds_ */,
-        shareContract.address /* shareContractAddress_ */
+        shareContract.address /* shareContractAddress_ */,
+        0 /* communitySplitsInitializationPercentage_ */
       );
     } catch (error) {
       console.log(error);
@@ -68,7 +71,8 @@ contract("SL2RD", (accounts) => {
       await splitContract.initialize(
         ownerAddresses /* addresses_ */,
         uniformCollaboratorsIds /* tokenIds_ */,
-        shareContract.address /* shareContractAddress_ */
+        shareContract.address /* shareContractAddress_ */,
+        0 /* communitySplitsInitializationPercentage_ */
       );
     } catch (error) {
       console.log(error);
@@ -132,7 +136,8 @@ contract("SL2RD", (accounts) => {
       await splitContract.initialize(
         ownerAddresses /* addresses_ */,
         uniformCollaboratorsIds /* tokenIds_ */,
-        shareContract.address /* shareContractAddress_ */
+        shareContract.address /* shareContractAddress_ */,
+        0 /* communitySplitsInitializationPercentage_ */
       );
     } catch (error) {
       console.log(error);
@@ -194,7 +199,8 @@ contract("SL2RD", (accounts) => {
     await split.initialize(
       ownerAddresses /* addresses_ */,
       uniformCollaboratorsIds /* tokenIds_ */,
-      shareContract.address /* shareContractAddress_ */
+      shareContract.address /* shareContractAddress_ */,
+      0 /* communitySplitsInitializationPercentage_ */
     );
     await pfa.transferOwnership(split.address);
     assert.equal(split.address, await pfa.owner());
@@ -224,7 +230,8 @@ contract("SL2RD", (accounts) => {
     await split.initialize(
       ownerAddresses /* addresses_ */,
       uniformCollaboratorsIds /* tokenIds_ */,
-      shareContract.address /* shareContractAddress_ */
+      shareContract.address /* shareContractAddress_ */,
+      0 /* communitySplitsInitializationPercentage_ */
     );
     await pfa.transferOwnership(split.address);
     assert.equal(split.address, await pfa.owner());
@@ -247,6 +254,7 @@ contract("SL2RD", (accounts) => {
     const uniformCollaboratorsIds = [];
     const ownerAddresses = [];
     const uniformCollaborators = [];
+
     for (let i = 0; i < SIZE; i += 1) {
       uniformCollaboratorsIds.push(i);
       ownerAddresses.push(accounts[0]);
@@ -259,7 +267,8 @@ contract("SL2RD", (accounts) => {
       await splitContract.initialize(
         ownerAddresses /* addresses_ */,
         uniformCollaboratorsIds /* tokenIds_ */,
-        shareContract.address /* shareContractAddress_ */
+        shareContract.address /* shareContractAddress_ */,
+        0 /* communitySplitsInitializationPercentage_ */
       );
     } catch (error) {
       console.log(error);
