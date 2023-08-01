@@ -98,76 +98,6 @@ truffle(optimism_goerli)> share_instance.addApprovedBuild("0x0000000000000000000
 }
 ```
 
-## Editing contract ownership and configuration
-
-There are times in production where you may need to make a change to a deployed SHARE smart contract. One example is when a PFA is deployed on _behalf_ of a user, but the owner of the PFA (or S2RD) is still the wallet address of a FORMLESS engineer or team member. You can use truffle to interact with blockchain contracts to make these edits.
-Here we start the truffle console using the seed phrase of the current contract owner:
-
-````
-MNEMONIC_PHRASE=$MNEMONIC RPC_ENDPOINT_POLYGON_MAINNET=$RPC_ENDPOINT_POLYGON_MAINNET RPC_ENDPOINT_POLYGON_MUMBAI=$RPC_ENDPOINT_POLYGON_MUMBAI RPC_ENDPOINT_OPTIMISM_GOERLI=$RPC_ENDPOINT_OPTIMISM_GOERLI truffle console --network=optimism_goerli```
-
-Comment out all of the module exports in the `1_initial_migrations` file and run `truffle(optimism_goerli)>migrations` in the console.
-
-Next we create a pointer to the deployed contract, in this case a GNFT PFA contract. Since our goal is to transfer ownership of the GNFT to the customer, we can use the `Ownable` interface as the type.
-
-```javascript
-truffle(optimism_goerli)> let contract = await Ownable.at("0x9a8CE3C4f9eDcda1B5e5d5D4c4542E43B5fd599A");
-```
-
-```javascript
-truffle(optimism_goerli)>await pfa_contract.transferOwnership("0xeF34563870F3010189696524f4400C4cBE64C5Ac")
-```
-
-```json
-{
-  tx: '0xb2e63af9f55af1c4d6a44d53c3f64218e072104f9e53417470b9ef5521926ecd',
-  receipt: {
-    transactionHash: '0xb2e63af9f55af1c4d6a44d53c3f64218e072104f9e53417470b9ef5521926ecd',
-    blockHash: '0x08629b7c62c29ceebdc103b752c0ca8e594a7e0761d11b34d23e3c97c9f89055',
-    blockNumber: 12703385,
-    logs: [ [Object] ],
-    contractAddress: null,
-    effectiveGasPrice: 2500000050,
-    cumulativeGasUsed: 103963,
-    from: '0x005d2246ce91890dbded3195a94095c560d5c363',
-    gasUsed: 53498,
-    logsBloom: '0x00000000000000000000000000000000000000000000000002800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002000000000000000400001000000200010000000000020000000000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000200000000000000',
-    status: true,
-    to: '0x9a8ce3c4f9edcda1b5e5d5d4c4542e43b5fd599a',
-    transactionIndex: 1,
-    type: '0x2',
-    l1Fee: '0x33d8e0',
-    l1FeeScalar: '1',
-    l1GasPrice: '0x314',
-    l1GasUsed: '0x10d8',
-    rawLogs: [ [Object] ]
-  },
-  logs: [
-    {
-      transactionHash: '0xb2e63af9f55af1c4d6a44d53c3f64218e072104f9e53417470b9ef5521926ecd',
-      address: '0x9a8CE3C4f9eDcda1B5e5d5D4c4542E43B5fd599A',
-      blockHash: '0x08629b7c62c29ceebdc103b752c0ca8e594a7e0761d11b34d23e3c97c9f89055',
-      blockNumber: 12703385,
-      logIndex: 0,
-      removed: false,
-      transactionIndex: 1,
-      id: 'log_c246bc17',
-      event: 'OwnershipTransferred',
-      args: [Result]
-    }
-  ]
-}
-```
-
-Next, to verify the customer is the new owner of the GNFT PFA, run:
-```javascript
-truffle(optimism_goerli)> let owner = await pfa_contract.owner();
-undefined
-truffle(optimism_goerli)> owner
-0xeF34563870F3010189696524f4400C4cBE64C5Ac
-```
-
-
 ## Error Codes
 
 - `SHARE000` : `Licensing this PFA requires the keccak256 hash of runtime build code for the recipient address to map to an approved SHARE PFA collection build.`
@@ -217,3 +147,4 @@ All contracts are WITHOUT ANY WARRANTY; without even the implied warranty of MER
 ```
 
 ```
+````
