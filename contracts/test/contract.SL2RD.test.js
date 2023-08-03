@@ -53,6 +53,41 @@ contract("SL2RD", (accounts) => {
     }
   });
 
+  specify("Static helper getter functions", async () => {
+    const shareContract = await SHARE.deployed();
+    const splitContract = await SL2RD.deployed();
+    const ownerAddresses = Array(10).fill(accounts[0]);
+    const communitySplitsPercentage = 5000;
+
+    const uniformCollaboratorsIds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+    await splitContract.initialize(
+      ownerAddresses /* addresses_ */,
+      uniformCollaboratorsIds /* tokenIds_ */,
+      shareContract.address /* shareContractAddress_ */,
+      communitySplitsPercentage /* communitySplitsInitializationPercentage_ */
+    );
+    assert.equal(
+      accounts[DEFAULT_ADDRESS_INDEX],
+      await splitContract.owner()
+    );
+    assert.equal(await splitContract.tokenIdIndex(), 0);
+
+    assert.equal(
+      splitContract.getCommunitySplitsInitializationPercentage(),
+      communitySplitsPercentage
+    );
+
+    assert.equal(
+      splitContract.initialSplitDistributionTable(),
+      ownerAddresses
+    );
+
+    assert.equal(
+      splitContract.totalSlots(),
+      (communitySplitsPercentage * ownerAddresses.length) / 10000
+    );
+  });
+
   specify("Payable with rotating recipient", async () => {
     const NUM_TRANSACTIONS = 50;
     const shareContract = await SHARE.deployed();

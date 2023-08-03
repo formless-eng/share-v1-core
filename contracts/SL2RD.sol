@@ -13,6 +13,7 @@ pragma solidity >=0.8.0 <0.9.0;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "./libraries/Immutable.sol";
 import "./LimitedOwnable.sol";
+import "./ShareOperatorRegistry.sol";
 
 /// @title Swift Liquid Rotating Royalty Distributor (SL2RD).
 /// @author john-paul@formless.xyz
@@ -41,20 +42,26 @@ contract SL2RD is
     Immutable.UnsignedInt256 private _totalSlots;
     Immutable.Unsigned256IntArray private _tokenIds;
     Immutable.AddressArray private _addresses;
-    Immutable.UnsignedInt256 private _communitySplitsInitializationPercentage;
+    Immutable.UnsignedInt256 private _communitySplitsPercentage;
+    Immutable.Address private _operatorRegistryAddress;
     uint256 private _totalCommunitySlots = 0;
     uint256 private _nextAvailableCommunitySlot = 0;
     uint256 private _currentTokenIdIndex = 0;
     mapping(uint256 => address) private _tokenOwners;
-    mapping(uint256 => uint256) private _latestTransferTimestamps;
+    mapping(uint256 => uint256) private _transferTimestamps;
 
+    ShareOperatorRegistry private _shareOperatorRegistry;
     SHARE private _protocol;
 
-    // // Modifier to allow only the owner or a verified operator to call the function
-    // modifier onlyOwnerOrOperator() {
-    //     require(ShareOperatorRegistry.isOperator(msg.sender), "SHARE030");
-    //     _;
-    // }
+    /// @notice Modifier to allow only the owner or a verified operator to call the function
+    modifier onlyOwnerOrOperator() {
+        require(
+            _shareOperatorRegistry.isOperator(msg.sender) ||
+                msg.sender == owner(),
+            "SHARE030"
+        );
+        _;
+    }
 
     constructor() public LimitedOwnable(true /* WALLET */, false /* SPLIT */) {}
 
@@ -74,29 +81,38 @@ contract SL2RD is
     /// owner for each tokenId. This is prefilled with the owner's
     /// address for each token, but designed with flexibilty to include
     /// others during initialization if they are known.
-    /// The communitySplitsInitializationPercentage is a const denoted in
+    /// The communitySplitsPercentage is a const denoted in
     /// basis points for how much of the slots the creator initially wants
     /// to allocate for everyone else.
     function initialize(
         address[] memory addresses_,
         uint256[] memory tokenIds_,
         address shareContractAddress_,
-        uint256 communitySplitsInitializationPercentage_
+        uint256 communitySplitsPercentage_,
+        address operatorRegistryAddress_
     ) public onlyOwner {
         require(tokenIds_.length == addresses_.length, "SHARE028");
         require(tokenIds_.length <= MAX_SPLIT_COUNT, "SHARE006");
         require(tokenIds_.length >= 1, "SHARE020");
-        require(communitySplitsInitializationPercentage_ <= 10000, "SHARE029");
+        require(communitySplitsPercentage_ <= 10000, "SHARE029");
+
         setShareContractAddress(shareContractAddress_);
         _protocol = SHARE(shareContractAddress_);
-        _totalSlots.value = tokenIds_.length;
-        _totalSlots.locked = true;
-        _communitySplitsInitializationPercentage
-            .value = communitySplitsInitializationPercentage_;
-        _communitySplitsInitializationPercentage.locked = true;
+        Immutable.setAddress(
+            _operatorRegistryAddress,
+            operatorRegistryAddress_
+        );
+        _shareOperatorRegistry = ShareOperatorRegistry(
+            operatorRegistryAddress_
+        );
+        Immutable.setUnsignedInt256(_totalSlots, tokenIds_.length);
+        Immutable.setUnsignedInt256(
+            _communitySplitsPercentage,
+            communitySplitsPercentage_
+        );
+
         _totalCommunitySlots =
-            (_totalSlots.value *
-                _communitySplitsInitializationPercentage.value) /
+            (_totalSlots.value * _communitySplitsPercentage.value) /
             10000;
 
         // The owner addresses are SHARE approved wallets,
@@ -142,30 +158,6 @@ contract SL2RD is
         return _addresses.value;
     }
 
-    /// @notice This function provides access to the live distribution table of
-    /// addresses. Since slots have canonical token IDs, the corresponding tokenIs
-    /// for the returned addresses array is simply its index.
-    /// @dev This function can be called with a specific set of token IDs, or if
-    /// called with no arguments, then all owner addresses will be returned
-    /// canonically.
-    function liveSplitDistributionTable(
-        uint256[] memory tokenIds
-    ) public view returns (address[] memory) {
-        address[] memory owners;
-        if (tokenIds.length > 0) {
-            owners = new address[](tokenIds.length);
-            for (uint256 i = 0; i < tokenIds.length; i++) {
-                owners[i] = ownerOf(tokenIds[i]);
-            }
-        } else {
-            owners = new address[](_tokenIds.value.length);
-            for (uint256 i = 0; i < _tokenIds.value.length; i++) {
-                owners[i] = ownerOf(_tokenIds.value[i]);
-            }
-        }
-        return owners;
-    }
-
     /// @notice Returns the index of the tokenId in the table which
     /// is the next tokenId to receive payment on the reception of
     /// royalty by this contract.
@@ -175,12 +167,8 @@ contract SL2RD is
 
     /// @notice Returns the community splits initialization percentage
     /// in basis points.
-    function getCommunitySplitsInitializationPercentage()
-        public
-        view
-        returns (uint256)
-    {
-        return _communitySplitsInitializationPercentage.value;
+    function communitySplitsPercentage() public view returns (uint256) {
+        return _communitySplitsPercentage.value;
     }
 
     /// @notice Returns the total ownership slots created for this contract
@@ -224,7 +212,7 @@ contract SL2RD is
         super.safeTransferFrom(from_, to_, tokenId_);
 
         // Update the transfer timestamp
-        _latestTransferTimestamps[tokenId_] = block.timestamp;
+        _transferTimestamps[tokenId_] = block.timestamp;
     }
 
     /// @notice Overrides ERC-721 transferFrom function and ensures
@@ -244,37 +232,46 @@ contract SL2RD is
         super.transferFrom(from_, to_, tokenId_);
 
         // Update the transfer timestamp
-        _latestTransferTimestamps[tokenId_] = block.timestamp;
+        _transferTimestamps[tokenId_] = block.timestamp;
     }
 
-    /// @notice Returns the latest transfer timestamp for each given tokenId.
-    function splitTransferTimestamps(
-        uint256[] memory tokenIds
-    ) public view returns (uint256[] memory) {
-        uint256 length = tokenIds.length;
-        uint256[] memory timestamps = new uint256[](length);
-        for (uint256 i = 0; i < length; i++) {
-            timestamps[i] = _latestTransferTimestamps[tokenIds[i]];
+    /// @notice Returns the latest transfer timestamp for each tokenId.
+    function slotTransferTimestamps()
+        public
+        view
+        returns (uint256[MAX_SPLIT_COUNT] memory)
+    {
+        uint256[MAX_SPLIT_COUNT] memory timeStampValues;
+
+        for (uint256 i = 0; i < _totalSlots.value; i++) {
+            timeStampValues[i] = _transferTimestamps[i];
         }
-        return timestamps;
+
+        return (timeStampValues);
     }
 
-    // /// @notice Function to transfer the next available slot to a specified address.
-    // /// This function keeps track of the available community splits and the next available slot.
-    // /// It reverts if all community apportioned splits are allocated.
-    // function transferNextAvailable(
-    //     address to,
-    //     uint256 tokenId
-    // ) public onlyOwnerOrOperator nonReentrant {
-    //     require(
-    //         _nextAvailableCommunitySlot <= _totalCommunitySlots,
-    //         "SHARE031"
-    //     );
+    /// @notice Returns the latest transfer timestamp for the given tokenId.
+    function slotTransferTimestamps(
+        uint256 tokenId
+    ) public view returns (uint256) {
+        return (_transferTimestamps[tokenId]);
+    }
 
-    //     safeTransferFrom(owner(), to, _nextAvailableCommunitySlot);
+    /// @notice Function to transfer the next available slot to a specified address.
+    /// Monitors the availability of community slot allocation while delegating the next slot.
+    /// It reverts if all community apportioned slots are allocated.
+    function transferNextAvailable(
+        address to
+    ) public onlyOwnerOrOperator nonReentrant {
+        require(
+            _nextAvailableCommunitySlot <= _totalCommunitySlots - 1,
+            "SHARE031"
+        );
 
-    //     _nextAvailableCommunitySlot++;
-    // }
+        transferFrom(owner(), to, _nextAvailableCommunitySlot);
+
+        _nextAvailableCommunitySlot++;
+    }
 
     /// @notice Reclaims a contract owned by this SL2RD, e.g. if a PFA
     /// is owned by this split, the split owner may transfer

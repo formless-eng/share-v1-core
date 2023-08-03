@@ -131,7 +131,8 @@ truffle(optimism_goerli)> share_instance.addApprovedBuild("0x0000000000000000000
 - `SHARE028` : `The tokenId and addresses liquid split arrays must be the same length.`
 - `SHARE029` : `Community splits initialization percentage cannot exceed 10000 basis points (100%).`
 - `SHARE030` : `Caller is not owner or operator.`
-- `SHARE031` : `All community apportioned splits are allocated.`
+- `SHARE031` : `All community apportioned splits have been allocated.`
+- `SHARE032` : `Only the NFT owner or verified operator is allowed to transfer the slot NFT.`
 
 ## Audits and Formal Verification
 
