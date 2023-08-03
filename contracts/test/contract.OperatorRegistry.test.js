@@ -101,9 +101,9 @@ contract("OperatorRegistry", (accounts) => {
       );
 
       fundsDelta = newBalance - initialBalance[i];
-      assert.equal(
-        expectedFundsPerOperator,
-        fundsDelta,
+      assert(
+        Math.abs(expectedFundsPerOperator - fundsDelta) <=
+          1000000 /* wei, prevents dust from invalidating test */,
         `Operator ${i} was not correctly funded.`
       );
     }
