@@ -13,12 +13,12 @@ pragma solidity >=0.8.0 <0.9.0;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "./libraries/Immutable.sol";
 import "./LimitedOwnable.sol";
-import "./ShareOperatorRegistry.sol";
+import "./OperatorRegistry.sol";
 
 /// @title Swift Liquid Rotating Royalty Distributor (SL2RD).
 /// @author john-paul@formless.xyz
 /// @notice This contract implements efficient liquid royalty splitting
-/// by shuffling recipient tokenIds off chain into a random distribution
+/// by shuffling recipient tokenIds off-chain into a random distribution
 /// and dealing transactions to those recipient slot NFTs atomically, e.g.
 /// royalties are "dealt" in a rotating fashion rather than "split". This
 /// results in immense gas savings and as the number of transactions
@@ -45,15 +45,17 @@ contract SL2RD is
     Immutable.UnsignedInt256 private _communitySplitsPercentage;
     Immutable.Address private _operatorRegistryAddress;
     uint256 private _totalCommunitySlots = 0;
+    uint256 private _totalWithheldSlots = 0;
     uint256 private _nextAvailableCommunitySlot = 0;
     uint256 private _currentTokenIdIndex = 0;
     mapping(uint256 => address) private _tokenOwners;
     mapping(uint256 => uint256) private _transferTimestamps;
 
-    ShareOperatorRegistry private _shareOperatorRegistry;
+    OperatorRegistry private _shareOperatorRegistry;
     SHARE private _protocol;
 
-    /// @notice Modifier to allow only the owner or a verified operator to call the function
+    /// @notice Modifier to allow only the owner or a verified operator
+    /// to call the function
     modifier onlyOwnerOrOperator() {
         require(
             _shareOperatorRegistry.isOperator(msg.sender) ||
@@ -84,6 +86,12 @@ contract SL2RD is
     /// The communitySplitsPercentage is a const denoted in
     /// basis points for how much of the slots the creator initially wants
     /// to allocate for everyone else.
+    /// @param addresses_ The addresses for initial distribution.
+    /// @param tokenIds_ The tokenIds for initial distribution.
+    /// @param shareContractAddress_ The address of the share contract.
+    /// @param communitySplitsPercentage_ The percentage of slots allocated
+    /// for the community(denoted in basis points).
+    /// @param operatorRegistryAddress_ The address of the share operator registry.
     function initialize(
         address[] memory addresses_,
         uint256[] memory tokenIds_,
@@ -95,6 +103,7 @@ contract SL2RD is
         require(tokenIds_.length <= MAX_SPLIT_COUNT, "SHARE006");
         require(tokenIds_.length >= 1, "SHARE020");
         require(communitySplitsPercentage_ <= 10000, "SHARE029");
+        // check operatorAddress
 
         setShareContractAddress(shareContractAddress_);
         _protocol = SHARE(shareContractAddress_);
@@ -102,9 +111,7 @@ contract SL2RD is
             _operatorRegistryAddress,
             operatorRegistryAddress_
         );
-        _shareOperatorRegistry = ShareOperatorRegistry(
-            operatorRegistryAddress_
-        );
+        _shareOperatorRegistry = OperatorRegistry(operatorRegistryAddress_);
         Immutable.setUnsignedInt256(_totalSlots, tokenIds_.length);
         Immutable.setUnsignedInt256(
             _communitySplitsPercentage,
@@ -114,11 +121,12 @@ contract SL2RD is
         _totalCommunitySlots =
             (_totalSlots.value * _communitySplitsPercentage.value) /
             10000;
+        _totalWithheldSlots = _totalSlots.value - _totalCommunitySlots;
 
         // The owner addresses are SHARE approved wallets,
         // e.g. EOAs or wallets with approved code hashes.
         for (uint256 i = 0; i < addresses_.length; i++) {
-            // All addresses in the table are SHARE approved wallets,
+            // Check that all addresses in the table are SHARE approved wallets,
             // e.g. EOAs or wallets with approved code hashes.
             require(
                 _protocol.isApprovedBuild(
@@ -167,13 +175,23 @@ contract SL2RD is
 
     /// @notice Returns the community splits initialization percentage
     /// in basis points.
-    function communitySplitsPercentage() public view returns (uint256) {
+    function communitySplitsPercentage()
+        public
+        view
+        afterInit
+        returns (uint256)
+    {
         return _communitySplitsPercentage.value;
     }
 
-    /// @notice Returns the total ownership slots created for this contract
-    function totalSlots() public view returns (uint256) {
+    /// @notice Returns the total ownership slots created for this contract.
+    function totalSlots() public view afterInit returns (uint256) {
         return _totalSlots.value;
+    }
+
+    /// @notice Returns the initial allocation of community slots.
+    function totalCommunitySlots() public view afterInit returns (uint256) {
+        return _totalCommunitySlots;
     }
 
     /// @notice Receives royalty funds and distributes them among
@@ -195,8 +213,11 @@ contract SL2RD is
         );
     }
 
-    /// @notice Overrides ERC-721 safeTransferFrom function and ensures
-    /// only SHARE approved wallets can recieve the SL2RD slot NFT.
+    /// @notice Allows for an ERC-721 token to be transferred to a new address.
+    /// @dev Overrides the ERC721 version to add additional checks:
+    /// - Ensures recipient address is a SHARE approved wallet hash.
+    /// - Only authorizes the owner transfer of withheld slots, until all of the
+    /// community allocation has been distributed.
     function safeTransferFrom(
         address from_,
         address to_,
@@ -215,8 +236,11 @@ contract SL2RD is
         _transferTimestamps[tokenId_] = block.timestamp;
     }
 
-    /// @notice Overrides ERC-721 transferFrom function and ensures
-    /// only SHARE approved wallets can recieve the SL2RD slot NFT.
+    /// @notice Allows for an ERC-721 token to be transferred to a new address.
+    /// @dev Overrides the ERC721 version to add additional checks:
+    /// - Ensures recipient address is a SHARE approved wallet hash.
+    /// - Only authorizes the owner transfer of withheld slots, until all of the
+    /// community allocation has been distributed.
     function transferFrom(
         address from_,
         address to_,
@@ -235,7 +259,7 @@ contract SL2RD is
         _transferTimestamps[tokenId_] = block.timestamp;
     }
 
-    /// @notice Returns the latest transfer timestamp for each tokenId.
+    /// @notice Returns an array of the latest transfer timestamps for each tokenId.
     function slotTransferTimestamps()
         public
         view
@@ -250,8 +274,8 @@ contract SL2RD is
         return (timeStampValues);
     }
 
-    /// @notice Returns the latest transfer timestamp for the given tokenId.
-    function slotTransferTimestamps(
+    /// @notice Returns the timestamp of the most recent transfer of a specific tokenId.
+    function slotTransferTimestamp(
         uint256 tokenId
     ) public view returns (uint256) {
         return (_transferTimestamps[tokenId]);

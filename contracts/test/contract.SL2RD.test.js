@@ -1,6 +1,7 @@
 const SHARE = artifacts.require("SHARE");
 const SL2RD = artifacts.require("SL2RD");
 const PFAUnit = artifacts.require("PFAUnit");
+const OperatorRegistry = artifacts.require("OperatorRegistry");
 const DEFAULT_ADDRESS_INDEX = 0;
 const NON_OWNER_ADDRESS_INDEX = 1;
 
@@ -12,6 +13,7 @@ contract("SL2RD", (accounts) => {
   specify("Contract initialization", async () => {
     const shareContract = await SHARE.deployed();
     const splitContract = await SL2RD.deployed();
+    const operatorRegistry = await OperatorRegistry.deployed();
     const ownerAddresses = Array(10).fill(accounts[0]);
 
     const uniformCollaboratorsIds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -19,7 +21,8 @@ contract("SL2RD", (accounts) => {
       ownerAddresses /* addresses_ */,
       uniformCollaboratorsIds /* tokenIds_ */,
       shareContract.address /* shareContractAddress_ */,
-      0 /* communitySplitsInitializationPercentage_ */
+      0 /* communitySplitsPercentage_ */,
+      operatorRegistry.address /* operatorRegistryAddress_ */
     );
     assert.equal(
       accounts[DEFAULT_ADDRESS_INDEX],
@@ -30,6 +33,7 @@ contract("SL2RD", (accounts) => {
 
   specify("Contract initialization with 200 splits", async () => {
     const shareContract = await SHARE.deployed();
+    const operatorRegistry = await OperatorRegistry.deployed();
     const split = await SL2RD.new();
     const uniformCollaboratorsIds = [];
     const ownerAddresses = [];
@@ -44,7 +48,8 @@ contract("SL2RD", (accounts) => {
         ownerAddresses /* addresses_ */,
         uniformCollaboratorsIds /* tokenIds_ */,
         shareContract.address /* shareContractAddress_ */,
-        0 /* communitySplitsInitializationPercentage_ */
+        0 /* communitySplitsPercentage_ */,
+        operatorRegistry.address /* operatorRegistryAddress_ */
       );
     } catch (error) {
       console.log(error);
@@ -55,7 +60,8 @@ contract("SL2RD", (accounts) => {
 
   specify("Static helper getter functions", async () => {
     const shareContract = await SHARE.deployed();
-    const splitContract = await SL2RD.deployed();
+    const splitContract = await SL2RD.new();
+    const operatorRegistry = await OperatorRegistry.deployed();
     const ownerAddresses = Array(10).fill(accounts[0]);
     const communitySplitsPercentage = 5000;
 
@@ -64,33 +70,106 @@ contract("SL2RD", (accounts) => {
       ownerAddresses /* addresses_ */,
       uniformCollaboratorsIds /* tokenIds_ */,
       shareContract.address /* shareContractAddress_ */,
-      communitySplitsPercentage /* communitySplitsInitializationPercentage_ */
+      communitySplitsPercentage /* communitySplitsPercentage_ */,
+      operatorRegistry.address /* operatorRegistryAddress_ */
     );
-    assert.equal(
-      accounts[DEFAULT_ADDRESS_INDEX],
-      await splitContract.owner()
-    );
-    assert.equal(await splitContract.tokenIdIndex(), 0);
 
     assert.equal(
-      splitContract.getCommunitySplitsInitializationPercentage(),
+      await splitContract.communitySplitsPercentage(),
       communitySplitsPercentage
     );
 
     assert.equal(
-      splitContract.initialSplitDistributionTable(),
-      ownerAddresses
+      (await splitContract.initialSplitDistributionTable()).length,
+      ownerAddresses.length
+    );
+    for (let i = 0; i < ownerAddresses.length; i++) {
+      assert.equal(
+        (await splitContract.initialSplitDistributionTable())[i],
+        ownerAddresses[i]
+      );
+    }
+
+    assert.equal(
+      await splitContract.totalSlots(),
+      uniformCollaboratorsIds.length
     );
 
     assert.equal(
-      splitContract.totalSlots(),
+      await splitContract.totalCommunitySlots(),
       (communitySplitsPercentage * ownerAddresses.length) / 10000
     );
   });
 
+  specify(
+    "Return the correct transfer timestamp for each tokenId",
+    async () => {
+      const shareContract = await SHARE.deployed();
+      const splitContract = await SL2RD.new();
+      const operatorRegistry = await OperatorRegistry.deployed();
+      const ownerAddresses = Array(10).fill(accounts[0]);
+      const receiptAddress = accounts[NON_OWNER_ADDRESS_INDEX];
+      const uniformCollaboratorsIds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+      await splitContract.initialize(
+        ownerAddresses /* addresses_ */,
+        uniformCollaboratorsIds /* tokenIds_ */,
+        shareContract.address /* shareContractAddress_ */,
+        0 /* communitySplitsPercentage_ */,
+        operatorRegistry.address /* operatorRegistryAddress_ */
+      );
+
+      /* ------- slotTransferTimestamps() test -------*/
+
+      // Record the current block timestamp before sending payment transactions
+      const recordedTimestamps = [];
+      for (let i = 0; i < ownerAddresses.length; i++) {
+        const block = await web3.eth.getBlock("latest");
+        recordedTimestamps.push(block.timestamp);
+        await splitContract.transferFrom(
+          ownerAddresses[0],
+          receiptAddress,
+          i, // tokenId
+          { from: ownerAddresses[0] }
+        );
+      }
+
+      // Fetch the transfer timestamps for each tokenId
+      const transferTimestamps =
+        await splitContract.slotTransferTimestamps();
+
+      // Assert that each transfer timestamp matches the recorded timestamp
+      for (let i = 0; i < ownerAddresses.length; i++) {
+        assert(
+          Math.abs(
+            transferTimestamps[i].toNumber() - recordedTimestamps[i]
+          ) <= 1,
+          `Invalid transfer timestamp for tokenId ${i}`
+        );
+      }
+
+      /* ------- slotTransferTimestamp(tokenId) test -------*/
+
+      // Assert that the transfer timestamp matches the recorded timestamp
+      assert(
+        Math.abs(
+          (await splitContract.slotTransferTimestamp(0)).toNumber() -
+            recordedTimestamps[0]
+        ) <= 1,
+        "Incorrect timestamp for tokenId 0."
+      );
+    }
+  );
+
+  specify(
+    "Slot transfer timestamps are valid and retrievable",
+    async () => {}
+  );
+
   specify("Payable with rotating recipient", async () => {
     const NUM_TRANSACTIONS = 50;
     const shareContract = await SHARE.deployed();
+    const operatorRegistry = await OperatorRegistry.deployed();
     const splitContract = await SL2RD.new();
     const ownerAddresses = Array(10).fill(accounts[0]);
 
@@ -107,7 +186,8 @@ contract("SL2RD", (accounts) => {
         ownerAddresses /* addresses_ */,
         uniformCollaboratorsIds /* tokenIds_ */,
         shareContract.address /* shareContractAddress_ */,
-        0 /* communitySplitsInitializationPercentage_ */
+        0 /* communitySplitsPercentage_ */,
+        operatorRegistry.address /* operatorRegistryAddress_ */
       );
     } catch (error) {
       console.log(error);
@@ -162,6 +242,7 @@ contract("SL2RD", (accounts) => {
   specify("Sending slots to non-EOA Failure", async () => {
     const smartContractPFA = await PFAUnit.deployed();
     const shareContract = await SHARE.deployed();
+    const operatorRegistry = await OperatorRegistry.deployed();
     const splitContract = await SL2RD.new();
     const ownerAddresses = Array(10).fill(accounts[0]);
 
@@ -172,7 +253,8 @@ contract("SL2RD", (accounts) => {
         ownerAddresses /* addresses_ */,
         uniformCollaboratorsIds /* tokenIds_ */,
         shareContract.address /* shareContractAddress_ */,
-        0 /* communitySplitsInitializationPercentage_ */
+        0 /* communitySplitsPercentage_ */,
+        operatorRegistry.address /* operatorRegistryAddress_ */
       );
     } catch (error) {
       console.log(error);
@@ -216,6 +298,7 @@ contract("SL2RD", (accounts) => {
 
   specify("SL2RD owner can reclaim PFA", async () => {
     const shareContract = await SHARE.deployed();
+    const operatorRegistry = await OperatorRegistry.deployed();
     await shareContract.setCodeVerificationEnabled(false);
     const split = await SL2RD.new();
     const pfa = await PFAUnit.new();
@@ -235,7 +318,8 @@ contract("SL2RD", (accounts) => {
       ownerAddresses /* addresses_ */,
       uniformCollaboratorsIds /* tokenIds_ */,
       shareContract.address /* shareContractAddress_ */,
-      0 /* communitySplitsInitializationPercentage_ */
+      0 /* communitySplitsPercentage_ */,
+      operatorRegistry.address /* operatorRegistryAddress_ */
     );
     await pfa.transferOwnership(split.address);
     assert.equal(split.address, await pfa.owner());
@@ -247,6 +331,7 @@ contract("SL2RD", (accounts) => {
 
   specify("Only SL2RD owner can reclaim PFA", async () => {
     const shareContract = await SHARE.deployed();
+    const operatorRegistry = await OperatorRegistry.deployed();
     await shareContract.setCodeVerificationEnabled(false);
 
     const ownerAddresses = [accounts[0], accounts[0], accounts[0]];
@@ -266,7 +351,8 @@ contract("SL2RD", (accounts) => {
       ownerAddresses /* addresses_ */,
       uniformCollaboratorsIds /* tokenIds_ */,
       shareContract.address /* shareContractAddress_ */,
-      0 /* communitySplitsInitializationPercentage_ */
+      0 /* communitySplitsPercentage_ */,
+      operatorRegistry.address /* operatorRegistryAddress_ */
     );
     await pfa.transferOwnership(split.address);
     assert.equal(split.address, await pfa.owner());
@@ -285,6 +371,7 @@ contract("SL2RD", (accounts) => {
     const NUM_TRANSACTIONS = 50;
     const SIZE = 20;
     const shareContract = await SHARE.deployed();
+    const operatorRegistry = await OperatorRegistry.deployed();
     const splitContract = await SL2RD.new();
     const uniformCollaboratorsIds = [];
     const ownerAddresses = [];
@@ -303,7 +390,8 @@ contract("SL2RD", (accounts) => {
         ownerAddresses /* addresses_ */,
         uniformCollaboratorsIds /* tokenIds_ */,
         shareContract.address /* shareContractAddress_ */,
-        0 /* communitySplitsInitializationPercentage_ */
+        0 /* communitySplitsPercentage_ */,
+        operatorRegistry.address /* operatorRegistryAddress_ */
       );
     } catch (error) {
       console.log(error);
@@ -376,4 +464,46 @@ contract("SL2RD", (accounts) => {
         });
     }
   });
+
+  specify(
+    "Transfer next available slot to a specified address",
+    async () => {
+      const shareContract = await SHARE.deployed();
+      const splitContract = await SL2RD.new();
+      const operatorRegistry = await OperatorRegistry.deployed();
+      const ownerAddresses = Array(10).fill(accounts[0]);
+      const recipientAddress = accounts[NON_OWNER_ADDRESS_INDEX];
+      const uniformCollaboratorsIds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+      const communitySplitsPercentage = 4000;
+
+      await splitContract.initialize(
+        ownerAddresses /* addresses_ */,
+        uniformCollaboratorsIds /* tokenIds_ */,
+        shareContract.address /* shareContractAddress_ */,
+        communitySplitsPercentage /* communitySplitsPercentage_ */,
+        operatorRegistry.address /* operatorRegistryAddress_ */
+      );
+
+      // Transfer the reserved community allocation (first 4 slots) to community
+      for (let i = 0; i < 4; i++) {
+        await splitContract.transferNextAvailable(recipientAddress, {
+          from: ownerAddresses[0],
+        });
+
+        assert.equal(
+          recipientAddress,
+          await splitContract.ownerOf(i)
+        );
+      }
+
+      // Make sure the owner still owns the private allocation
+      for (let i = 4; i < ownerAddresses.length; i++) {
+        assert.equal(
+          ownerAddresses[0],
+          await splitContract.ownerOf(i),
+          "Distributed past community allocation."
+        );
+      }
+    }
+  );
 });
