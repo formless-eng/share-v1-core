@@ -39,17 +39,17 @@ contract SL2RD is
     event MintingToken(uint256 indexed tokenId, address indexed toAddress);
 
     uint256 public constant MAX_SPLIT_COUNT = 1000;
+    uint256 public constant MAX_BASIS_POINTS = 10000;
     Immutable.UnsignedInt256 private _totalSlots;
     Immutable.Unsigned256IntArray private _tokenIds;
     Immutable.AddressArray private _addresses;
-    Immutable.UnsignedInt256 private _communitySplitsPercentage;
-    Immutable.Address private _operatorRegistryAddress;
+    Immutable.UnsignedInt256 private _communitySplitsBasisPoints;
+    Immutable.Address private _initialOwner;
     uint256 private _totalCommunitySlots = 0;
-    uint256 private _totalWithheldSlots = 0;
     uint256 private _nextAvailableCommunitySlot = 0;
     uint256 private _currentTokenIdIndex = 0;
+    uint256[MAX_SPLIT_COUNT] private _transferTimestamps;
     mapping(uint256 => address) private _tokenOwners;
-    mapping(uint256 => uint256) private _transferTimestamps;
 
     OperatorRegistry private _shareOperatorRegistry;
     SHARE private _protocol;
@@ -83,45 +83,42 @@ contract SL2RD is
     /// owner for each tokenId. This is prefilled with the owner's
     /// address for each token, but designed with flexibilty to include
     /// others during initialization if they are known.
-    /// The communitySplitsPercentage is a const denoted in
-    /// basis points for how much of the slots the creator initially wants
+    /// The communitySplitsBasisPoints is a const percentage denoted in
+    /// basis points for how many of the slots the creator initially wants
     /// to allocate for everyone else.
     /// @param addresses_ The addresses for initial distribution.
     /// @param tokenIds_ The tokenIds for initial distribution.
+    /// @param communitySplitsBasisPoints_ The percentage of slots allocated
+    /// for the community (denoted in basis points).
     /// @param shareContractAddress_ The address of the share contract.
-    /// @param communitySplitsPercentage_ The percentage of slots allocated
-    /// for the community(denoted in basis points).
     /// @param operatorRegistryAddress_ The address of the share operator registry.
     function initialize(
         address[] memory addresses_,
         uint256[] memory tokenIds_,
+        uint256 communitySplitsBasisPoints_,
         address shareContractAddress_,
-        uint256 communitySplitsPercentage_,
         address operatorRegistryAddress_
     ) public onlyOwner {
         require(tokenIds_.length == addresses_.length, "SHARE028");
         require(tokenIds_.length <= MAX_SPLIT_COUNT, "SHARE006");
         require(tokenIds_.length >= 1, "SHARE020");
-        require(communitySplitsPercentage_ <= 10000, "SHARE029");
+        require(communitySplitsBasisPoints_ <= MAX_BASIS_POINTS, "SHARE029");
         // check operatorAddress
 
         setShareContractAddress(shareContractAddress_);
         _protocol = SHARE(shareContractAddress_);
-        Immutable.setAddress(
-            _operatorRegistryAddress,
-            operatorRegistryAddress_
-        );
+
         _shareOperatorRegistry = OperatorRegistry(operatorRegistryAddress_);
         Immutable.setUnsignedInt256(_totalSlots, tokenIds_.length);
         Immutable.setUnsignedInt256(
-            _communitySplitsPercentage,
-            communitySplitsPercentage_
+            _communitySplitsBasisPoints,
+            communitySplitsBasisPoints_
         );
+        Immutable.setAddress(_initialOwner, addresses_[0]);
 
         _totalCommunitySlots =
-            (_totalSlots.value * _communitySplitsPercentage.value) /
-            10000;
-        _totalWithheldSlots = _totalSlots.value - _totalCommunitySlots;
+            (_totalSlots.value * _communitySplitsBasisPoints.value) /
+            MAX_BASIS_POINTS;
 
         // The owner addresses are SHARE approved wallets,
         // e.g. EOAs or wallets with approved code hashes.
@@ -173,15 +170,14 @@ contract SL2RD is
         return _currentTokenIdIndex;
     }
 
-    /// @notice Returns the community splits initialization percentage
-    /// in basis points.
-    function communitySplitsPercentage()
+    /// @notice Returns the community splits initialization basis points.
+    function communitySplitsBasisPoints()
         public
         view
         afterInit
         returns (uint256)
     {
-        return _communitySplitsPercentage.value;
+        return _communitySplitsBasisPoints.value;
     }
 
     /// @notice Returns the total ownership slots created for this contract.
@@ -214,22 +210,25 @@ contract SL2RD is
     }
 
     /// @notice Allows for an ERC-721 token to be transferred to a new address.
-    /// @dev Overrides the ERC721 version to add additional checks:
-    /// - Ensures recipient address is a SHARE approved wallet hash.
-    /// - Only authorizes the owner transfer of withheld slots, until all of the
-    /// community allocation has been distributed.
+    /// @dev Overrides the ERC721 version to add additional check that ensures
+    // the recipient address is a SHARE approved wallet hash.
     function safeTransferFrom(
         address from_,
         address to_,
         uint256 tokenId_
     ) public override {
+        // Restrict trading of community slots until distribution process is complete.
+        if (_nextAvailableCommunitySlot < _totalCommunitySlots) {
+            require(tokenId_ >= _totalCommunitySlots, "SHARE037");
+        }
+
         // Check if 'to' address is a SHARE approved wallet.
         require(
             _protocol.isApprovedBuild(to_, CodeVerification.BuildType.WALLET),
             "SHARE007"
         );
 
-        // Call the parent's _transfer function
+        // Call the parent's transferFrom function
         super.safeTransferFrom(from_, to_, tokenId_);
 
         // Update the transfer timestamp
@@ -237,22 +236,25 @@ contract SL2RD is
     }
 
     /// @notice Allows for an ERC-721 token to be transferred to a new address.
-    /// @dev Overrides the ERC721 version to add additional checks:
-    /// - Ensures recipient address is a SHARE approved wallet hash.
-    /// - Only authorizes the owner transfer of withheld slots, until all of the
-    /// community allocation has been distributed.
+    /// @dev Overrides the ERC721 version to add additional check that ensures
+    // the recipient address is a SHARE approved wallet hash.
     function transferFrom(
         address from_,
         address to_,
         uint256 tokenId_
     ) public override {
+        // Restrict trading of community slots until distribution process is complete.
+        if (_nextAvailableCommunitySlot < _totalCommunitySlots) {
+            require(tokenId_ >= _totalCommunitySlots, "SHARE037");
+        }
+
         // Check if 'to' address is a SHARE approved wallet.
         require(
             _protocol.isApprovedBuild(to_, CodeVerification.BuildType.WALLET),
             "SHARE007"
         );
 
-        // Call the parent's _transfer function
+        // Call the parent's transferFrom function
         super.transferFrom(from_, to_, tokenId_);
 
         // Update the transfer timestamp
@@ -265,13 +267,7 @@ contract SL2RD is
         view
         returns (uint256[MAX_SPLIT_COUNT] memory)
     {
-        uint256[MAX_SPLIT_COUNT] memory timeStampValues;
-
-        for (uint256 i = 0; i < _totalSlots.value; i++) {
-            timeStampValues[i] = _transferTimestamps[i];
-        }
-
-        return (timeStampValues);
+        return (_transferTimestamps);
     }
 
     /// @notice Returns the timestamp of the most recent transfer of a specific tokenId.
@@ -281,18 +277,39 @@ contract SL2RD is
         return (_transferTimestamps[tokenId]);
     }
 
-    /// @notice Function to transfer the next available slot to a specified address.
+    /// @notice Function to transfer the next available slot to a specified address. Self contained
+    /// distribution logic that is only called during the distribution period and wholly handles the
+    /// process, including transfers.
     /// Monitors the availability of community slot allocation while delegating the next slot.
     /// It reverts if all community apportioned slots are allocated.
     function transferNextAvailable(
-        address to
+        address to_
     ) public onlyOwnerOrOperator nonReentrant {
+        // Gates process to only continue until community reservations are depleted.
+        require(_nextAvailableCommunitySlot < _totalCommunitySlots, "SHARE031");
+
+        // Ensure the initial owner still owns the community slot before transfer.
+        // MIGHT BE REDUNDANT NOW THAT TRANSFER OF THESE RESERVED CANNOT TAKE PLACE
         require(
-            _nextAvailableCommunitySlot <= _totalCommunitySlots - 1,
-            "SHARE031"
+            ownerOf(_nextAvailableCommunitySlot) == _initialOwner.value,
+            "SHARE035"
         );
 
-        transferFrom(owner(), to, _nextAvailableCommunitySlot);
+        // Check if 'to_' address is a SHARE approved wallet.
+        require(
+            _protocol.isApprovedBuild(to_, CodeVerification.BuildType.WALLET),
+            "SHARE007"
+        );
+
+        // Allows the operator to call transfer without revert
+        if (_shareOperatorRegistry.isOperator(msg.sender)) {
+            approve(msg.sender, _nextAvailableCommunitySlot);
+        }
+
+        super.transferFrom(owner(), to_, _nextAvailableCommunitySlot);
+
+        // Update the transfer timestamp
+        _transferTimestamps[_nextAvailableCommunitySlot] = block.timestamp;
 
         _nextAvailableCommunitySlot++;
     }

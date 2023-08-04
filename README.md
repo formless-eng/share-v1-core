@@ -135,6 +135,9 @@ truffle(optimism_goerli)> share_instance.addApprovedBuild("0x0000000000000000000
 - `SHARE032` : `Only the NFT owner or verified operator is allowed to transfer the slot NFT.`
 - `SHARE033` : `No funds provided for distribution.`
 - `SHARE034` : `Cannot distribute funds to empty operator registry.`
+- `SHARE035` : `The community reserved slot must currently be owned by initialization owner.`
+- `SHARE036` : `Payment to operator address unsuccessful.`
+- `SHARE037` : `Transfering community allocated slots is prohibited until distribution process is complete.`
 
 ## Audits and Formal Verification
 

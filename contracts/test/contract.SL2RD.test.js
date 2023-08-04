@@ -20,8 +20,8 @@ contract("SL2RD", (accounts) => {
     await splitContract.initialize(
       ownerAddresses /* addresses_ */,
       uniformCollaboratorsIds /* tokenIds_ */,
+      0 /* communitySplitsBasisPoints_ */,
       shareContract.address /* shareContractAddress_ */,
-      0 /* communitySplitsPercentage_ */,
       operatorRegistry.address /* operatorRegistryAddress_ */
     );
     assert.equal(
@@ -47,8 +47,8 @@ contract("SL2RD", (accounts) => {
       await split.initialize(
         ownerAddresses /* addresses_ */,
         uniformCollaboratorsIds /* tokenIds_ */,
+        0 /* communitySplitsBasisPoints_ */,
         shareContract.address /* shareContractAddress_ */,
-        0 /* communitySplitsPercentage_ */,
         operatorRegistry.address /* operatorRegistryAddress_ */
       );
     } catch (error) {
@@ -58,51 +58,54 @@ contract("SL2RD", (accounts) => {
     }
   });
 
-  specify("Static helper getter functions", async () => {
-    const shareContract = await SHARE.deployed();
-    const splitContract = await SL2RD.new();
-    const operatorRegistry = await OperatorRegistry.deployed();
-    const ownerAddresses = Array(10).fill(accounts[0]);
-    const communitySplitsPercentage = 5000;
+  specify(
+    "Retrieve communitySplitBasisPoints, initialSplitDistributionTable, totalSlots, totalCommunitySlots using getter functions.",
+    async () => {
+      const shareContract = await SHARE.deployed();
+      const splitContract = await SL2RD.new();
+      const operatorRegistry = await OperatorRegistry.deployed();
+      const ownerAddresses = Array(10).fill(accounts[0]);
+      const communitySplitsBasisPoints = 5000;
 
-    const uniformCollaboratorsIds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-    await splitContract.initialize(
-      ownerAddresses /* addresses_ */,
-      uniformCollaboratorsIds /* tokenIds_ */,
-      shareContract.address /* shareContractAddress_ */,
-      communitySplitsPercentage /* communitySplitsPercentage_ */,
-      operatorRegistry.address /* operatorRegistryAddress_ */
-    );
+      const uniformCollaboratorsIds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+      await splitContract.initialize(
+        ownerAddresses /* addresses_ */,
+        uniformCollaboratorsIds /* tokenIds_ */,
+        communitySplitsBasisPoints /* communitySplitsBasisPoints_ */,
+        shareContract.address /* shareContractAddress_ */,
+        operatorRegistry.address /* operatorRegistryAddress_ */
+      );
 
-    assert.equal(
-      await splitContract.communitySplitsPercentage(),
-      communitySplitsPercentage
-    );
-
-    assert.equal(
-      (await splitContract.initialSplitDistributionTable()).length,
-      ownerAddresses.length
-    );
-    for (let i = 0; i < ownerAddresses.length; i++) {
       assert.equal(
-        (await splitContract.initialSplitDistributionTable())[i],
-        ownerAddresses[i]
+        await splitContract.communitySplitsBasisPoints(),
+        communitySplitsBasisPoints
+      );
+
+      assert.equal(
+        (await splitContract.initialSplitDistributionTable()).length,
+        ownerAddresses.length
+      );
+      for (let i = 0; i < ownerAddresses.length; i++) {
+        assert.equal(
+          (await splitContract.initialSplitDistributionTable())[i],
+          ownerAddresses[i]
+        );
+      }
+
+      assert.equal(
+        await splitContract.totalSlots(),
+        uniformCollaboratorsIds.length
+      );
+
+      assert.equal(
+        await splitContract.totalCommunitySlots(),
+        (communitySplitsBasisPoints * ownerAddresses.length) / 10000
       );
     }
-
-    assert.equal(
-      await splitContract.totalSlots(),
-      uniformCollaboratorsIds.length
-    );
-
-    assert.equal(
-      await splitContract.totalCommunitySlots(),
-      (communitySplitsPercentage * ownerAddresses.length) / 10000
-    );
-  });
+  );
 
   specify(
-    "Return the correct transfer timestamp for each tokenId",
+    "Return the correct transfer timestamp for each token ID",
     async () => {
       const shareContract = await SHARE.deployed();
       const splitContract = await SL2RD.new();
@@ -110,12 +113,13 @@ contract("SL2RD", (accounts) => {
       const ownerAddresses = Array(10).fill(accounts[0]);
       const receiptAddress = accounts[NON_OWNER_ADDRESS_INDEX];
       const uniformCollaboratorsIds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+      const negligibleTimeDifference = 1;
 
       await splitContract.initialize(
         ownerAddresses /* addresses_ */,
         uniformCollaboratorsIds /* tokenIds_ */,
+        0 /* communitySplitsBasisPoints_ */,
         shareContract.address /* shareContractAddress_ */,
-        0 /* communitySplitsPercentage_ */,
         operatorRegistry.address /* operatorRegistryAddress_ */
       );
 
@@ -143,7 +147,7 @@ contract("SL2RD", (accounts) => {
         assert(
           Math.abs(
             transferTimestamps[i].toNumber() - recordedTimestamps[i]
-          ) <= 1,
+          ) <= negligibleTimeDifference,
           `Invalid transfer timestamp for tokenId ${i}`
         );
       }
@@ -155,15 +159,10 @@ contract("SL2RD", (accounts) => {
         Math.abs(
           (await splitContract.slotTransferTimestamp(0)).toNumber() -
             recordedTimestamps[0]
-        ) <= 1,
+        ) <= negligibleTimeDifference,
         "Incorrect timestamp for tokenId 0."
       );
     }
-  );
-
-  specify(
-    "Slot transfer timestamps are valid and retrievable",
-    async () => {}
   );
 
   specify("Payable with rotating recipient", async () => {
@@ -185,8 +184,8 @@ contract("SL2RD", (accounts) => {
       await splitContract.initialize(
         ownerAddresses /* addresses_ */,
         uniformCollaboratorsIds /* tokenIds_ */,
+        0 /* communitySplitsBasisPoints_ */,
         shareContract.address /* shareContractAddress_ */,
-        0 /* communitySplitsPercentage_ */,
         operatorRegistry.address /* operatorRegistryAddress_ */
       );
     } catch (error) {
@@ -252,8 +251,8 @@ contract("SL2RD", (accounts) => {
       await splitContract.initialize(
         ownerAddresses /* addresses_ */,
         uniformCollaboratorsIds /* tokenIds_ */,
+        0 /* communitySplitsBasisPoints_ */,
         shareContract.address /* shareContractAddress_ */,
-        0 /* communitySplitsPercentage_ */,
         operatorRegistry.address /* operatorRegistryAddress_ */
       );
     } catch (error) {
@@ -317,8 +316,8 @@ contract("SL2RD", (accounts) => {
     await split.initialize(
       ownerAddresses /* addresses_ */,
       uniformCollaboratorsIds /* tokenIds_ */,
+      0 /* communitySplitsBasisPoints_ */,
       shareContract.address /* shareContractAddress_ */,
-      0 /* communitySplitsPercentage_ */,
       operatorRegistry.address /* operatorRegistryAddress_ */
     );
     await pfa.transferOwnership(split.address);
@@ -350,8 +349,8 @@ contract("SL2RD", (accounts) => {
     await split.initialize(
       ownerAddresses /* addresses_ */,
       uniformCollaboratorsIds /* tokenIds_ */,
+      0 /* communitySplitsBasisPoints_ */,
       shareContract.address /* shareContractAddress_ */,
-      0 /* communitySplitsPercentage_ */,
       operatorRegistry.address /* operatorRegistryAddress_ */
     );
     await pfa.transferOwnership(split.address);
@@ -389,8 +388,8 @@ contract("SL2RD", (accounts) => {
       await splitContract.initialize(
         ownerAddresses /* addresses_ */,
         uniformCollaboratorsIds /* tokenIds_ */,
+        0 /* communitySplitsBasisPoints_ */,
         shareContract.address /* shareContractAddress_ */,
-        0 /* communitySplitsPercentage_ */,
         operatorRegistry.address /* operatorRegistryAddress_ */
       );
     } catch (error) {
@@ -474,13 +473,13 @@ contract("SL2RD", (accounts) => {
       const ownerAddresses = Array(10).fill(accounts[0]);
       const recipientAddress = accounts[NON_OWNER_ADDRESS_INDEX];
       const uniformCollaboratorsIds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-      const communitySplitsPercentage = 4000;
+      const communitySplitsBasisPoints = 4000;
 
       await splitContract.initialize(
         ownerAddresses /* addresses_ */,
         uniformCollaboratorsIds /* tokenIds_ */,
+        communitySplitsBasisPoints /* communitySplitsBasisPoints_ */,
         shareContract.address /* shareContractAddress_ */,
-        communitySplitsPercentage /* communitySplitsPercentage_ */,
         operatorRegistry.address /* operatorRegistryAddress_ */
       );
 
@@ -503,6 +502,117 @@ contract("SL2RD", (accounts) => {
           await splitContract.ownerOf(i),
           "Distributed past community allocation."
         );
+      }
+    }
+  );
+
+  specify(
+    "Transfer slot past community allocation failure",
+    async () => {
+      const shareContract = await SHARE.deployed();
+      const splitContract = await SL2RD.new();
+      const operatorRegistry = await OperatorRegistry.deployed();
+      const ownerAddresses = Array(10).fill(accounts[0]);
+      const recipientAddress = accounts[NON_OWNER_ADDRESS_INDEX];
+      const uniformCollaboratorsIds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+      const communitySplitsBasisPoints = 4000;
+
+      await splitContract.initialize(
+        ownerAddresses /* addresses_ */,
+        uniformCollaboratorsIds /* tokenIds_ */,
+        communitySplitsBasisPoints /* communitySplitsBasisPoints_ */,
+        shareContract.address /* shareContractAddress_ */,
+        operatorRegistry.address /* operatorRegistryAddress_ */
+      );
+
+      // Transfer the reserved community allocation (first 4 slots) to community
+      for (let i = 0; i < 4; i++) {
+        await splitContract.transferNextAvailable(recipientAddress, {
+          from: ownerAddresses[0],
+        });
+
+        assert.equal(
+          recipientAddress,
+          await splitContract.ownerOf(i)
+        );
+      }
+
+      // Transfer past the community allocation.
+      try {
+        await splitContract.transferNextAvailable(recipientAddress, {
+          from: ownerAddresses[0],
+        });
+        assert(error.message.includes("SHARE035"));
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+  );
+
+  specify(
+    "Transfer slot in community allocation failure",
+    async () => {
+      const shareContract = await SHARE.deployed();
+      const splitContract = await SL2RD.new();
+      const operatorRegistry = await OperatorRegistry.deployed();
+      const ownerAddresses = Array(10).fill(accounts[0]);
+      const recipientAddress = accounts[NON_OWNER_ADDRESS_INDEX];
+      const uniformCollaboratorsIds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+      const communitySplitsBasisPoints = 4000;
+
+      await splitContract.initialize(
+        ownerAddresses /* addresses_ */,
+        uniformCollaboratorsIds /* tokenIds_ */,
+        communitySplitsBasisPoints /* communitySplitsBasisPoints_ */,
+        shareContract.address /* shareContractAddress_ */,
+        operatorRegistry.address /* operatorRegistryAddress_ */
+      );
+
+      // Transfer one of the community slots to non-owner address, before distribution.
+      try {
+        await splitContract.transferFrom(
+          ownerAddresses[0],
+          recipientAddress,
+          1
+        );
+        assert(error.message.includes("SHARE037"));
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+  );
+
+  specify(
+    "Initialize operator registry and use non-registry address to conduct transfer error.",
+    async () => {
+      const shareContract = await SHARE.deployed();
+      const splitContract = await SL2RD.new();
+      const operatorRegistry = await OperatorRegistry.deployed();
+      const ownerAddresses = Array(10).fill(accounts[0]);
+      const recipientAddress = accounts[NON_OWNER_ADDRESS_INDEX];
+      const uniformCollaboratorsIds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+      const operatorAddresses = [accounts[5], accounts[6]];
+      const nonOperatorAddress = accounts[7];
+      const communitySplitsBasisPoints = 4000;
+
+      await operatorRegistry.initialize(operatorAddresses);
+
+      await splitContract.initialize(
+        ownerAddresses /* addresses_ */,
+        uniformCollaboratorsIds /* tokenIds_ */,
+        communitySplitsBasisPoints /* communitySplitsBasisPoints_ */,
+        shareContract.address /* shareContractAddress_ */,
+        operatorRegistry.address /* operatorRegistryAddress_ */
+      );
+
+      // Try and initiate distribution with non-operator && non-owner address
+      try {
+        await nonOperatorAddress.transferNextAvailable(
+          recipientAddress
+        );
+        assert(error.message.includes("SHARE030"));
+      } catch (error) {
+        console.log(error.message);
       }
     }
   );

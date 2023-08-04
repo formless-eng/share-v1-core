@@ -43,23 +43,21 @@ contract("OperatorRegistry", (accounts) => {
     "Remove a verified operator address from the registry",
     async () => {
       const operatorRegistry = await OperatorRegistry.deployed();
-      const retiredShareVerifiedOperator = accounts[5];
+      const addressToRemove = accounts[5];
       await operatorRegistry.initialize(
         verifiedShareOperatorEOAs /* shareEOAOperators_ */
       );
 
       assert(
-        operatorRegistry.isOperator(retiredShareVerifiedOperator),
-        `Operator address ${retiredShareVerifiedOperator} does not exist in registry`
+        operatorRegistry.isOperator(addressToRemove),
+        `Operator address ${addressToRemove} does not exist in registry`
       );
 
-      const retiredOperation =
-        operatorRegistry.removeVerifiedOperator(
-          retiredShareVerifiedOperator
-        );
+      const success =
+        operatorRegistry.removeVerifiedOperator(addressToRemove);
 
       assert(
-        retiredOperation,
+        success,
         "Retired SHARE operator not removed from registry."
       );
     }
@@ -67,6 +65,7 @@ contract("OperatorRegistry", (accounts) => {
 
   specify("Fund the operator addresses", async () => {
     const operatorRegistry = await OperatorRegistry.deployed();
+    const weiDeltaGranularity = 1000000;
     const fundAmount = web3.utils.toWei("10", "ether");
     const expectedFundsPerOperator =
       fundAmount / verifiedShareOperatorEOAs.length;
@@ -84,15 +83,11 @@ contract("OperatorRegistry", (accounts) => {
       );
     }
 
-    try {
-      // Fund all operator addresses
-      await operatorRegistry.fundOperatorAddresses({
-        from: accounts[0],
-        value: fundAmount,
-      });
-    } catch (error) {
-      assert(false, "Funding broke.");
-    }
+    // Fund all operator addresses
+    await operatorRegistry.fundOperatorAddresses({
+      from: accounts[0],
+      value: fundAmount,
+    });
 
     // Check that each operator address has the correct balance
     for (let i = 0; i < verifiedShareOperatorEOAs.length; i++) {
@@ -103,7 +98,7 @@ contract("OperatorRegistry", (accounts) => {
       fundsDelta = newBalance - initialBalance[i];
       assert(
         Math.abs(expectedFundsPerOperator - fundsDelta) <=
-          1000000 /* wei, prevents dust from invalidating test */,
+          weiDeltaGranularity /* prevents dust from invalidating test */,
         `Operator ${i} was not correctly funded.`
       );
     }
@@ -117,7 +112,7 @@ contract("OperatorRegistry", (accounts) => {
     );
 
     const registeredOperators =
-      await operatorRegistry.listOperatorRegistry();
+      await operatorRegistry.listOperatorAddresses();
 
     // The registeredOperators array should have the same length
     // as the verifiedShareOperatorEOAs array.

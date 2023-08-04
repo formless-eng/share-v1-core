@@ -8,6 +8,9 @@
 // ⠛⠛⠀⠀⠀⠀⠀⠈⠛⠿⠿⠛⠀⠀⠀⠛⠛⠀⠘⠛⠃⠀⠀⠛⠛⠀⠛⠀⠈⠛⠃⠀⠀⠛⠛⠛⠛⠃⠀⠘⠛⠛⠛⠛⠃⠀⠀⠙⠿⠿⠟⠁⠀⠀⠀⠛⠿⠿⠛⠀
 // https://formless.xyz/opportunities
 //
+pragma solidity >=0.8.0 <0.9.0;
+
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
@@ -15,7 +18,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 /// @notice A living canonical registry of all SHARE protocol operator
 /// EOAs (Externally Owned Accounts).
 /// @author john-paul@formless.xyz
-contract OperatorRegistry is Ownable {
+contract OperatorRegistry is Ownable, ReentrancyGuard {
     // Using OpenZeppelin's EnumerableSet utility for managing addresses
     using EnumerableSet for EnumerableSet.AddressSet;
 
@@ -23,10 +26,12 @@ contract OperatorRegistry is Ownable {
     EnumerableSet.AddressSet private _operatorAddresses;
 
     /// @notice Initialize the contract with an initial set of operator addresses.
-    /// @param shareEOAOperators_ array of operator addresses to add to the registry initially
-    function initialize(address[] memory shareEOAOperators_) public onlyOwner {
-        for (uint256 i = 0; i < shareEOAOperators_.length; i++) {
-            _operatorAddresses.add(shareEOAOperators_[i]);
+    /// @param shareOperatorsAddresses_ array of operator addresses to add to the registry initially
+    function initialize(
+        address[] memory shareOperatorsAddresses_
+    ) public onlyOwner {
+        for (uint256 i = 0; i < shareOperatorsAddresses_.length; i++) {
+            _operatorAddresses.add(shareOperatorsAddresses_[i]);
         }
     }
 
@@ -48,32 +53,31 @@ contract OperatorRegistry is Ownable {
 
     /// @notice Provide funds to all registered operators. The funds sent with the transaction
     /// will be evenly distributed amongst all registered operators.
-    function fundOperatorAddresses() public payable onlyOwner {
+    function fundOperatorAddresses() public payable onlyOwner nonReentrant {
         require(msg.value > 0, "SHARE033");
         require(_operatorAddresses.length() > 0, "SHARE034");
         uint256 fundingPerOperator = msg.value / _operatorAddresses.length();
         for (uint256 i = 0; i < _operatorAddresses.length(); i++) {
-            payable(_operatorAddresses.at(i)).transfer(fundingPerOperator);
+            (bool success, ) = payable(_operatorAddresses.at(i)).call{
+                value: fundingPerOperator
+            }("");
+            require(success, "SHARE036");
         }
     }
 
     /// @notice Check if a given address is a verified operator in the registry.
-    /// @param suspectedOperatorAddress_ the address to check.
+    /// @param address_ the address to check.
     /// @return true if the address is a verified operator, false otherwise.
-    function isOperator(
-        address suspectedOperatorAddress_
-    ) public view returns (bool) {
-        return _operatorAddresses.contains(suspectedOperatorAddress_);
+    function isOperator(address address_) public view returns (bool) {
+        return _operatorAddresses.contains(address_);
     }
 
     /// @notice List all of the operators in the current registry.
     /// @return array containing the operator addresses.
-    function listOperatorRegistry() public view returns (address[] memory) {
+    function listOperatorAddresses() public view returns (address[] memory) {
         uint256 length = _operatorAddresses.length();
-        address[] memory operators = new address[](length);
-        for (uint256 i = 0; i < length; i++) {
-            operators[i] = _operatorAddresses.at(i);
-        }
+        address[] memory operators = _operatorAddresses.values();
+
         return operators;
     }
 }
