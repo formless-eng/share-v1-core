@@ -52,17 +52,28 @@ contract OperatorRegistry is Ownable, ReentrancyGuard {
     }
 
     /// @notice Provide funds to all registered operators. The funds sent with the transaction
-    /// will be evenly distributed amongst all registered operators.
-    function fundOperatorAddresses() public payable onlyOwner nonReentrant {
-        require(msg.value > 0, "SHARE033");
+    /// will be evenly distributed amongst all registered operators according to per operator
+    /// amount.
+    /// @param totalFunding_ This is the total eth sent during the call, that is appropriated
+    /// for funding the operator addresses.
+    /// @param fundingPerOperator_ This is the per operator allocation of funds that is calculated
+    /// off-chain.
+    function fundOperatorAddresses(
+        uint256 totalFunding_,
+        uint256 fundingPerOperator_
+    ) public payable onlyOwner nonReentrant {
+        require(msg.value == totalFunding_, "SHARE033");
         require(_operatorAddresses.length() > 0, "SHARE034");
-        uint256 fundingPerOperator = msg.value / _operatorAddresses.length();
         for (uint256 i = 0; i < _operatorAddresses.length(); i++) {
             (bool success, ) = payable(_operatorAddresses.at(i)).call{
-                value: fundingPerOperator
+                value: fundingPerOperator_
             }("");
             require(success, "SHARE036");
         }
+    }
+
+    function countOperatorAddresses() public view returns (uint256) {
+        return _operatorAddresses.length();
     }
 
     /// @notice Check if a given address is a verified operator in the registry.

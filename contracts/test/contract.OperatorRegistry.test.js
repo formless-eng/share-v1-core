@@ -66,9 +66,7 @@ contract("OperatorRegistry", (accounts) => {
   specify("Fund the operator addresses", async () => {
     const operatorRegistry = await OperatorRegistry.deployed();
     const weiDeltaGranularity = 1000000;
-    const fundAmount = web3.utils.toWei("10", "ether");
-    const expectedFundsPerOperator =
-      fundAmount / verifiedShareOperatorEOAs.length;
+    const totalFundingAmount = web3.utils.toWei("10", "ether");
     const initialBalance = new Array(
       verifiedShareOperatorEOAs.length
     );
@@ -77,6 +75,22 @@ contract("OperatorRegistry", (accounts) => {
       verifiedShareOperatorEOAs /* shareEOAOperators_ */
     );
 
+    const amountOfOperators = (
+      await operatorRegistry.countOperatorAddresses()
+    ).toString();
+
+    // Verify the helper function amountOfOperators retrieved
+    // properly.
+    assert.equal(
+      amountOfOperators,
+      verifiedShareOperatorEOAs.length,
+      "Number of registry addresses is not accurate to initializting array."
+    );
+
+    const fundsPerOperator = (
+      totalFundingAmount / amountOfOperators
+    ).toString();
+
     for (let i = 0; i < verifiedShareOperatorEOAs.length; i++) {
       initialBalance[i] = await web3.eth.getBalance(
         verifiedShareOperatorEOAs[i]
@@ -84,10 +98,14 @@ contract("OperatorRegistry", (accounts) => {
     }
 
     // Fund all operator addresses
-    await operatorRegistry.fundOperatorAddresses({
-      from: accounts[0],
-      value: fundAmount,
-    });
+    await operatorRegistry.fundOperatorAddresses(
+      totalFundingAmount,
+      fundsPerOperator,
+      {
+        from: accounts[0],
+        value: totalFundingAmount,
+      }
+    );
 
     // Check that each operator address has the correct balance
     for (let i = 0; i < verifiedShareOperatorEOAs.length; i++) {
@@ -95,9 +113,16 @@ contract("OperatorRegistry", (accounts) => {
         verifiedShareOperatorEOAs[i]
       );
 
-      fundsDelta = newBalance - initialBalance[i];
+      const fundsDelta = newBalance - initialBalance[i];
+
+      console.log(
+        `\nNEW BALANCE: ${newBalance}\nINITIAL BALANCE: ${initialBalance[i]}\nFUNDS DELTA: ${fundsDelta}`
+      );
+
+      // If this assertion is producing errors, try restarting ganache
+      // local chain, and re-running tests.
       assert(
-        Math.abs(expectedFundsPerOperator - fundsDelta) <=
+        Math.abs(fundsPerOperator - fundsDelta) <=
           weiDeltaGranularity /* prevents dust from invalidating test */,
         `Operator ${i} was not correctly funded.`
       );
