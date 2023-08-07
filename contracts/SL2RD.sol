@@ -103,7 +103,6 @@ contract SL2RD is
         require(tokenIds_.length <= MAX_SPLIT_COUNT, "SHARE006");
         require(tokenIds_.length >= 1, "SHARE020");
         require(communitySplitsBasisPoints_ <= MAX_BASIS_POINTS, "SHARE029");
-        // check operatorAddress
 
         setShareContractAddress(shareContractAddress_);
         _protocol = SHARE(shareContractAddress_);
@@ -289,7 +288,6 @@ contract SL2RD is
         require(_nextAvailableCommunitySlot < _totalCommunitySlots, "SHARE031");
 
         // Ensure the initial owner still owns the community slot before transfer.
-        // MIGHT BE REDUNDANT NOW THAT TRANSFER OF THESE RESERVED CANNOT TAKE PLACE
         require(
             ownerOf(_nextAvailableCommunitySlot) == _initialOwner.value,
             "SHARE035"

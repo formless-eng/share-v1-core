@@ -116,7 +116,7 @@ contract("OperatorRegistry", (accounts) => {
       const fundsDelta = newBalance - initialBalance[i];
 
       console.log(
-        `\nNEW BALANCE: ${newBalance}\nINITIAL BALANCE: ${initialBalance[i]}\nFUNDS DELTA: ${fundsDelta}`
+        `\nNew balance: ${newBalance}\nInitial balance: ${initialBalance[i]}\nFunds delta: ${fundsDelta}`
       );
 
       // If this assertion is producing errors, try restarting ganache
