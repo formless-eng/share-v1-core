@@ -19,7 +19,7 @@ import "./OperatorRegistry.sol";
 /// @author john-paul@formless.xyz
 /// @notice This contract implements efficient liquid royalty splitting
 /// by shuffling recipient tokenIds off-chain into a random distribution
-/// and dealing transactions to those recipient slot NFTs atomically, e.g.
+/// and dealing transactions to those recipient slot entries atomically, e.g.
 /// royalties are "dealt" in a rotating fashion rather than "split". This
 /// results in immense gas savings and as the number of transactions
 /// approaches infinity the delta between revenue received and revenue owed
@@ -83,13 +83,13 @@ contract SL2RD is
     /// owner for each tokenId. This is prefilled with the owner's
     /// address for each token, but designed with flexibilty to include
     /// others during initialization if they are known.
-    /// The communitySplitsBasisPoints is a const percentage denoted in
+    /// The communitySplitsBasisPoints is a constant percentage denoted in
     /// basis points for how many of the slots the creator initially wants
     /// to allocate for everyone else.
     /// @param addresses_ The addresses for initial distribution.
     /// @param tokenIds_ The tokenIds for initial distribution.
     /// @param communitySplitsBasisPoints_ The percentage of slots allocated
-    /// for the community (denoted in basis points).
+    /// for the community (denoted in basis points); e.g. 20% is denoted as 2000.
     /// @param shareContractAddress_ The address of the share contract.
     /// @param operatorRegistryAddress_ The address of the share operator registry.
     function initialize(

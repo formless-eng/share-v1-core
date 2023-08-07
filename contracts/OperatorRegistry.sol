@@ -19,7 +19,6 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 /// EOAs (Externally Owned Accounts).
 /// @author john-paul@formless.xyz
 contract OperatorRegistry is Ownable, ReentrancyGuard {
-    // Using OpenZeppelin's EnumerableSet utility for managing addresses
     using EnumerableSet for EnumerableSet.AddressSet;
 
     // Private set of operator addresses
@@ -54,7 +53,7 @@ contract OperatorRegistry is Ownable, ReentrancyGuard {
     /// @notice Provide funds to all registered operators. The funds sent with the transaction
     /// will be evenly distributed amongst all registered operators according to per operator
     /// amount.
-    /// @param totalFunding_ This is the total eth sent during the call, that is appropriated
+    /// @param totalFunding_ This is the total ETH sent during the call, that is appropriated
     /// for funding the operator addresses.
     /// @param fundingPerOperator_ This is the per operator allocation of funds that is calculated
     /// off-chain.
