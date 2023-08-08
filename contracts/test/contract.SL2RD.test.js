@@ -109,7 +109,9 @@ contract("SL2RD", (accounts) => {
       );
 
       // Increment the current count of community slots.
-      await splitContract.transferNextAvailable(accounts[i]);
+      await splitContract.transferNextAvailable(
+        accounts[NON_OWNER_ADDRESS_INDEX]
+      );
 
       // Ensure the counter retrieves the correct count.
       assert.equal(
