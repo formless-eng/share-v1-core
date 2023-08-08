@@ -59,7 +59,7 @@ contract("SL2RD", (accounts) => {
   });
 
   specify(
-    "Retrieve communitySplitBasisPoints, initialSplitDistributionTable, totalSlots, totalCommunitySlots using getter functions.",
+    "Retrieve communitySplitBasisPoints, initialSplitDistributionTable, totalSlots, totalCommunitySlots, nextAvailableCommunitySlot using getter functions.",
     async () => {
       const shareContract = await SHARE.deployed();
       const splitContract = await SL2RD.new();
@@ -100,6 +100,11 @@ contract("SL2RD", (accounts) => {
       assert.equal(
         await splitContract.totalCommunitySlots(),
         (communitySplitsBasisPoints * ownerAddresses.length) / 10000
+      );
+
+      assert.equal(
+        await splitContract.nextAvailableCommunitySlot(),
+        0
       );
     }
   );
