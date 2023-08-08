@@ -102,9 +102,19 @@ contract("SL2RD", (accounts) => {
         (communitySplitsBasisPoints * ownerAddresses.length) / 10000
       );
 
+      // Distribution helper function test
       assert.equal(
         await splitContract.countAllocatedCommunitySlots(),
         0
+      );
+
+      // Increment the current count of community slots.
+      await splitContract.transferNextAvailable(accounts[i]);
+
+      // Ensure the counter retrieves the correct count.
+      assert.equal(
+        await splitContract.countAllocatedCommunitySlots(),
+        1
       );
     }
   );
