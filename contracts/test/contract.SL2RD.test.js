@@ -624,13 +624,45 @@ contract("SL2RD", (accounts) => {
 
       // Try and initiate distribution with non-operator && non-owner address
       try {
-        await nonOperatorAddress.transferNextAvailable(
-          recipientAddress
-        );
+        await splitContract.transferNextAvailable(recipientAddress, {
+          from: nonOperatorAddress,
+        });
         assert(error.message.includes("SHARE030"));
       } catch (error) {
         console.log(error.message);
       }
+    }
+  );
+
+  specify(
+    "Initialize operator registry and use verified operator address to conduct transfer.",
+    async () => {
+      const shareContract = await SHARE.deployed();
+      const splitContract = await SL2RD.new();
+      const operatorRegistry = await OperatorRegistry.deployed();
+      const ownerAddresses = Array(10).fill(accounts[0]);
+      const recipientAddress = accounts[NON_OWNER_ADDRESS_INDEX];
+      const uniformCollaboratorsIds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+      const operatorAddresses = [accounts[5], accounts[6]];
+      const nonOperatorAddress = accounts[7];
+      const communitySplitsBasisPoints = 4000;
+
+      await operatorRegistry.initialize(operatorAddresses);
+
+      await splitContract.initialize(
+        ownerAddresses /* addresses_ */,
+        uniformCollaboratorsIds /* tokenIds_ */,
+        communitySplitsBasisPoints /* communitySplitsBasisPoints_ */,
+        shareContract.address /* shareContractAddress_ */,
+        operatorRegistry.address /* operatorRegistryAddress_ */
+      );
+
+      assert(
+        await splitContract.transferNextAvailable(recipientAddress, {
+          from: operatorAddresses[0],
+        }),
+        "Non-operator trying to initiate community distribution process."
+      );
     }
   );
 });
