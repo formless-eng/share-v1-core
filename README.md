@@ -137,7 +137,7 @@ truffle(optimism_goerli)> share_instance.addApprovedBuild("0x0000000000000000000
 - `SHARE034` : `Cannot distribute funds to empty operator registry.`
 - `SHARE035` : `The community reserved slot must currently be owned by initialization owner in order to have proper permissions to transfer to community member.`
 - `SHARE036` : `Payment to operator address during funding operation unsuccessful.`
-- `SHARE037` : `Transfering community allocated slots is prohibited until distribution process is complete.`
+- `SHARE037` : `Transferring community allocated slots is prohibited until distribution process is complete.`
 
 ## Audits and Formal Verification
 
