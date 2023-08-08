@@ -103,7 +103,7 @@ contract("SL2RD", (accounts) => {
       );
 
       assert.equal(
-        await splitContract.nextAvailableCommunitySlot(),
+        await splitContract.countAllocatedCommunitySlots(),
         0
       );
     }

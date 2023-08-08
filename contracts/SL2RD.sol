@@ -180,7 +180,7 @@ contract SL2RD is
     }
 
     /// @notice Returns the next available community slot id.
-    function nextAvailableCommunitySlot() public view returns (uint256) {
+    function countAllocatedCommunitySlots() public view returns (uint256) {
         return _nextAvailableCommunitySlot;
     }
 
