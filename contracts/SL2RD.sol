@@ -179,6 +179,11 @@ contract SL2RD is
         return _communitySplitsBasisPoints.value;
     }
 
+    /// @notice Returns the next available community slot id.
+    function nextAvailableCommunitySlot() public view returns (uint256) {
+        return _nextAvailableCommunitySlot;
+    }
+
     /// @notice Returns the total ownership slots created for this contract.
     function totalSlots() public view afterInit returns (uint256) {
         return _totalSlots.value;
