@@ -132,10 +132,10 @@ truffle(optimism_goerli)> share_instance.addApprovedBuild("0x0000000000000000000
 - `SHARE029` : `Community splits initialization percentage cannot exceed 10000 basis points (100%).`
 - `SHARE030` : `Caller is not owner or operator.`
 - `SHARE031` : `All community apportioned splits have been allocated.`
-- `SHARE032` : `Only the contract owner or verified operator is allowed to transfer the slot NFT.`
+- `SHARE032` : `Only the contract owner or verified operator is allowed to transfer the slot.`
 - `SHARE033` : `No funds provided for distribution.`
 - `SHARE034` : `Cannot distribute funds to empty operator registry.`
-- `SHARE035` : `The community reserved slot must currently be owned by initialization owner in oder to have proper permissions to transfer to community memeber.`
+- `SHARE035` : `The community reserved slot must currently be owned by initialization owner in order to have proper permissions to transfer to community member.`
 - `SHARE036` : `Payment to operator address during funding operation unsuccessful.`
 - `SHARE037` : `Transfering community allocated slots is prohibited until distribution process is complete.`
 
