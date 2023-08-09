@@ -59,7 +59,7 @@ contract("SL2RD", (accounts) => {
   });
 
   specify(
-    "Retrieve communitySplitBasisPoints, initialSplitDistributionTable, totalSlots, totalCommunitySlots, nextAvailableCommunitySlot using getter functions.",
+    "Retrieve communitySplitBasisPoints, initialSplitDistributionTable, currentDistributionTable, totalSlots, totalCommunitySlots, nextAvailableCommunitySlot using getter functions.",
     async () => {
       const shareContract = await SHARE.deployed();
       const splitContract = await SL2RD.new();
@@ -85,6 +85,7 @@ contract("SL2RD", (accounts) => {
         (await splitContract.initialSplitDistributionTable()).length,
         ownerAddresses.length
       );
+
       for (let i = 0; i < ownerAddresses.length; i++) {
         assert.equal(
           (await splitContract.initialSplitDistributionTable())[i],
@@ -118,6 +119,26 @@ contract("SL2RD", (accounts) => {
         await splitContract.countAllocatedCommunitySlots(),
         1
       );
+
+      const expectedNewDistribution = [
+        accounts[NON_OWNER_ADDRESS_INDEX],
+        accounts[0],
+        accounts[0],
+        accounts[0],
+        accounts[0],
+        accounts[0],
+        accounts[0],
+        accounts[0],
+        accounts[0],
+        accounts[0],
+      ];
+
+      const newDistribution =
+        await splitContract.currentSplitDistributionTable();
+
+      for (let i = 0; i < ownerAddresses.length; i++) {
+        assert.equal(newDistribution[i], expectedNewDistribution[i]);
+      }
     }
   );
 

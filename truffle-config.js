@@ -52,8 +52,8 @@ module.exports = {
           RPC_ENDPOINT_POLYGON_MAINNET
         ),
       network_id: 137,
-      gas: 100000,
-      gasPrice: 150000000000,
+      gas: 5000000,
+      gasPrice: 250000000000,
       timeoutBlocks: 200,
       networkCheckTimeout: 10000,
       skipDryRun: true,
