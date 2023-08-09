@@ -162,6 +162,20 @@ contract SL2RD is
         return _addresses.value;
     }
 
+    /// @notice This function provides access to the current distribution table of
+    /// addresses, derived from the slot owners.
+    function currentSplitDistributionTable()
+        public
+        view
+        returns (address[] memory)
+    {
+        address[] memory owners = new address[](_totalSlots.value);
+        for (uint256 i = 0; i < _totalSlots.value; i++) {
+            owners[i] = ownerOf(_tokenIds.value[i]);
+        }
+        return owners;
+    }
+
     /// @notice Returns the index of the tokenId in the table which
     /// is the next tokenId to receive payment on the reception of
     /// royalty by this contract.
