@@ -121,7 +121,7 @@ contract("SL2RD", (accounts) => {
       );
 
       const expectedNewDistribution = [
-        accounts[1],
+        accounts[NON_OWNER_ADDRESS_INDEX],
         accounts[0],
         accounts[0],
         accounts[0],
