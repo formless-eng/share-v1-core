@@ -134,7 +134,7 @@ contract("SL2RD", (accounts) => {
       ];
 
       const newDistribution =
-        await splitContract.currentSplitDistributionTable();
+        await splitContract.splitDistributionTable();
 
       for (let i = 0; i < ownerAddresses.length; i++) {
         assert.equal(newDistribution[i], expectedNewDistribution[i]);
