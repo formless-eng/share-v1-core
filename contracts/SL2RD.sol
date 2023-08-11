@@ -44,7 +44,6 @@ contract SL2RD is
     Immutable.Unsigned256IntArray private _tokenIds;
     Immutable.AddressArray private _addresses;
     Immutable.UnsignedInt256 private _communitySplitsBasisPoints;
-    Immutable.Address private _initialOwner;
     uint256 private _totalCommunitySlots = 0;
     uint256 private _nextAvailableCommunitySlot = 0;
     uint256 private _currentTokenIdIndex = 0;
@@ -113,7 +112,6 @@ contract SL2RD is
             _communitySplitsBasisPoints,
             communitySplitsBasisPoints_
         );
-        Immutable.setAddress(_initialOwner, addresses_[0]);
 
         _totalCommunitySlots =
             (_totalSlots.value * _communitySplitsBasisPoints.value) /
@@ -300,12 +298,14 @@ contract SL2RD is
     function transferNextAvailable(
         address to_
     ) public onlyOwnerOrOperator nonReentrant {
+        address splitOwner = ownerOf(_nextAvailableCommunitySlot);
+
         // Gates process to only continue until community reservations are depleted.
         require(_nextAvailableCommunitySlot < _totalCommunitySlots, "SHARE031");
 
         // Ensure the initial owner still owns the community slot before transfer.
         require(
-            ownerOf(_nextAvailableCommunitySlot) == _initialOwner.value,
+            splitOwner == _addresses.value[_nextAvailableCommunitySlot],
             "SHARE035"
         );
 
@@ -315,15 +315,7 @@ contract SL2RD is
             "SHARE007"
         );
 
-        // Allows the operator to call transfer without revert
-        if (
-            _shareOperatorRegistry.isOperator(msg.sender) ||
-            msg.sender == owner()
-        ) {
-            super._approve(msg.sender, _nextAvailableCommunitySlot);
-        }
-
-        super.transferFrom(owner(), to_, _nextAvailableCommunitySlot);
+        super._transfer(splitOwner, to_, _nextAvailableCommunitySlot);
 
         // Update the transfer timestamp
         _transferTimestamps[_nextAvailableCommunitySlot] = block.timestamp;
