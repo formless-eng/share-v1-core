@@ -1,11 +1,10 @@
 const HDWalletProvider = require("@truffle/hdwallet-provider");
 const mnemonicPhrase = process.env.MNEMONIC_PHRASE;
-const RPC_ENDPOINT_OPTIMISM_GOERLI =
-  process.env.RPC_ENDPOINT_OPTIMISM_GOERLI;
-const RPC_ENDPOINT_POLYGON_MUMBAI =
-  process.env.RPC_ENDPOINT_POLYGON_MUMBAI;
-const RPC_ENDPOINT_POLYGON_MAINNET =
-  process.env.RPC_ENDPOINT_POLYGON_MAINNET;
+const RPC_ENDPOINT_OPTIMISM_GOERLI = process.env.RPC_ENDPOINT_OPTIMISM_GOERLI;
+const RPC_ENDPOINT_POLYGON_MUMBAI = process.env.RPC_ENDPOINT_POLYGON_MUMBAI;
+const RPC_ENDPOINT_POLYGON_MAINNET = process.env.RPC_ENDPOINT_POLYGON_MAINNET;
+const RPC_ENDPOINT_ETHEREUM_MAINNET = process.env.RPC_ENDPOINT_ETHEREUM_MAINNET;
+const GAS_VALUE = process.env.GAS_VALUE ? process.env.GAS_VALUE : 5500000;
 
 const SOLIDITY_COMPILER_VERSION = "0.8.11";
 
@@ -15,16 +14,24 @@ module.exports = {
       host: "127.0.0.1",
       port: 8545,
       network_id: "*",
-      gas: 800000000,
+      gas: GAS_VALUE,
     },
+    ethereum: {
+      provider: () =>
+        new HDWalletProvider(mnemonicPhrase, RPC_ENDPOINT_ETHEREUM_MAINNET),
+      network_id: 1,
+      gas: GAS_VALUE,
+      confirmations: 2,
+      timeoutBlocks: 2000,
+      networkCheckTimeout: 1000000,
+      skipDryRun: true,
+    },
+
     optimism_goerli: {
       provider: () =>
-        new HDWalletProvider(
-          mnemonicPhrase,
-          RPC_ENDPOINT_OPTIMISM_GOERLI
-        ),
+        new HDWalletProvider(mnemonicPhrase, RPC_ENDPOINT_OPTIMISM_GOERLI),
       network_id: 420,
-      gas: 5500000,
+      gas: GAS_VALUE,
       confirmations: 2,
       timeoutBlocks: 2000,
       networkCheckTimeout: 1000000,
@@ -33,12 +40,9 @@ module.exports = {
 
     mumbai: {
       provider: () =>
-        new HDWalletProvider(
-          mnemonicPhrase,
-          RPC_ENDPOINT_POLYGON_MUMBAI
-        ),
+        new HDWalletProvider(mnemonicPhrase, RPC_ENDPOINT_POLYGON_MUMBAI),
       network_id: 80001,
-      gas: 5500000,
+      gas: GAS_VALUE,
       confirmations: 2,
       timeoutBlocks: 200,
       networkCheckTimeout: 1000000,
@@ -47,13 +51,10 @@ module.exports = {
 
     polygon: {
       provider: () =>
-        new HDWalletProvider(
-          mnemonicPhrase,
-          RPC_ENDPOINT_POLYGON_MAINNET
-        ),
+        new HDWalletProvider(mnemonicPhrase, RPC_ENDPOINT_POLYGON_MAINNET),
       network_id: 137,
-      gas: 5000000,
-      gasPrice: 250000000000,
+      gas: GAS_VALUE,
+      gasPrice: 150000000000,
       timeoutBlocks: 200,
       networkCheckTimeout: 10000,
       skipDryRun: true,
