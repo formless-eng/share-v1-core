@@ -55,7 +55,7 @@ truffle test
 
 To interact with deployed contracts you can use the truffle console:
 
-```
+```shell
 MNEMONIC_PHRASE=$MNEMONIC RPC_ENDPIONT_OPTIMISM_GOERLI=$RPC_ENDPOINT_OPTIMISM_GOERLI RPC_ENDPOINT_POLYGON_MUMBAI=$RPC_ENDPOINT_POLYGON_MUMBAI truffle console --network=optimism_goerli
 ```
 
@@ -97,6 +97,18 @@ truffle(optimism_goerli)> share_instance.addApprovedBuild("0x0000000000000000000
   "logs": []
 }
 ```
+
+### Performing specific contract migrations using Truffle
+
+```shell
+MNEMONIC_PHRASE=$MNEMONIC RPC_ENDPOINT_POLYGON_MAINNET=$RPC_ENDPOINT_POLYGON_MAINNET GAS_VALUE=12000000 truffle console --network=polygon
+```
+
+```
+migrate --f 2 --to 2
+```
+
+The command above deploys the contracts as specified in `2_SL2RD_migration.js`.
 
 ## Error Codes
 
