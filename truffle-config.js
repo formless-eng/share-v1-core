@@ -54,7 +54,7 @@ module.exports = {
         new HDWalletProvider(mnemonicPhrase, RPC_ENDPOINT_POLYGON_MAINNET),
       network_id: 137,
       gas: GAS_VALUE,
-      gasPrice: 150000000000,
+      gasPrice: 250000000000,
       timeoutBlocks: 200,
       networkCheckTimeout: 10000,
       skipDryRun: true,
