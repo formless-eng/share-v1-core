@@ -10,37 +10,36 @@ const MockImmutable = artifacts.require("MockImmutable");
 const MockPFARevertsOnAccess = artifacts.require(
   "MockPFARevertsOnAccess"
 );
-const ERC1155 = artifacts.require("ERC1155");
 
 module.exports = async (deployer) => {
   // Deploy library contracts
   await deployer.deploy(CodeVerification);
   await deployer.deploy(Immutable);
-  //await deployer.link(Immutable, MockImmutable);
-  // await deployer.deploy(MockImmutable);
+  await deployer.link(Immutable, MockImmutable);
+  await deployer.deploy(MockImmutable);
 
   // Deploy SHARE protocol contract.
-  // await deployer.link(CodeVerification, SHARE);
-  // await deployer.deploy(SHARE);
+  await deployer.link(CodeVerification, SHARE);
+  await deployer.deploy(SHARE);
 
   // Deploy PFAUnit (PFA implementation e.g. `G_NFT`) contract
-  // await deployer.link(Immutable, PFAUnit);
-  // await deployer.link(Immutable, MockPFARevertsOnAccess);
-  // await deployer.deploy(PFAUnit);
-  // await deployer.deploy(MockPFARevertsOnAccess);
+  await deployer.link(Immutable, PFAUnit);
+  await deployer.link(Immutable, MockPFARevertsOnAccess);
+  await deployer.deploy(PFAUnit);
+  await deployer.deploy(MockPFARevertsOnAccess);
 
   // Deploy S2RD royalty split contract.
-  // await deployer.link(Immutable, S2RD);
-  // await deployer.deploy(S2RD);
+  await deployer.link(Immutable, S2RD);
+  await deployer.deploy(S2RD);
 
   // Deploy SL2RD royalty split contract.
   await deployer.link(Immutable, SL2RD);
   await deployer.deploy(SL2RD);
 
   // Deploy OperatorRegistry contract
-  // await deployer.deploy(OperatorRegistry);
+  await deployer.deploy(OperatorRegistry);
 
   // Deploy PFACollection
-  // await deployer.link(Immutable, PFACollection);
-  // await deployer.deploy(PFACollection);
+  await deployer.link(Immutable, PFACollection);
+  await deployer.deploy(PFACollection);
 };
