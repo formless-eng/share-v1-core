@@ -331,6 +331,16 @@ contract SL2RD is
         _nextAvailableCommunitySlot++;
     }
 
+    /// @notice Function to transfer multiple available slots to a specifed address.
+    function allocateMultiple(
+        address to_,
+        uint256 slots_
+    ) public onlyOwnerOrOperator {
+        for (uint256 i = 0; i < slots_; i++) {
+            transferNextAvailable(to_);
+        }
+    }
+
     /// @notice Reclaims a contract owned by this SL2RD, e.g. if a PFA
     /// is owned by this split, the split owner may transfer
     /// ownership of the PFA back to their account. This is intended
