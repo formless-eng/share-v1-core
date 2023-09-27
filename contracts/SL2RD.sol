@@ -332,7 +332,7 @@ contract SL2RD is
     }
 
     /// @notice Function to transfer multiple available slots to a specifed address.
-    function allocateMultiple(
+    function transferMultipleAvailable(
         address to_,
         uint256 slots_
     ) public onlyOwnerOrOperator {

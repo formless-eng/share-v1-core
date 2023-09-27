@@ -529,7 +529,7 @@ contract("SL2RD", (accounts) => {
         operatorRegistry.address /* operatorRegistryAddress_ */
       );
 
-      await splitContract.allocateMultiple(recipientAddress, 7, {
+      await splitContract.transferMultipleAvailable(recipientAddress, 7, {
         from: ownerAddresses[0],
       });
 
