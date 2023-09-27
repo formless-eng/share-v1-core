@@ -24,10 +24,7 @@ contract("SL2RD", (accounts) => {
       shareContract.address /* shareContractAddress_ */,
       operatorRegistry.address /* operatorRegistryAddress_ */
     );
-    assert.equal(
-      accounts[DEFAULT_ADDRESS_INDEX],
-      await splitContract.owner()
-    );
+    assert.equal(accounts[DEFAULT_ADDRESS_INDEX], await splitContract.owner());
     assert.equal(await splitContract.tokenIdIndex(), 0);
   });
 
@@ -104,10 +101,7 @@ contract("SL2RD", (accounts) => {
       );
 
       // Distribution helper function test
-      assert.equal(
-        await splitContract.countAllocatedCommunitySlots(),
-        0
-      );
+      assert.equal(await splitContract.countAllocatedCommunitySlots(), 0);
 
       // Increment the current count of community slots.
       await splitContract.transferNextAvailable(
@@ -115,10 +109,7 @@ contract("SL2RD", (accounts) => {
       );
 
       // Ensure the counter retrieves the correct count.
-      assert.equal(
-        await splitContract.countAllocatedCommunitySlots(),
-        1
-      );
+      assert.equal(await splitContract.countAllocatedCommunitySlots(), 1);
 
       const expectedNewDistribution = [
         accounts[NON_OWNER_ADDRESS_INDEX],
@@ -133,8 +124,7 @@ contract("SL2RD", (accounts) => {
         accounts[DEFAULT_ADDRESS_INDEX],
       ];
 
-      const newDistribution =
-        await splitContract.splitDistributionTable();
+      const newDistribution = await splitContract.splitDistributionTable();
 
       for (let i = 0; i < ownerAddresses.length; i++) {
         assert.equal(newDistribution[i], expectedNewDistribution[i]);
@@ -177,15 +167,13 @@ contract("SL2RD", (accounts) => {
       }
 
       // Fetch the transfer timestamps for each tokenId
-      const transferTimestamps =
-        await splitContract.slotTransferTimestamps();
+      const transferTimestamps = await splitContract.slotTransferTimestamps();
 
       // Assert that each transfer timestamp matches the recorded timestamp
       for (let i = 0; i < ownerAddresses.length; i++) {
         assert(
-          Math.abs(
-            transferTimestamps[i].toNumber() - recordedTimestamps[i]
-          ) <= negligibleTimeDifference,
+          Math.abs(transferTimestamps[i].toNumber() - recordedTimestamps[i]) <=
+            negligibleTimeDifference,
           `Invalid transfer timestamp for tokenId ${i}`
         );
       }
@@ -264,9 +252,7 @@ contract("SL2RD", (accounts) => {
                 ),
                 normalizeAddress(
                   uniformCollaboratorsMap.get(
-                    uniformCollaboratorsIds[
-                      i % uniformCollaboratorsIds.length
-                    ]
+                    uniformCollaboratorsIds[i % uniformCollaboratorsIds.length]
                   )
                 )
               );
@@ -300,11 +286,7 @@ contract("SL2RD", (accounts) => {
     }
 
     try {
-      await splitContract.safeTransferFrom(
-        accounts[0],
-        accounts[1],
-        0
-      );
+      await splitContract.safeTransferFrom(accounts[0], accounts[1], 0);
       assert(true, "Transfer to EOA");
     } catch (error) {
       assert(error.message.includes("SHARE007"));
@@ -453,17 +435,9 @@ contract("SL2RD", (accounts) => {
       console.log("tokenId: ", tokenId, "\n");
 
       if (i < halfLength) {
-        await splitContract.safeTransferFrom(
-          accounts[0],
-          recipient,
-          tokenId
-        );
+        await splitContract.safeTransferFrom(accounts[0], recipient, tokenId);
       } else {
-        await splitContract.transferFrom(
-          accounts[0],
-          recipient,
-          tokenId
-        );
+        await splitContract.transferFrom(accounts[0], recipient, tokenId);
       }
     }
 
@@ -490,9 +464,7 @@ contract("SL2RD", (accounts) => {
                 ),
                 normalizeAddress(
                   uniformCollaboratorsMap.get(
-                    uniformCollaboratorsIds[
-                      i % uniformCollaboratorsIds.length
-                    ]
+                    uniformCollaboratorsIds[i % uniformCollaboratorsIds.length]
                   )
                 )
               );
@@ -502,8 +474,44 @@ contract("SL2RD", (accounts) => {
     }
   });
 
+  specify("Transfer next available slot to a specified address", async () => {
+    const shareContract = await SHARE.deployed();
+    const splitContract = await SL2RD.new();
+    const operatorRegistry = await OperatorRegistry.deployed();
+    const ownerAddresses = Array(10).fill(accounts[0]);
+    const recipientAddress = accounts[NON_OWNER_ADDRESS_INDEX];
+    const uniformCollaboratorsIds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+    const communitySplitsBasisPoints = 4000;
+
+    await splitContract.initialize(
+      ownerAddresses /* addresses_ */,
+      uniformCollaboratorsIds /* tokenIds_ */,
+      communitySplitsBasisPoints /* communitySplitsBasisPoints_ */,
+      shareContract.address /* shareContractAddress_ */,
+      operatorRegistry.address /* operatorRegistryAddress_ */
+    );
+
+    // Transfer the reserved community allocation (first 4 slots) to community
+    for (let i = 0; i < 4; i++) {
+      await splitContract.transferNextAvailable(recipientAddress, {
+        from: ownerAddresses[0],
+      });
+
+      assert.equal(recipientAddress, await splitContract.ownerOf(i));
+    }
+
+    // Make sure the owner still owns the private allocation
+    for (let i = 4; i < ownerAddresses.length; i++) {
+      assert.equal(
+        ownerAddresses[0],
+        await splitContract.ownerOf(i),
+        "Distributed past community allocation."
+      );
+    }
+  });
+
   specify(
-    "Transfer next available slot to a specified address",
+    "Allocate multiple available slots to a specified address",
     async () => {
       const shareContract = await SHARE.deployed();
       const splitContract = await SL2RD.new();
@@ -511,7 +519,7 @@ contract("SL2RD", (accounts) => {
       const ownerAddresses = Array(10).fill(accounts[0]);
       const recipientAddress = accounts[NON_OWNER_ADDRESS_INDEX];
       const uniformCollaboratorsIds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-      const communitySplitsBasisPoints = 4000;
+      const communitySplitsBasisPoints = 10000;
 
       await splitContract.initialize(
         ownerAddresses /* addresses_ */,
@@ -521,20 +529,16 @@ contract("SL2RD", (accounts) => {
         operatorRegistry.address /* operatorRegistryAddress_ */
       );
 
-      // Transfer the reserved community allocation (first 4 slots) to community
-      for (let i = 0; i < 4; i++) {
-        await splitContract.transferNextAvailable(recipientAddress, {
-          from: ownerAddresses[0],
-        });
+      await splitContract.transferMultipleAvailable(recipientAddress, 7, {
+        from: ownerAddresses[0],
+      });
 
-        assert.equal(
-          recipientAddress,
-          await splitContract.ownerOf(i)
-        );
+      for (let i = 0; i < 7; i++) {
+        assert.equal(recipientAddress, await splitContract.ownerOf(i));
       }
 
       // Make sure the owner still owns the private allocation
-      for (let i = 4; i < ownerAddresses.length; i++) {
+      for (let i = 7; i < ownerAddresses.length; i++) {
         assert.equal(
           ownerAddresses[0],
           await splitContract.ownerOf(i),
@@ -544,81 +548,68 @@ contract("SL2RD", (accounts) => {
     }
   );
 
-  specify(
-    "Transfer slot past community allocation failure",
-    async () => {
-      const shareContract = await SHARE.deployed();
-      const splitContract = await SL2RD.new();
-      const operatorRegistry = await OperatorRegistry.deployed();
-      const ownerAddresses = Array(10).fill(accounts[0]);
-      const recipientAddress = accounts[NON_OWNER_ADDRESS_INDEX];
-      const uniformCollaboratorsIds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-      const communitySplitsBasisPoints = 4000;
+  specify("Transfer slot past community allocation failure", async () => {
+    const shareContract = await SHARE.deployed();
+    const splitContract = await SL2RD.new();
+    const operatorRegistry = await OperatorRegistry.deployed();
+    const ownerAddresses = Array(10).fill(accounts[0]);
+    const recipientAddress = accounts[NON_OWNER_ADDRESS_INDEX];
+    const uniformCollaboratorsIds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+    const communitySplitsBasisPoints = 4000;
 
-      await splitContract.initialize(
-        ownerAddresses /* addresses_ */,
-        uniformCollaboratorsIds /* tokenIds_ */,
-        communitySplitsBasisPoints /* communitySplitsBasisPoints_ */,
-        shareContract.address /* shareContractAddress_ */,
-        operatorRegistry.address /* operatorRegistryAddress_ */
-      );
+    await splitContract.initialize(
+      ownerAddresses /* addresses_ */,
+      uniformCollaboratorsIds /* tokenIds_ */,
+      communitySplitsBasisPoints /* communitySplitsBasisPoints_ */,
+      shareContract.address /* shareContractAddress_ */,
+      operatorRegistry.address /* operatorRegistryAddress_ */
+    );
 
-      // Transfer the reserved community allocation (first 4 slots) to community
-      for (let i = 0; i < 4; i++) {
-        await splitContract.transferNextAvailable(recipientAddress, {
-          from: ownerAddresses[0],
-        });
+    // Transfer the reserved community allocation (first 4 slots) to community
+    for (let i = 0; i < 4; i++) {
+      await splitContract.transferNextAvailable(recipientAddress, {
+        from: ownerAddresses[0],
+      });
 
-        assert.equal(
-          recipientAddress,
-          await splitContract.ownerOf(i)
-        );
-      }
-
-      // Transfer past the community allocation.
-      try {
-        await splitContract.transferNextAvailable(recipientAddress, {
-          from: ownerAddresses[0],
-        });
-        assert(error.message.includes("SHARE035"));
-      } catch (error) {
-        console.log(error.message);
-      }
+      assert.equal(recipientAddress, await splitContract.ownerOf(i));
     }
-  );
 
-  specify(
-    "Transfer slot in community allocation failure",
-    async () => {
-      const shareContract = await SHARE.deployed();
-      const splitContract = await SL2RD.new();
-      const operatorRegistry = await OperatorRegistry.deployed();
-      const ownerAddresses = Array(10).fill(accounts[0]);
-      const recipientAddress = accounts[NON_OWNER_ADDRESS_INDEX];
-      const uniformCollaboratorsIds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-      const communitySplitsBasisPoints = 4000;
-
-      await splitContract.initialize(
-        ownerAddresses /* addresses_ */,
-        uniformCollaboratorsIds /* tokenIds_ */,
-        communitySplitsBasisPoints /* communitySplitsBasisPoints_ */,
-        shareContract.address /* shareContractAddress_ */,
-        operatorRegistry.address /* operatorRegistryAddress_ */
-      );
-
-      // Transfer one of the community slots to non-owner address, before distribution.
-      try {
-        await splitContract.transferFrom(
-          ownerAddresses[0],
-          recipientAddress,
-          1
-        );
-        assert(error.message.includes("SHARE037"));
-      } catch (error) {
-        console.log(error.message);
-      }
+    // Transfer past the community allocation.
+    try {
+      await splitContract.transferNextAvailable(recipientAddress, {
+        from: ownerAddresses[0],
+      });
+      assert(error.message.includes("SHARE035"));
+    } catch (error) {
+      console.log(error.message);
     }
-  );
+  });
+
+  specify("Transfer slot in community allocation failure", async () => {
+    const shareContract = await SHARE.deployed();
+    const splitContract = await SL2RD.new();
+    const operatorRegistry = await OperatorRegistry.deployed();
+    const ownerAddresses = Array(10).fill(accounts[0]);
+    const recipientAddress = accounts[NON_OWNER_ADDRESS_INDEX];
+    const uniformCollaboratorsIds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+    const communitySplitsBasisPoints = 4000;
+
+    await splitContract.initialize(
+      ownerAddresses /* addresses_ */,
+      uniformCollaboratorsIds /* tokenIds_ */,
+      communitySplitsBasisPoints /* communitySplitsBasisPoints_ */,
+      shareContract.address /* shareContractAddress_ */,
+      operatorRegistry.address /* operatorRegistryAddress_ */
+    );
+
+    // Transfer one of the community slots to non-owner address, before distribution.
+    try {
+      await splitContract.transferFrom(ownerAddresses[0], recipientAddress, 1);
+      assert(error.message.includes("SHARE037"));
+    } catch (error) {
+      console.log(error.message);
+    }
+  });
 
   specify(
     "Initialize operator registry and use non-registry address to conduct transfer error.",
