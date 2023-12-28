@@ -56,7 +56,7 @@ module.exports = {
       gas: GAS_VALUE,
       gasPrice: 250000000000,
       timeoutBlocks: 200,
-      networkCheckTimeout: 10000,
+      networkCheckTimeout: 1000000,
       skipDryRun: true,
     },
   },
