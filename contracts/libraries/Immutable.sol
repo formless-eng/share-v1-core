@@ -54,7 +54,7 @@ library Immutable {
 
     /// @notice Lockable uint256[] type. Write-once state variable
     /// that does not use the Solidity `immutable` keyword.
-    struct Unsigned256IntArray {
+    struct UnsignedInt256Array {
         uint256[] value;
         bool locked;
     }
@@ -105,7 +105,7 @@ library Immutable {
     /// integer array. Once the associated lock for the array is set,
     /// subsequent attempts to push revert.
     function pushUnsigned256Int(
-        Unsigned256IntArray storage object,
+        UnsignedInt256Array storage object,
         uint256 value
     ) public {
         require(!object.locked, "SHARE003");

@@ -41,7 +41,7 @@ contract SL2RD is
     uint256 public constant MAX_SPLIT_COUNT = 1000;
     uint256 public constant MAX_BASIS_POINTS = 10000;
     Immutable.UnsignedInt256 private _totalSlots;
-    Immutable.Unsigned256IntArray private _tokenIds;
+    Immutable.UnsignedInt256Array private _tokenIds;
     Immutable.AddressArray private _addresses;
     Immutable.UnsignedInt256 private _communitySplitsBasisPoints;
     Immutable.Address private _initialOwner;
