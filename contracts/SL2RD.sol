@@ -136,7 +136,7 @@ contract SL2RD is
         _addresses.locked = true;
 
         for (uint256 i = 0; i < tokenIds_.length; i++) {
-            Immutable.pushUnsigned256Int(_tokenIds, tokenIds_[i]);
+            Immutable.pushUnsignedInt256(_tokenIds, tokenIds_[i]);
         }
         _tokenIds.locked = true;
 
