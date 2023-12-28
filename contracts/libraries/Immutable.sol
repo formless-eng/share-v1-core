@@ -104,7 +104,7 @@ library Immutable {
     /// @notice Pushes an unsigned 256 integer value onto an unsigned 256
     /// integer array. Once the associated lock for the array is set,
     /// subsequent attempts to push revert.
-    function pushUnsigned256Int(
+    function pushUnsignedInt256(
         UnsignedInt256Array storage object,
         uint256 value
     ) public {
