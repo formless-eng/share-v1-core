@@ -1,6 +1,6 @@
 # SHARE Protocol V1 Core Contracts
 
-https://github.com/formless-eng/share-v1-core
+<a href="https://github.com/formless-eng/share-v1-core">https://github.com/formless-eng/share-v1-core</a>
 
 ## Documentation
 
