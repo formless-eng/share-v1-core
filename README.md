@@ -1,8 +1,9 @@
-# SHARE Contracts
+# SHARE Protocol V1 Core Contracts
+
+<a href="https://github.com/formless-eng/share-v1-core">https://github.com/formless-eng/share-v1-core</a>
 
 ## Documentation
 
-- [SHARE Whitepaper](https://formless-eng.s3.us-east-2.amazonaws.com/share+whitepaper+7.pdf)
 - Source level documentation is done in accordance with the Ethereum Natural Langauge Specification (<a href="https://docs.soliditylang.org/en/develop/natspec-format.html">NatSpec</a>).
 - [docs.formless.xyz](https://docs.formless.xyz)
 
