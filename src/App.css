@@ -1,0 +1,155 @@
+@import url('https://fonts.googleapis.com/css2?family=Helvetica+Neue&display=swap');
+
+body {
+    font-family: 'Helvetica Neue', sans-serif;
+}
+
+* {
+    font-family: 'Helvetica Neue', sans-serif;
+}
+
+h1 {
+    font-family: 'Helvetica Neue', sans-serif;
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+	background: url('https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdTY1eWQ1c3VhbmE1cmt2aTV3YThrcjBqems3ejljNXV6MmJidzlrNSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/9ChiqYoVos2ac/giphy.gif') repeat center center fixed;
+	background-size: cover; 
+	
+}
+
+.App {
+    text-align: center;
+}
+
+.appHeader {
+    background-color: #222;
+    color: white;
+    padding: 20px;
+    font-size: 2em;
+}
+
+.chartList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    width: 80%;
+    margin: 20px auto;
+}
+
+.chartItem {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #74ee15;
+    padding: 10px;
+    background-color: white;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+	opacity: 0.9;
+}
+
+.chartDetails {
+    display: flex;
+    flex-direction: column; 
+    justify-content: space-around; 
+    flex-grow: 1; 
+    text-align: left;
+    margin-left: 20px; 
+}
+
+.chartTitle, .transactionCount {
+    margin-bottom: 10px; 
+}
+
+.listenNowContainer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.listenNowLink {
+    text-decoration: none;
+    color: inherit; 
+}
+
+.contentWrapper {
+    align-items: center;
+    border: 2px solid black;
+    border-radius: 15px;
+    padding: 5px;
+    transition: all 0.3s ease; 
+	display: inline-flex;
+}
+
+.listenNowLink:hover .contentWrapper {
+    border: color #000;;
+    background-color:#74ee15; 
+}
+
+.contentWrapper span, .contentWrapper img {
+    margin-right: 4px;
+}
+
+
+.listenNowContainer span, .listenNowContainer a {
+    margin-right: 10px;
+}
+
+
+
+.chartPosition {
+    font-size: 24px;
+    font-weight: bold;
+    margin-right: 20px;
+}
+
+
+.chartDetailItem {
+    margin-bottom: 10px; 
+}
+
+.chartTitle {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #333;
+}
+
+.transactionCount, .contractAddress {
+    color: #666;
+    margin: 5px 0;
+}
+
+.contractLink {
+    color: #0066cc;
+    text-decoration: none;
+}
+
+.pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+
+.pagination button {
+    border: none;
+    background-color: #222;
+    color: white;
+    padding: 10px 15px;
+    margin: 0 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.pagination button:disabled {
+    background-color: #666;
+}
+
+.pagination button:hover:not(:disabled) {
+    background-color: #0056b3;
+}

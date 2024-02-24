@@ -1,0 +1,99 @@
+.navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background-color: #222;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 20px;
+    color: white;
+    opacity: 0.9;
+    background-image: url('https://img.freepik.com/free-vector/grunge-dusty-texture-background_1048-9793.jpg');
+    background-repeat: repeat;
+}
+
+.nav-logo img {
+    height: 60px; 
+}
+
+.nav-items {
+    display: flex;
+    justify-content: center; 
+    width: 100%; 
+}
+
+.nav-item {
+    color: white;
+    text-decoration: none;
+    padding: 10px; 
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+.nav-item:hover {
+    background-color: #333; 
+}
+
+.nav-dropdown {
+    position: relative;
+}
+
+.custom-dropdown {
+    cursor: pointer;
+    border-radius: 5px;
+    padding: 5px 5px; 
+    display: flex;
+    align-items: center;
+}
+
+.dropdown-selected img {
+    width: 20px; 
+    height: 20px;
+    margin-right: 5px;
+}
+
+.dropdown-options {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: white;
+    display: none;
+    z-index: 1000;
+}
+
+.dropdown-options.show {
+    display: block;
+}
+
+.dropdown-option {
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.dropdown-option img {
+    width: 20px; 
+    height: 20px;
+    margin-right: 5px;
+}
+
+.dropdown-option:hover {
+    background-color: #f0f0f0;
+}
+
+.dropdown-selected, .dropdown-option {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dropdown-option span, .dropdown-selected span {
+    max-width: 150px; 
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
