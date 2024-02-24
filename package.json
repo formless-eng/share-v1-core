@@ -1,13 +1,48 @@
 {
-  "name": "share",
-  "version": "1.0.0",
-  "description": "SHARE v1 core contracts",
-  "author": "brandon@formless.xyz",
-  "license": "UNLICENSED",
-  "dependencies": {
-    "@openzeppelin/contracts": "^4.4.2",
-    "@truffle/hdwallet-provider": "^2.0.0",
-    "ethereumjs-util": "^7.1.4",
-    "web3": "^1.6.1"
-  }
+	"name": "share-charts",
+	"version": "1.0.0",
+	"description": "top song charts from smart contracts",
+	"author": "sagaryadav.xyz",
+	"license": "UNLICENSED",
+	"dependencies": {
+		"@openzeppelin/contracts": "^4.4.2",
+		"@truffle/hdwallet-provider": "^2.0.0",
+		"ethereumjs-util": "^7.1.4",
+		"@testing-library/jest-dom": "^5.17.0",
+		"@testing-library/react": "^13.4.0",
+		"@testing-library/user-event": "^13.5.0",
+		"axios": "^1.6.7",
+		"cheerio": "^1.0.0-rc.12",
+		"dotenv": "^16.4.5",
+		"ethers": "^6.11.1",
+		"react": "^18.2.0",
+		"react-dom": "^18.2.0",
+		"react-scripts": "5.0.1",
+		"web-vitals": "^2.1.4",
+		"web3": "^4.5.0"
+	},
+	"scripts": {
+		"start": "node src/api.js && react-scripts start",
+		"build": "node src/api.js && react-scripts build",
+		"test": "react-scripts test",
+		"eject": "react-scripts eject"
+	},
+	"eslintConfig": {
+		"extends": [
+			"react-app",
+			"react-app/jest"
+		]
+	},
+	"browserslist": {
+		"production": [
+			">0.2%",
+			"not dead",
+			"not op_mini all"
+		],
+		"development": [
+			"last 1 chrome version",
+			"last 1 firefox version",
+			"last 1 safari version"
+		]
+	}
 }
