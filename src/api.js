@@ -46,12 +46,20 @@ const getMetaName = async (url) => {
 		const response = await axios.get(url);
 		const $ = cheerio.load(response.data);
 		const ogTitle = $('meta[property="og:title"]').attr('content');
-		return ogTitle ? ogTitle : "No og:title meta tag found";
+
+		if (!ogTitle) {
+			return "No og:title meta tag found";
+		}
+
+		const pricePattern = /\(\$.*?\)/g;
+
+		return ogTitle.replace(pricePattern, '').trim();
 	} catch (error) {
 		console.error("An error occurred:", error);
 		return "Failed to fetch the page";
 	}
 };
+
 
 contract.getPastEvents('Grant', {
 	fromBlock: 0,
