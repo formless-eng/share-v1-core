@@ -5,8 +5,8 @@ const cheerio = require('cheerio');
 const fs = require('fs');
 
 const chain = 'POLYGON';
-const web3 = new Web3(process.env[`${chain}_MAINNET_URL`]);
 
+const web3 = new Web3(process.env[`${chain}_MAINNET_URL`]);
 
 const contractABI = [
 	{
@@ -53,13 +53,11 @@ const getMetaName = async (url) => {
 	}
 };
 
-const updateData = async () => {
-	try {
-		const events = await contract.getPastEvents('Grant', {
-			fromBlock: 0,
-			toBlock: 'latest'
-		});
-
+contract.getPastEvents('Grant', {
+	fromBlock: 0,
+	toBlock: 'latest'
+})
+	.then(async events => {
 		let counts = {};
 		for (const event of events) {
 			let key = event.returnValues.contractAddress;
@@ -81,12 +79,7 @@ const updateData = async () => {
 				console.error(err);
 				return;
 			}
-			console.log('Event logs saved to api.json');
+			console.log('Event logs saved to eventLogs.json');
 		});
-	} catch (error) {
-		console.error(error);
-	}
-};
-
-setInterval(updateData, 3600000);
-updateData();
+	})
+	.catch(console.error);
