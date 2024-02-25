@@ -46,7 +46,7 @@ const getMetaName = async (url) => {
 		const response = await axios.get(url);
 		const $ = cheerio.load(response.data);
 		const ogTitle = $('meta[property="og:title"]').attr('content');
-		return ogTitle ? ogTitle.split(' (')[0] : "No og:title meta tag found";
+		return ogTitle ? ogTitle : "No og:title meta tag found";
 	} catch (error) {
 		console.error("An error occurred:", error);
 		return "Failed to fetch the page";
