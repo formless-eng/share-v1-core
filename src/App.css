@@ -16,8 +16,7 @@ body,
 html {
 	margin: 0;
 	padding: 0;
-	background: url('https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdTY1eWQ1c3VhbmE1cmt2aTV3YThrcjBqems3ejljNXV6MmJidzlrNSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/9ChiqYoVos2ac/giphy.gif') repeat center center fixed;
-	background-size: cover;
+	background:white;
 
 }
 

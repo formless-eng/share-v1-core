@@ -59,7 +59,7 @@ function ChartList({ items }) {
 					<div className="chartPosition">{index + 1}</div>
 					<div className="chartDetails">
 						<div className="chartTitle">{details.metaName}</div>
-						<div className="transactionCount">Total Plays: {details.count}</div>
+						<div className="transactionCount">Total Transactions: {details.count}</div>
 						<a href={details.url} target="_blank" rel="noopener noreferrer" className="listenNowLink">
 							<div className="contentWrapper">
 								<span>Listen now on </span>

@@ -24,7 +24,7 @@ const Navbar = ({ isScrolled }) => {
 				<img src="https://app.share.formless.xyz/formless-mark-white.svg" alt="Formless Mark White" />
 			</div>
 			<div className="nav-items">
-				<h2><a href="https://formless.xyz" className="nav-item" target="_blank" rel="noopener noreferrer">TOP HITS : SHARE PROTOCOL'S MOST PLAYED SONGS</a></h2>
+				<h2><a href="https://formless.xyz" className="nav-item" target="_blank" rel="noopener noreferrer">TOP CONTRACTS : SHARE PROTOCOL'S MOST PLAYED SONGS</a></h2>
 			</div>
 			<div className="nav-dropdown">
 				<div className="custom-dropdown" onClick={toggleDropdown}>
