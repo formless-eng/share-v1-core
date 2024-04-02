@@ -16,11 +16,11 @@ import "./LimitedOwnable.sol";
 import "./OperatorRegistry.sol";
 
 /// @title Swift Liquid Rotating Royalty Distributor (SL2RD).
-/// @author john-paul@formless.xyz
-/// @notice This contract implements efficient liquid royalty splitting
+/// @author john-paul@formless.xyz, brandon@formless.xyz
+/// @notice This contract implements efficient liquid payment splitting
 /// by shuffling recipient tokenIds off-chain into a random distribution
 /// and dealing transactions to those recipient slot entries atomically, e.g.
-/// royalties are "dealt" in a rotating fashion rather than "split". This
+/// payments are "dealt" in a rotating fashion rather than "split". This
 /// results in immense gas savings and as the number of transactions
 /// approaches infinity the delta between revenue received and revenue owed
 /// by each recipient approaches zero.
@@ -29,7 +29,7 @@ contract SL2RD is
     ERC721("Swift Liquid Rotating Royalty Distributor", "SL2RD")
 {
     /// @notice Emitted when a payment is sent to a stakeholder
-    /// slot listed within this royalty distribution contract.
+    /// slot listed within this payment distribution contract.
     event Payment(
         address indexed from,
         address indexed recipient,
@@ -38,7 +38,13 @@ contract SL2RD is
     );
     event MintingToken(uint256 indexed tokenId, address indexed toAddress);
 
-    uint256 public constant MAX_SPLIT_COUNT = 1000;
+    uint256 public constant MAX_SPLIT_COUNT = 10000;
+    /// Max partition size empirically derived as a result of 30M gas
+    /// block limit on L2 blockchains. For a 10000 slot distribution
+    /// this would take 100 multipart transactions to initialize.
+    uint256 public constant MAX_PARTITION_SIZE = 100;
+    /// Max basis points of 10000 corresponds to 10000 splits each
+    /// at 0.01% ownership.
     uint256 public constant MAX_BASIS_POINTS = 10000;
     Immutable.UnsignedInt256 private _totalSlots;
     Immutable.UnsignedInt256Array private _tokenIds;
@@ -152,6 +158,108 @@ contract SL2RD is
         setInitialized();
     }
 
+    /// @notice Prepares the contract for multipart initialization.
+    /// @dev Recipient tokenId table is constructed off-chain and is
+    /// constructed as follows:
+    /// 1. A number of slots are allocated in an array corresponding
+    /// to 1 / minimum percentage of any stakeholder in this asset.
+    /// 2. IDs are assigned to slots redundantly such that the probability
+    /// of an iterator pointing to a given ID is equal to that
+    /// ID's ownership stake in the asset.
+    /// 3. Additionally, the layout specified in (2) is randomized
+    /// such that primary stakeholders have no advantage in payment
+    /// time given that the iterator increments linearly through the
+    /// ID table.
+    /// 4. A parallel addresses array is filled with the corresponding
+    /// owner for each tokenId. This is prefilled with the owner's
+    /// address for each token, but designed with flexibilty to include
+    /// others during initialization if they are known.
+    /// The communitySplitsBasisPoints is a constant percentage denoted in
+    /// basis points for how many of the slots the owner initially wants
+    /// to allocate for everyone else.
+    /// 5. The array noted in (1) is partitioned into multiple arrays
+    /// such that a composite array is constructed through a series of
+    /// calls to `multipartAddPartition`, followed by a final call to
+    /// `multipartInitializationEnd`. This is a requirement for large
+    /// distributions where the block gas limit would otherwise be
+    /// exceeded when attempting to initialize the contract.
+    /// @param communitySplitsBasisPoints_ The percentage of slots allocated
+    /// for the community (denoted in basis points); e.g. 20% is denoted as 2000.
+    /// @param shareContractAddress_ The address of the share contract.
+    /// @param operatorRegistryAddress_ The address of the share operator registry.
+    function multipartInitializationBegin(
+        uint256 communitySplitsBasisPoints_,
+        address shareContractAddress_,
+        address operatorRegistryAddress_
+    ) public onlyOwner {
+        require(communitySplitsBasisPoints_ <= MAX_BASIS_POINTS, "SHARE029");
+        setShareContractAddress(shareContractAddress_);
+        _protocol = SHARE(shareContractAddress_);
+        _shareOperatorRegistry = OperatorRegistry(operatorRegistryAddress_);
+        Immutable.setUnsignedInt256(
+            _communitySplitsBasisPoints,
+            communitySplitsBasisPoints_
+        );
+    }
+
+    /// @notice Initializes a specified partition of the distribution
+    /// vector. Called for each sub-partition until the entire distribution
+    /// vector is stored on-chain.
+    /// @param addresses_ The addresses for initial distribution.
+    /// @param tokenIds_ The tokenIds for initial distribution.
+    function multipartAddPartition(
+        uint256 partitionIndex_,
+        address[] memory addresses_,
+        uint256[] memory tokenIds_
+    ) public onlyOwner {
+        require(tokenIds_.length == addresses_.length, "SHARE028");
+        require(tokenIds_.length <= MAX_PARTITION_SIZE, "SHARE038");
+        require(tokenIds_.length >= 1, "SHARE020");
+        if (partitionIndex_ == 0) {
+            Immutable.setAddress(_initialOwner, addresses_[0]);
+        }
+        // The owner addresses are SHARE approved wallets,
+        // e.g. EOAs or wallets with approved code hashes.
+        for (uint256 i = 0; i < addresses_.length; i++) {
+            // Check that all addresses in the table are SHARE approved wallets,
+            // e.g. EOAs or wallets with approved code hashes.
+            require(
+                _protocol.isApprovedBuild(
+                    addresses_[i],
+                    CodeVerification.BuildType.WALLET
+                ),
+                "SHARE007"
+            );
+            Immutable.pushAddress(_addresses, addresses_[i]);
+        }
+
+        for (uint256 i = 0; i < tokenIds_.length; i++) {
+            Immutable.pushUnsignedInt256(_tokenIds, tokenIds_[i]);
+        }
+
+        // Mint all of the slots to the corresponding address (default owner).
+        for (uint256 i = 0; i < _tokenIds.value.length; i++) {
+            // Duplicate verification ensures tokenIds are minted once.
+            if (_tokenOwners[_tokenIds.value[i]] == address(0)) {
+                emit MintingToken(_tokenIds.value[i], _addresses.value[i]);
+                _safeMint(_addresses.value[i], _tokenIds.value[i]);
+                _tokenOwners[_tokenIds.value[i]] = _addresses.value[i];
+            }
+        }
+    }
+
+    /// @notice Completes multipart initilization and sets
+    /// addresses_ and tokenIds_ write state to immutable.
+    function multipartInitializationEnd() public {
+        _addresses.locked = true;
+        _tokenIds.locked = true;
+        Immutable.setUnsignedInt256(_totalSlots, _tokenIds.value.length);
+        _totalCommunitySlots =
+            (_totalSlots.value * _communitySplitsBasisPoints.value) /
+            MAX_BASIS_POINTS;
+        setInitialized();
+    }
+
     /// @notice This function provides access to the initial distribution table of
     /// addresses.
     function initialSplitDistributionTable()
@@ -175,7 +283,7 @@ contract SL2RD is
 
     /// @notice Returns the index of the tokenId in the table which
     /// is the next tokenId to receive payment on the reception of
-    /// royalty by this contract.
+    /// payment by this contract.
     function tokenIdIndex() public view afterInit returns (uint256) {
         return _currentTokenIdIndex;
     }
@@ -205,7 +313,7 @@ contract SL2RD is
         return _totalCommunitySlots;
     }
 
-    /// @notice Receives royalty funds and distributes them among
+    /// @notice Receives payment funds and distributes them among
     /// stakeholders specified in this contract using the SL2RD
     /// method described above.
     receive() external payable nonReentrant afterInit {

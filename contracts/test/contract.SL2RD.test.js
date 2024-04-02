@@ -4,9 +4,18 @@ const PFAUnit = artifacts.require("PFAUnit");
 const OperatorRegistry = artifacts.require("OperatorRegistry");
 const DEFAULT_ADDRESS_INDEX = 0;
 const NON_OWNER_ADDRESS_INDEX = 1;
+const MAX_SL2RD_PARTITION_SIZE = 100;
 
 function normalizeAddress(address) {
   return address.toLowerCase();
+}
+
+function calculateSplitIndexUsingPartition(
+  partitionIndex,
+  partitionSize = MAX_SL2RD_PARTITION_SIZE,
+  offset = 0
+) {
+  return partitionIndex * partitionSize + offset;
 }
 
 contract("SL2RD", (accounts) => {
@@ -15,7 +24,6 @@ contract("SL2RD", (accounts) => {
     const splitContract = await SL2RD.deployed();
     const operatorRegistry = await OperatorRegistry.deployed();
     const ownerAddresses = Array(10).fill(accounts[0]);
-
     const uniformCollaboratorsIds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
     await splitContract.initialize(
       ownerAddresses /* addresses_ */,
@@ -28,10 +36,36 @@ contract("SL2RD", (accounts) => {
     assert.equal(await splitContract.tokenIdIndex(), 0);
   });
 
+  specify("Multipart contract initialization", async () => {
+    const shareContract = await SHARE.deployed();
+    const splitContract = await SL2RD.new();
+    const operatorRegistry = await OperatorRegistry.deployed();
+    const ownerAddresses = Array(10).fill(accounts[0]);
+    const uniformCollaboratorsIds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+    await splitContract.multipartInitializationBegin(
+      0 /* communitySplitsBasisPoints_ */,
+      shareContract.address /* shareContractAddress_ */,
+      operatorRegistry.address /* operatorRegistryAddress_ */
+    );
+    await splitContract.multipartAddPartition(
+      0 /* partitionIndex_ */,
+      ownerAddresses.slice(0, 5) /* addresses_ */,
+      uniformCollaboratorsIds.slice(0, 5) /* tokenIds_ */
+    );
+    await splitContract.multipartAddPartition(
+      1 /* partitionIndex_ */,
+      ownerAddresses.slice(5, 10) /* addresses_ */,
+      uniformCollaboratorsIds.slice(5, 10) /* tokenIds_ */
+    );
+    await splitContract.multipartInitializationEnd();
+    assert.equal(accounts[DEFAULT_ADDRESS_INDEX], await splitContract.owner());
+    assert.equal(await splitContract.tokenIdIndex(), 0);
+  });
+
   specify("Contract initialization with 200 splits", async () => {
     const shareContract = await SHARE.deployed();
     const operatorRegistry = await OperatorRegistry.deployed();
-    const split = await SL2RD.new();
+    const splitContract = await SL2RD.new();
     const uniformCollaboratorsIds = [];
     const ownerAddresses = [];
 
@@ -41,7 +75,7 @@ contract("SL2RD", (accounts) => {
     }
     console.log(uniformCollaboratorsIds);
     try {
-      await split.initialize(
+      await splitContract.initialize(
         ownerAddresses /* addresses_ */,
         uniformCollaboratorsIds /* tokenIds_ */,
         0 /* communitySplitsBasisPoints_ */,
@@ -52,6 +86,61 @@ contract("SL2RD", (accounts) => {
       console.log(error);
       console.log(error.message);
       assert(false, "Initialization with 200 splits failed");
+    }
+  });
+
+  specify("Multipart contract initialization with 1000 splits", async () => {
+    const shareContract = await SHARE.deployed();
+    const operatorRegistry = await OperatorRegistry.deployed();
+    const splitContract = await SL2RD.new();
+    const uniformCollaboratorsIds = [];
+    const ownerAddresses = [];
+
+    for (let i = 0; i < 1000; i += 1) {
+      uniformCollaboratorsIds.push(Math.floor(Math.random() * 3));
+      ownerAddresses.push(accounts[0]);
+    }
+    console.log(uniformCollaboratorsIds);
+    try {
+      await splitContract.multipartInitializationBegin(
+        0 /* communitySplitsBasisPoints_ */,
+        shareContract.address /* shareContractAddress_ */,
+        operatorRegistry.address /* operatorRegistryAddress_ */
+      );
+      for (let partitionIndex = 0; partitionIndex < 5; partitionIndex += 1) {
+        await splitContract.multipartAddPartition(
+          partitionIndex /* partitionIndex_ */,
+          ownerAddresses.slice(
+            calculateSplitIndexUsingPartition(
+              partitionIndex,
+              MAX_SL2RD_PARTITION_SIZE,
+              0
+            ),
+            calculateSplitIndexUsingPartition(
+              partitionIndex,
+              MAX_SL2RD_PARTITION_SIZE,
+              MAX_SL2RD_PARTITION_SIZE
+            )
+          ) /* addresses_ */,
+          uniformCollaboratorsIds.slice(
+            calculateSplitIndexUsingPartition(
+              partitionIndex,
+              MAX_SL2RD_PARTITION_SIZE,
+              0
+            ),
+            calculateSplitIndexUsingPartition(
+              partitionIndex,
+              MAX_SL2RD_PARTITION_SIZE,
+              MAX_SL2RD_PARTITION_SIZE
+            )
+          ) /* tokenIds_ */
+        );
+      }
+      await splitContract.multipartInitializationEnd();
+    } catch (error) {
+      console.log(error);
+      console.log(error.message);
+      assert(false, "Initialization with 10000 splits failed");
     }
   });
 
@@ -474,6 +563,105 @@ contract("SL2RD", (accounts) => {
     }
   });
 
+  /* If using Ganache, be sure to set account amount adequately */
+  specify("Multipart split comprehensive test", async () => {
+    const NUM_TRANSACTIONS = 50;
+    const SIZE = 20;
+    const shareContract = await SHARE.deployed();
+    const operatorRegistry = await OperatorRegistry.deployed();
+    const splitContract = await SL2RD.new();
+    const uniformCollaboratorsIds = [];
+    const ownerAddresses = [];
+    const uniformCollaborators = [];
+
+    for (let i = 0; i < SIZE; i += 1) {
+      uniformCollaboratorsIds.push(i);
+      ownerAddresses.push(accounts[0]);
+      uniformCollaborators.push(accounts[i + 1]);
+    }
+    console.log("ACCOUNTS", uniformCollaborators);
+    try {
+      await splitContract.multipartInitializationBegin(
+        0 /* communitySplitsBasisPoints_ */,
+        shareContract.address /* shareContractAddress_ */,
+        operatorRegistry.address /* operatorRegistryAddress_ */
+      );
+      for (let partitionIndex = 0; partitionIndex < 5; partitionIndex += 1) {
+        await splitContract.multipartAddPartition(
+          partitionIndex /* partitionIndex_ */,
+          ownerAddresses.slice(
+            calculateSplitIndexUsingPartition(partitionIndex, 4, 0),
+            calculateSplitIndexUsingPartition(partitionIndex, 4, 4)
+          ) /* addresses_ */,
+          uniformCollaboratorsIds.slice(
+            calculateSplitIndexUsingPartition(partitionIndex, 4, 0),
+            calculateSplitIndexUsingPartition(partitionIndex, 4, 4)
+          ) /* tokenIds_ */
+        );
+      }
+      await splitContract.multipartInitializationEnd();
+    } catch (error) {
+      console.log(error);
+      console.log(error.message);
+      assert(false, "Initialization failed");
+    }
+
+    const uniformCollaboratorsMap = new Map();
+    for (let i = 0; i < SIZE; i += 1) {
+      uniformCollaboratorsMap.set(i, uniformCollaborators[i]);
+    }
+
+    console.log("FULL MAP: ", uniformCollaboratorsMap);
+
+    const entries = Array.from(uniformCollaboratorsMap.entries());
+    const halfLength = Math.ceil(entries.length / 2);
+
+    for (let i = 0; i < entries.length; i += 1) {
+      const tokenId = entries[i][0];
+      const recipient = entries[i][1];
+
+      console.log("tokenId: ", tokenId, "\n");
+
+      if (i < halfLength) {
+        await splitContract.safeTransferFrom(accounts[0], recipient, tokenId);
+      } else {
+        await splitContract.transferFrom(accounts[0], recipient, tokenId);
+      }
+    }
+
+    for (let i = 0; i < NUM_TRANSACTIONS; i += 1) {
+      await web3.eth
+        .sendTransaction({
+          to: splitContract.address,
+          from: accounts[DEFAULT_ADDRESS_INDEX],
+          value: 1,
+        })
+        .then(function (receipt) {
+          console.log(receipt);
+          splitContract
+            .getPastEvents("Payment", {
+              fromBlock: 0,
+              toBlock: "latest",
+            })
+            .then((events) => {
+              const mostRecentEvent = events[events.length - 1];
+              assert.equal(events.length, i + 1);
+              assert.equal(
+                normalizeAddress(
+                  mostRecentEvent.returnValues.recipient.toLowerCase()
+                ),
+                normalizeAddress(
+                  uniformCollaboratorsMap.get(
+                    uniformCollaboratorsIds[i % uniformCollaboratorsIds.length]
+                  )
+                )
+              );
+              assert.equal(mostRecentEvent.returnValues.value, 1);
+            });
+        });
+    }
+  });
+
   specify("Transfer next available slot to a specified address", async () => {
     const shareContract = await SHARE.deployed();
     const splitContract = await SL2RD.new();
@@ -511,7 +699,57 @@ contract("SL2RD", (accounts) => {
   });
 
   specify(
-    "Allocate multiple available slots to a specified address",
+    "Multipart split transfer next available slot to a specified address",
+    async () => {
+      const shareContract = await SHARE.deployed();
+      const splitContract = await SL2RD.new();
+      const operatorRegistry = await OperatorRegistry.deployed();
+      const ownerAddresses = Array(10).fill(accounts[0]);
+      const recipientAddress = accounts[NON_OWNER_ADDRESS_INDEX];
+      const uniformCollaboratorsIds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+      const communitySplitsBasisPoints = 4000;
+
+      await splitContract.multipartInitializationBegin(
+        communitySplitsBasisPoints /* communitySplitsBasisPoints_ */,
+        shareContract.address /* shareContractAddress_ */,
+        operatorRegistry.address /* operatorRegistryAddress_ */
+      );
+      for (let partitionIndex = 0; partitionIndex < 5; partitionIndex += 1) {
+        await splitContract.multipartAddPartition(
+          partitionIndex /* partitionIndex_ */,
+          ownerAddresses.slice(
+            calculateSplitIndexUsingPartition(partitionIndex, 2, 0),
+            calculateSplitIndexUsingPartition(partitionIndex, 2, 2)
+          ) /* addresses_ */,
+          uniformCollaboratorsIds.slice(
+            calculateSplitIndexUsingPartition(partitionIndex, 2, 0),
+            calculateSplitIndexUsingPartition(partitionIndex, 2, 2)
+          ) /* tokenIds_ */
+        );
+      }
+      await splitContract.multipartInitializationEnd();
+
+      // Transfer the reserved community allocation (first 4 slots) to community
+      for (let i = 0; i < 4; i++) {
+        await splitContract.transferNextAvailable(recipientAddress, {
+          from: ownerAddresses[0],
+        });
+        assert.equal(recipientAddress, await splitContract.ownerOf(i));
+      }
+
+      // Make sure the owner still owns the private allocation
+      for (let i = 4; i < ownerAddresses.length; i++) {
+        assert.equal(
+          ownerAddresses[0],
+          await splitContract.ownerOf(i),
+          "Distributed past community allocation."
+        );
+      }
+    }
+  );
+
+  specify(
+    "Multipart allocate multiple available slots to a specified address",
     async () => {
       const shareContract = await SHARE.deployed();
       const splitContract = await SL2RD.new();
@@ -521,13 +759,25 @@ contract("SL2RD", (accounts) => {
       const uniformCollaboratorsIds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
       const communitySplitsBasisPoints = 10000;
 
-      await splitContract.initialize(
-        ownerAddresses /* addresses_ */,
-        uniformCollaboratorsIds /* tokenIds_ */,
+      await splitContract.multipartInitializationBegin(
         communitySplitsBasisPoints /* communitySplitsBasisPoints_ */,
         shareContract.address /* shareContractAddress_ */,
         operatorRegistry.address /* operatorRegistryAddress_ */
       );
+      for (let partitionIndex = 0; partitionIndex < 5; partitionIndex += 1) {
+        await splitContract.multipartAddPartition(
+          partitionIndex /* partitionIndex_ */,
+          ownerAddresses.slice(
+            calculateSplitIndexUsingPartition(partitionIndex, 2, 0),
+            calculateSplitIndexUsingPartition(partitionIndex, 2, 2)
+          ) /* addresses_ */,
+          uniformCollaboratorsIds.slice(
+            calculateSplitIndexUsingPartition(partitionIndex, 2, 0),
+            calculateSplitIndexUsingPartition(partitionIndex, 2, 2)
+          ) /* tokenIds_ */
+        );
+      }
+      await splitContract.multipartInitializationEnd();
 
       await splitContract.transferMultipleAvailable(recipientAddress, 7, {
         from: ownerAddresses[0],
