@@ -4,9 +4,18 @@ const PFAUnit = artifacts.require("PFAUnit");
 const OperatorRegistry = artifacts.require("OperatorRegistry");
 const DEFAULT_ADDRESS_INDEX = 0;
 const NON_OWNER_ADDRESS_INDEX = 1;
+const MAX_SL2RD_PARTITION_SIZE = 100;
 
 function normalizeAddress(address) {
   return address.toLowerCase();
+}
+
+function calculateSplitIndexUsingPartition(
+  partitionIndex,
+  partitionSize = MAX_SL2RD_PARTITION_SIZE,
+  offset = 0
+) {
+  return partitionIndex * partitionSize + offset;
 }
 
 contract("SL2RD", (accounts) => {
@@ -49,7 +58,6 @@ contract("SL2RD", (accounts) => {
       uniformCollaboratorsIds.slice(5, 10) /* tokenIds_ */
     );
     await splitContract.multipartInitializationEnd();
-
     assert.equal(accounts[DEFAULT_ADDRESS_INDEX], await splitContract.owner());
     assert.equal(await splitContract.tokenIdIndex(), 0);
   });
@@ -103,12 +111,28 @@ contract("SL2RD", (accounts) => {
         await splitContract.multipartAddPartition(
           partitionIndex /* partitionIndex_ */,
           ownerAddresses.slice(
-            partitionIndex * 200,
-            partitionIndex * 200 + 200
+            calculateSplitIndexUsingPartition(
+              partitionIndex,
+              MAX_SL2RD_PARTITION_SIZE,
+              0
+            ),
+            calculateSplitIndexUsingPartition(
+              partitionIndex,
+              MAX_SL2RD_PARTITION_SIZE,
+              MAX_SL2RD_PARTITION_SIZE
+            )
           ) /* addresses_ */,
           uniformCollaboratorsIds.slice(
-            partitionIndex * 200,
-            partitionIndex * 200 + 200
+            calculateSplitIndexUsingPartition(
+              partitionIndex,
+              MAX_SL2RD_PARTITION_SIZE,
+              0
+            ),
+            calculateSplitIndexUsingPartition(
+              partitionIndex,
+              MAX_SL2RD_PARTITION_SIZE,
+              MAX_SL2RD_PARTITION_SIZE
+            )
           ) /* tokenIds_ */
         );
       }
@@ -566,12 +590,12 @@ contract("SL2RD", (accounts) => {
         await splitContract.multipartAddPartition(
           partitionIndex /* partitionIndex_ */,
           ownerAddresses.slice(
-            partitionIndex * 4,
-            partitionIndex * 4 + 4
+            calculateSplitIndexUsingPartition(partitionIndex, 4, 0),
+            calculateSplitIndexUsingPartition(partitionIndex, 4, 4)
           ) /* addresses_ */,
           uniformCollaboratorsIds.slice(
-            partitionIndex * 4,
-            partitionIndex * 4 + 4
+            calculateSplitIndexUsingPartition(partitionIndex, 4, 0),
+            calculateSplitIndexUsingPartition(partitionIndex, 4, 4)
           ) /* tokenIds_ */
         );
       }

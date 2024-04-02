@@ -17,10 +17,10 @@ import "./OperatorRegistry.sol";
 
 /// @title Swift Liquid Rotating Royalty Distributor (SL2RD).
 /// @author john-paul@formless.xyz, brandon@formless.xyz
-/// @notice This contract implements efficient liquid royalty splitting
+/// @notice This contract implements efficient liquid payment splitting
 /// by shuffling recipient tokenIds off-chain into a random distribution
 /// and dealing transactions to those recipient slot entries atomically, e.g.
-/// royalties are "dealt" in a rotating fashion rather than "split". This
+/// payments are "dealt" in a rotating fashion rather than "split". This
 /// results in immense gas savings and as the number of transactions
 /// approaches infinity the delta between revenue received and revenue owed
 /// by each recipient approaches zero.
@@ -29,7 +29,7 @@ contract SL2RD is
     ERC721("Swift Liquid Rotating Royalty Distributor", "SL2RD")
 {
     /// @notice Emitted when a payment is sent to a stakeholder
-    /// slot listed within this royalty distribution contract.
+    /// slot listed within this payment distribution contract.
     event Payment(
         address indexed from,
         address indexed recipient,
@@ -38,8 +38,13 @@ contract SL2RD is
     );
     event MintingToken(uint256 indexed tokenId, address indexed toAddress);
 
-    uint256 public constant MAX_SPLIT_COUNT = 1000;
-    uint256 public constant MAX_PARTITION_SIZE = 200;
+    uint256 public constant MAX_SPLIT_COUNT = 10000;
+    /// Max partition size emperically derived as a result of 30M gas
+    /// block limit on L2 blockchains. For a 10000 slot distribution
+    /// this would take 100 multipart transactions to initialize.
+    uint256 public constant MAX_PARTITION_SIZE = 100;
+    /// Max basis points of 10000 corresponds to 10000 splits each
+    /// at 0.01% ownership.
     uint256 public constant MAX_BASIS_POINTS = 10000;
     Immutable.UnsignedInt256 private _totalSlots;
     Immutable.UnsignedInt256Array private _tokenIds;
@@ -193,7 +198,7 @@ contract SL2RD is
 
     /// @notice Initializes a specified partition of the distribution
     /// vector. Called for each sub-partition until the entire distribution
-    // vector is stored on-chain.
+    /// vector is stored on-chain.
     /// @param addresses_ The addresses for initial distribution.
     /// @param tokenIds_ The tokenIds for initial distribution.
     function multipartAddPartition(
@@ -272,7 +277,7 @@ contract SL2RD is
 
     /// @notice Returns the index of the tokenId in the table which
     /// is the next tokenId to receive payment on the reception of
-    /// royalty by this contract.
+    /// payment by this contract.
     function tokenIdIndex() public view afterInit returns (uint256) {
         return _currentTokenIdIndex;
     }
@@ -302,7 +307,7 @@ contract SL2RD is
         return _totalCommunitySlots;
     }
 
-    /// @notice Receives royalty funds and distributes them among
+    /// @notice Receives payment funds and distributes them among
     /// stakeholders specified in this contract using the SL2RD
     /// method described above.
     receive() external payable nonReentrant afterInit {
