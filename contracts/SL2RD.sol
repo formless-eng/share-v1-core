@@ -163,7 +163,7 @@ contract SL2RD is
     /// constructed as follows:
     /// 1. A number of slots are allocated in an array corresponding
     /// to 1 / minimum percentage of any stakeholder in this asset.
-    /// 2. IDs are assigned to slots such that the probability
+    /// 2. IDs are assigned to slots redundantly such that the probability
     /// of an iterator pointing to a given ID is equal to that
     /// ID's ownership stake in the asset.
     /// 3. Additionally, the layout specified in (2) is randomized
@@ -175,8 +175,14 @@ contract SL2RD is
     /// address for each token, but designed with flexibilty to include
     /// others during initialization if they are known.
     /// The communitySplitsBasisPoints is a constant percentage denoted in
-    /// basis points for how many of the slots the creator initially wants
+    /// basis points for how many of the slots the owner initially wants
     /// to allocate for everyone else.
+    /// 5. The array noted in (1) is partitioned into multiple arrays
+    /// such that a composite array is constructed through a series of
+    /// calls to `multipartAddPartition`, followed by a final call to
+    /// `multipartInitializationEnd`. This is a requirement for large
+    /// distributions where the block gas limit would otherwise be
+    /// exceeded when attempting to initialize the contract.
     /// @param communitySplitsBasisPoints_ The percentage of slots allocated
     /// for the community (denoted in basis points); e.g. 20% is denoted as 2000.
     /// @param shareContractAddress_ The address of the share contract.
