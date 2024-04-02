@@ -39,7 +39,7 @@ contract SL2RD is
     event MintingToken(uint256 indexed tokenId, address indexed toAddress);
 
     uint256 public constant MAX_SPLIT_COUNT = 10000;
-    /// Max partition size emperically derived as a result of 30M gas
+    /// Max partition size empirically derived as a result of 30M gas
     /// block limit on L2 blockchains. For a 10000 slot distribution
     /// this would take 100 multipart transactions to initialize.
     uint256 public constant MAX_PARTITION_SIZE = 100;
