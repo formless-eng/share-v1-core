@@ -699,7 +699,57 @@ contract("SL2RD", (accounts) => {
   });
 
   specify(
-    "Allocate multiple available slots to a specified address",
+    "Multipart split transfer next available slot to a specified address",
+    async () => {
+      const shareContract = await SHARE.deployed();
+      const splitContract = await SL2RD.new();
+      const operatorRegistry = await OperatorRegistry.deployed();
+      const ownerAddresses = Array(10).fill(accounts[0]);
+      const recipientAddress = accounts[NON_OWNER_ADDRESS_INDEX];
+      const uniformCollaboratorsIds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+      const communitySplitsBasisPoints = 4000;
+
+      await splitContract.multipartInitializationBegin(
+        communitySplitsBasisPoints /* communitySplitsBasisPoints_ */,
+        shareContract.address /* shareContractAddress_ */,
+        operatorRegistry.address /* operatorRegistryAddress_ */
+      );
+      for (let partitionIndex = 0; partitionIndex < 5; partitionIndex += 1) {
+        await splitContract.multipartAddPartition(
+          partitionIndex /* partitionIndex_ */,
+          ownerAddresses.slice(
+            calculateSplitIndexUsingPartition(partitionIndex, 2, 0),
+            calculateSplitIndexUsingPartition(partitionIndex, 2, 2)
+          ) /* addresses_ */,
+          uniformCollaboratorsIds.slice(
+            calculateSplitIndexUsingPartition(partitionIndex, 2, 0),
+            calculateSplitIndexUsingPartition(partitionIndex, 2, 2)
+          ) /* tokenIds_ */
+        );
+      }
+      await splitContract.multipartInitializationEnd();
+
+      // Transfer the reserved community allocation (first 4 slots) to community
+      for (let i = 0; i < 4; i++) {
+        await splitContract.transferNextAvailable(recipientAddress, {
+          from: ownerAddresses[0],
+        });
+        assert.equal(recipientAddress, await splitContract.ownerOf(i));
+      }
+
+      // Make sure the owner still owns the private allocation
+      for (let i = 4; i < ownerAddresses.length; i++) {
+        assert.equal(
+          ownerAddresses[0],
+          await splitContract.ownerOf(i),
+          "Distributed past community allocation."
+        );
+      }
+    }
+  );
+
+  specify(
+    "Multipart allocate multiple available slots to a specified address",
     async () => {
       const shareContract = await SHARE.deployed();
       const splitContract = await SL2RD.new();
@@ -709,13 +759,25 @@ contract("SL2RD", (accounts) => {
       const uniformCollaboratorsIds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
       const communitySplitsBasisPoints = 10000;
 
-      await splitContract.initialize(
-        ownerAddresses /* addresses_ */,
-        uniformCollaboratorsIds /* tokenIds_ */,
+      await splitContract.multipartInitializationBegin(
         communitySplitsBasisPoints /* communitySplitsBasisPoints_ */,
         shareContract.address /* shareContractAddress_ */,
         operatorRegistry.address /* operatorRegistryAddress_ */
       );
+      for (let partitionIndex = 0; partitionIndex < 5; partitionIndex += 1) {
+        await splitContract.multipartAddPartition(
+          partitionIndex /* partitionIndex_ */,
+          ownerAddresses.slice(
+            calculateSplitIndexUsingPartition(partitionIndex, 2, 0),
+            calculateSplitIndexUsingPartition(partitionIndex, 2, 2)
+          ) /* addresses_ */,
+          uniformCollaboratorsIds.slice(
+            calculateSplitIndexUsingPartition(partitionIndex, 2, 0),
+            calculateSplitIndexUsingPartition(partitionIndex, 2, 2)
+          ) /* tokenIds_ */
+        );
+      }
+      await splitContract.multipartInitializationEnd();
 
       await splitContract.transferMultipleAvailable(recipientAddress, 7, {
         from: ownerAddresses[0],
