@@ -15,7 +15,6 @@ contract("SL2RD", (accounts) => {
     const splitContract = await SL2RD.deployed();
     const operatorRegistry = await OperatorRegistry.deployed();
     const ownerAddresses = Array(10).fill(accounts[0]);
-
     const uniformCollaboratorsIds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
     await splitContract.initialize(
       ownerAddresses /* addresses_ */,
@@ -28,10 +27,37 @@ contract("SL2RD", (accounts) => {
     assert.equal(await splitContract.tokenIdIndex(), 0);
   });
 
+  specify("Multipart contract initialization", async () => {
+    const shareContract = await SHARE.deployed();
+    const splitContract = await SL2RD.new();
+    const operatorRegistry = await OperatorRegistry.deployed();
+    const ownerAddresses = Array(10).fill(accounts[0]);
+    const uniformCollaboratorsIds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+    await splitContract.multipartInitializationBegin(
+      0 /* communitySplitsBasisPoints_ */,
+      shareContract.address /* shareContractAddress_ */,
+      operatorRegistry.address /* operatorRegistryAddress_ */
+    );
+    await splitContract.multipartAddPartition(
+      0 /* partitionIndex_ */,
+      ownerAddresses.slice(0, 5) /* addresses_ */,
+      uniformCollaboratorsIds.slice(0, 5) /* tokenIds_ */
+    );
+    await splitContract.multipartAddPartition(
+      1 /* partitionIndex_ */,
+      ownerAddresses.slice(5, 10) /* addresses_ */,
+      uniformCollaboratorsIds.slice(5, 10) /* tokenIds_ */
+    );
+    await splitContract.multipartInitializationEnd();
+
+    assert.equal(accounts[DEFAULT_ADDRESS_INDEX], await splitContract.owner());
+    assert.equal(await splitContract.tokenIdIndex(), 0);
+  });
+
   specify("Contract initialization with 200 splits", async () => {
     const shareContract = await SHARE.deployed();
     const operatorRegistry = await OperatorRegistry.deployed();
-    const split = await SL2RD.new();
+    const splitContract = await SL2RD.new();
     const uniformCollaboratorsIds = [];
     const ownerAddresses = [];
 
@@ -41,7 +67,7 @@ contract("SL2RD", (accounts) => {
     }
     console.log(uniformCollaboratorsIds);
     try {
-      await split.initialize(
+      await splitContract.initialize(
         ownerAddresses /* addresses_ */,
         uniformCollaboratorsIds /* tokenIds_ */,
         0 /* communitySplitsBasisPoints_ */,
@@ -52,6 +78,45 @@ contract("SL2RD", (accounts) => {
       console.log(error);
       console.log(error.message);
       assert(false, "Initialization with 200 splits failed");
+    }
+  });
+
+  specify("Multipart contract initialization with 1000 splits", async () => {
+    const shareContract = await SHARE.deployed();
+    const operatorRegistry = await OperatorRegistry.deployed();
+    const splitContract = await SL2RD.new();
+    const uniformCollaboratorsIds = [];
+    const ownerAddresses = [];
+
+    for (let i = 0; i < 1000; i += 1) {
+      uniformCollaboratorsIds.push(Math.floor(Math.random() * 3));
+      ownerAddresses.push(accounts[0]);
+    }
+    console.log(uniformCollaboratorsIds);
+    try {
+      await splitContract.multipartInitializationBegin(
+        0 /* communitySplitsBasisPoints_ */,
+        shareContract.address /* shareContractAddress_ */,
+        operatorRegistry.address /* operatorRegistryAddress_ */
+      );
+      for (let partitionIndex = 0; partitionIndex < 5; partitionIndex += 1) {
+        await splitContract.multipartAddPartition(
+          partitionIndex /* partitionIndex_ */,
+          ownerAddresses.slice(
+            partitionIndex * 200,
+            partitionIndex * 200 + 200
+          ) /* addresses_ */,
+          uniformCollaboratorsIds.slice(
+            partitionIndex * 200,
+            partitionIndex * 200 + 200
+          ) /* tokenIds_ */
+        );
+      }
+      await splitContract.multipartInitializationEnd();
+    } catch (error) {
+      console.log(error);
+      console.log(error.message);
+      assert(false, "Initialization with 10000 splits failed");
     }
   });
 
@@ -412,6 +477,105 @@ contract("SL2RD", (accounts) => {
         shareContract.address /* shareContractAddress_ */,
         operatorRegistry.address /* operatorRegistryAddress_ */
       );
+    } catch (error) {
+      console.log(error);
+      console.log(error.message);
+      assert(false, "Initialization failed");
+    }
+
+    const uniformCollaboratorsMap = new Map();
+    for (let i = 0; i < SIZE; i += 1) {
+      uniformCollaboratorsMap.set(i, uniformCollaborators[i]);
+    }
+
+    console.log("FULL MAP: ", uniformCollaboratorsMap);
+
+    const entries = Array.from(uniformCollaboratorsMap.entries());
+    const halfLength = Math.ceil(entries.length / 2);
+
+    for (let i = 0; i < entries.length; i += 1) {
+      const tokenId = entries[i][0];
+      const recipient = entries[i][1];
+
+      console.log("tokenId: ", tokenId, "\n");
+
+      if (i < halfLength) {
+        await splitContract.safeTransferFrom(accounts[0], recipient, tokenId);
+      } else {
+        await splitContract.transferFrom(accounts[0], recipient, tokenId);
+      }
+    }
+
+    for (let i = 0; i < NUM_TRANSACTIONS; i += 1) {
+      await web3.eth
+        .sendTransaction({
+          to: splitContract.address,
+          from: accounts[DEFAULT_ADDRESS_INDEX],
+          value: 1,
+        })
+        .then(function (receipt) {
+          console.log(receipt);
+          splitContract
+            .getPastEvents("Payment", {
+              fromBlock: 0,
+              toBlock: "latest",
+            })
+            .then((events) => {
+              const mostRecentEvent = events[events.length - 1];
+              assert.equal(events.length, i + 1);
+              assert.equal(
+                normalizeAddress(
+                  mostRecentEvent.returnValues.recipient.toLowerCase()
+                ),
+                normalizeAddress(
+                  uniformCollaboratorsMap.get(
+                    uniformCollaboratorsIds[i % uniformCollaboratorsIds.length]
+                  )
+                )
+              );
+              assert.equal(mostRecentEvent.returnValues.value, 1);
+            });
+        });
+    }
+  });
+
+  /* If using Ganache, be sure to set account amount adequately */
+  specify("Multipart split comprehensive test", async () => {
+    const NUM_TRANSACTIONS = 50;
+    const SIZE = 20;
+    const shareContract = await SHARE.deployed();
+    const operatorRegistry = await OperatorRegistry.deployed();
+    const splitContract = await SL2RD.new();
+    const uniformCollaboratorsIds = [];
+    const ownerAddresses = [];
+    const uniformCollaborators = [];
+
+    for (let i = 0; i < SIZE; i += 1) {
+      uniformCollaboratorsIds.push(i);
+      ownerAddresses.push(accounts[0]);
+      uniformCollaborators.push(accounts[i + 1]);
+    }
+    console.log("ACCOUNTS", uniformCollaborators);
+    try {
+      await splitContract.multipartInitializationBegin(
+        0 /* communitySplitsBasisPoints_ */,
+        shareContract.address /* shareContractAddress_ */,
+        operatorRegistry.address /* operatorRegistryAddress_ */
+      );
+      for (let partitionIndex = 0; partitionIndex < 5; partitionIndex += 1) {
+        await splitContract.multipartAddPartition(
+          partitionIndex /* partitionIndex_ */,
+          ownerAddresses.slice(
+            partitionIndex * 4,
+            partitionIndex * 4 + 4
+          ) /* addresses_ */,
+          uniformCollaboratorsIds.slice(
+            partitionIndex * 4,
+            partitionIndex * 4 + 4
+          ) /* tokenIds_ */
+        );
+      }
+      await splitContract.multipartInitializationEnd();
     } catch (error) {
       console.log(error);
       console.log(error.message);

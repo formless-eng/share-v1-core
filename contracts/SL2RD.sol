@@ -16,7 +16,7 @@ import "./LimitedOwnable.sol";
 import "./OperatorRegistry.sol";
 
 /// @title Swift Liquid Rotating Royalty Distributor (SL2RD).
-/// @author john-paul@formless.xyz
+/// @author john-paul@formless.xyz, brandon@formless.xyz
 /// @notice This contract implements efficient liquid royalty splitting
 /// by shuffling recipient tokenIds off-chain into a random distribution
 /// and dealing transactions to those recipient slot entries atomically, e.g.
@@ -39,6 +39,7 @@ contract SL2RD is
     event MintingToken(uint256 indexed tokenId, address indexed toAddress);
 
     uint256 public constant MAX_SPLIT_COUNT = 1000;
+    uint256 public constant MAX_PARTITION_SIZE = 200;
     uint256 public constant MAX_BASIS_POINTS = 10000;
     Immutable.UnsignedInt256 private _totalSlots;
     Immutable.UnsignedInt256Array private _tokenIds;
@@ -149,6 +150,102 @@ contract SL2RD is
                 _tokenOwners[_tokenIds.value[i]] = _addresses.value[i];
             }
         }
+        setInitialized();
+    }
+
+    /// @notice Prepares the contract for multipart initialization.
+    /// @dev Recipient tokenId table is constructed off-chain and is
+    /// constructed as follows:
+    /// 1. A number of slots are allocated in an array corresponding
+    /// to 1 / minimum percentage of any stakeholder in this asset.
+    /// 2. IDs are assigned to slots such that the probability
+    /// of an iterator pointing to a given ID is equal to that
+    /// ID's ownership stake in the asset.
+    /// 3. Additionally, the layout specified in (2) is randomized
+    /// such that primary stakeholders have no advantage in payment
+    /// time given that the iterator increments linearly through the
+    /// ID table.
+    /// 4. A parallel addresses array is filled with the corresponding
+    /// owner for each tokenId. This is prefilled with the owner's
+    /// address for each token, but designed with flexibilty to include
+    /// others during initialization if they are known.
+    /// The communitySplitsBasisPoints is a constant percentage denoted in
+    /// basis points for how many of the slots the creator initially wants
+    /// to allocate for everyone else.
+    /// @param communitySplitsBasisPoints_ The percentage of slots allocated
+    /// for the community (denoted in basis points); e.g. 20% is denoted as 2000.
+    /// @param shareContractAddress_ The address of the share contract.
+    /// @param operatorRegistryAddress_ The address of the share operator registry.
+    function multipartInitializationBegin(
+        uint256 communitySplitsBasisPoints_,
+        address shareContractAddress_,
+        address operatorRegistryAddress_
+    ) public onlyOwner {
+        require(communitySplitsBasisPoints_ <= MAX_BASIS_POINTS, "SHARE029");
+        setShareContractAddress(shareContractAddress_);
+        _protocol = SHARE(shareContractAddress_);
+        _shareOperatorRegistry = OperatorRegistry(operatorRegistryAddress_);
+        Immutable.setUnsignedInt256(
+            _communitySplitsBasisPoints,
+            communitySplitsBasisPoints_
+        );
+    }
+
+    /// @notice Initializes a specified partition of the distribution
+    /// vector. Called for each sub-partition until the entire distribution
+    // vector is stored on-chain.
+    /// @param addresses_ The addresses for initial distribution.
+    /// @param tokenIds_ The tokenIds for initial distribution.
+    function multipartAddPartition(
+        uint256 partitionIndex_,
+        address[] memory addresses_,
+        uint256[] memory tokenIds_
+    ) public onlyOwner {
+        require(tokenIds_.length == addresses_.length, "SHARE028");
+        require(tokenIds_.length <= MAX_PARTITION_SIZE, "SHARE038");
+        require(tokenIds_.length >= 1, "SHARE020");
+        if (partitionIndex_ == 0) {
+            Immutable.setAddress(_initialOwner, addresses_[0]);
+        }
+        // The owner addresses are SHARE approved wallets,
+        // e.g. EOAs or wallets with approved code hashes.
+        for (uint256 i = 0; i < addresses_.length; i++) {
+            // Check that all addresses in the table are SHARE approved wallets,
+            // e.g. EOAs or wallets with approved code hashes.
+            require(
+                _protocol.isApprovedBuild(
+                    addresses_[i],
+                    CodeVerification.BuildType.WALLET
+                ),
+                "SHARE007"
+            );
+            Immutable.pushAddress(_addresses, addresses_[i]);
+        }
+
+        for (uint256 i = 0; i < tokenIds_.length; i++) {
+            Immutable.pushUnsignedInt256(_tokenIds, tokenIds_[i]);
+        }
+
+        // Mint all of the slots to the corresponding address (default owner).
+        for (uint256 i = 0; i < _tokenIds.value.length; i++) {
+            // Duplicate verification ensures tokenIds are minted once.
+            if (_tokenOwners[_tokenIds.value[i]] == address(0)) {
+                emit MintingToken(_tokenIds.value[i], _addresses.value[i]);
+                _safeMint(_addresses.value[i], _tokenIds.value[i]);
+                _tokenOwners[_tokenIds.value[i]] = _addresses.value[i];
+            }
+        }
+    }
+
+    /// @notice Completes multipart initilization and sets
+    /// addresses_ and tokenIds_ write state to immutable.
+    function multipartInitializationEnd() public {
+        _addresses.locked = true;
+        _tokenIds.locked = true;
+        Immutable.setUnsignedInt256(_totalSlots, _tokenIds.value.length);
+        _totalCommunitySlots =
+            (_totalSlots.value * _communitySplitsBasisPoints.value) /
+            MAX_BASIS_POINTS;
         setInitialized();
     }
 

@@ -151,6 +151,7 @@ The command above deploys the contracts as specified in `2_SL2RD_migration.js`.
 - `SHARE035` : `The community reserved slot must currently be owned by initialization owner in order to have proper permissions to transfer to community member.`
 - `SHARE036` : `Payment to operator address during funding operation unsuccessful.`
 - `SHARE037` : `Transferring community allocated slots is prohibited until distribution process is complete.`
+- `SHARE038` : `Partition size must be less than or equal to the maximum partition size specified by this contract.`
 
 ## Audits and Formal Verification
 
