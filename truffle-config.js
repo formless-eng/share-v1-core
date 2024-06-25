@@ -1,6 +1,8 @@
 const HDWalletProvider = require("@truffle/hdwallet-provider");
 const mnemonicPhrase = process.env.MNEMONIC_PHRASE;
 const RPC_ENDPOINT_OPTIMISM_GOERLI = process.env.RPC_ENDPOINT_OPTIMISM_GOERLI;
+const RPC_ENDPOINT_OPTIMISM_MAINNET = process.env.RPC_ENDPOINT_OPTIMISM_MAINNET;
+const RPC_ENDPOINT_OPTIMISM_SEPOLIA = process.env.RPC_ENDPOINT_OPTIMISM_SEPOLIA;
 const RPC_ENDPOINT_POLYGON_MUMBAI = process.env.RPC_ENDPOINT_POLYGON_MUMBAI;
 const RPC_ENDPOINT_POLYGON_MAINNET = process.env.RPC_ENDPOINT_POLYGON_MAINNET;
 const RPC_ENDPOINT_ETHEREUM_MAINNET = process.env.RPC_ENDPOINT_ETHEREUM_MAINNET;
@@ -38,6 +40,17 @@ module.exports = {
       skipDryRun: true,
     },
 
+    optimism_sepolia: {
+      provider: () =>
+        new HDWalletProvider(mnemonicPhrase, RPC_ENDPOINT_OPTIMISM_SEPOLIA),
+      network_id: 11155420,
+      gas: GAS_VALUE,
+      confirmations: 2,
+      timeoutBlocks: 2000,
+      networkCheckTimeout: 1000000,
+      skipDryRun: true,
+    },
+
     mumbai: {
       provider: () =>
         new HDWalletProvider(mnemonicPhrase, RPC_ENDPOINT_POLYGON_MUMBAI),
@@ -59,7 +72,19 @@ module.exports = {
       networkCheckTimeout: 1000000,
       skipDryRun: true,
     },
+
+    optimism: {
+      provider: () =>
+        new HDWalletProvider(mnemonicPhrase, RPC_ENDPOINT_OPTIMISM_MAINNET),
+      network_id: 10,
+      gas: GAS_VALUE,
+      confirmations: 2,
+      timeoutBlocks: 2000,
+      networkCheckTimeout: 1000000,
+      skipDryRun: true,
+    },
   },
+
   mocha: {},
   compilers: {
     solc: {
