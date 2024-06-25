@@ -1,0 +1,205 @@
+{
+  "contractName": "IPFACollection",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "account_",
+          "type": "address"
+        }
+      ],
+      "name": "contains",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "metadata": "{\"compiler\":{\"version\":\"0.8.11+commit.d7f03943\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account_\",\"type\":\"address\"}],\"name\":\"contains\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"author\":\"brandon@formless.xyz\",\"kind\":\"dev\",\"methods\":{\"contains(address)\":{\"details\":\"Note that the standard implementation of this interface has a write-once (immutable post initialization) table for storing addresses. This means the return value of `contains` is stable in perpetuity after the initialization of a SHARE PFA collection.\"}},\"title\":\"Standard pay-for-access (PFA) collection contract interface for SHARE.\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"contains(address)\":{\"notice\":\"Returns true if `account_` address is included in the payout distribution table of the collection.\"}},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/interfaces/IPFACollection.sol\":\"IPFACollection\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"project:/contracts/interfaces/IPFACollection.sol\":{\"keccak256\":\"0x316124ba1aa53deb3f5ab8e2f9685bfcc4db798cf3aeff7c24c04bed923258d9\",\"license\":\"UNLICENSED\",\"urls\":[\"bzz-raw://6a0bcbb75227b411a93db0f46d71493123905469c779f88cf0e1da293853155d\",\"dweb:/ipfs/QmQawedoXL63ggdawvLxSFQeBkD5x8ucXBN98T2KoRNEzt\"]}},\"version\":1}",
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "immutableReferences": {},
+  "generatedSources": [],
+  "deployedGeneratedSources": [],
+  "sourceMap": "",
+  "deployedSourceMap": "",
+  "source": "// SPDX-License-Identifier: UNLICENSED\n// ⣿⣿⣿⣿⣿⠀⠀⣰⣿⣿⣿⣷⡀⠀⠀⣶⣶⣶⣦⡀⠀⠀⠀⣶⣶⡄⠀⠀⣶⣶⡆⠀⠀⣶⣶⠀⠀⠀⠀⢰⣶⣶⣶⣶⢀⠀⠀⣤⣶⣶⣦⡀⠀⠀⠀⣴⣶⣶⣦⠀\n// ⣿⣿⠀⠀⠀⠀⠀⣿⣿⠀⢸⣿⡇⠀⠀⣿⣿⠀⢻⣿⠀⠀⠀⣿⣿⣿⠀⢸⣿⣿⡇⠀⠀⣿⣿⠀⠀⠀⠀⢸⣿⡇⠀⠀⠀⠀⢸⣿⡇⠀⣿⣿⠀⠀⣾⣿⠁⠈⣿⡇\n// ⣿⣿⠀⠀⠀⠀⠀⣿⣿⠀⢸⣿⡇⠀⠀⣿⣿⠀⣸⣿⠀⠀⠀⣿⣿⣿⡀⣿⡟⣿⡇⠀⠀⣿⣿⠀⠀⠀⠀⢸⣿⡇⠀⠀⠀⠀⠀⣿⣿⡀⠀⠀⠀⠀⠘⣿⣷⠀⠀⠀\n// ⣿⣿⠿⠿⠀⠀⠀⣿⣿⠀⢸⣿⡇⠀⠀⣿⣿⣿⣿⡟⠀⠀⠀⣿⣿⣿⣷⣿⠀⣿⡇⠀⠀⣿⣿⠀⠀⠀⠀⢸⣿⡿⠿⠀⠀⠀⠀⠀⢿⣿⣦⠀⠀⠀⠀⠈⣿⣿⡄⠀\n// ⣿⣿⠀⠀⠀⠀⠀⣿⣿⠀⢸⣿⡇⠀⠀⣿⣿⠈⣿⣷⠀⠀⠀⣿⣿⢸⣿⣿⠈⣿⡇⠀⠀⣿⣿⠀⠀⠀⠀⢸⣿⡇⠀⠀⠀⠀⢀⣀⠀⠙⣿⣧⠀⠀⣀⣀⠀⠻⣿⡆\n// ⣿⣿⠀⠀⠀⠀⠀⢿⣿⣤⣾⣿⠇⠀⠀⣿⣿⠀⣿⣿⠀⠀⠀⣿⣿⠀⣿⡇⠈⣿⡇⠀⠀⣿⣿⣤⣤⡄⠀⢸⣿⣧⣤⣤⡄⠀⢸⣿⣆⠀⣿⣿⠀⠀⣿⣿⡀⢀⣿⣿\n// ⠛⠛⠀⠀⠀⠀⠀⠈⠛⠿⠿⠛⠀⠀⠀⠛⠛⠀⠘⠛⠃⠀⠀⠛⠛⠀⠛⠀⠈⠛⠃⠀⠀⠛⠛⠛⠛⠃⠀⠘⠛⠛⠛⠛⠃⠀⠀⠙⠿⠿⠟⠁⠀⠀⠀⠛⠿⠿⠛⠀\n// https://formless.xyz/opportunities\n//\npragma solidity >=0.8.0 <0.9.0;\n\n/// @title Standard pay-for-access (PFA) collection contract\n/// interface for SHARE.\n/// @author brandon@formless.xyz\ninterface IPFACollection {\n    /// @notice Returns true if `account_` address is included in the\n    /// payout distribution table of the collection.\n    /// @dev Note that the standard implementation of this interface\n    /// has a write-once (immutable post initialization) table\n    /// for storing addresses. This means the return value of\n    /// `contains` is stable in perpetuity after the initialization of\n    /// a SHARE PFA collection.\n    function contains(address account_) external view returns (bool);\n}\n",
+  "sourcePath": "/Users/xiang2011w/Desktop/formless/smartContractGithub/share-v1-core/contracts/interfaces/IPFACollection.sol",
+  "ast": {
+    "absolutePath": "project:/contracts/interfaces/IPFACollection.sol",
+    "exportedSymbols": {
+      "IPFACollection": [
+        6681
+      ]
+    },
+    "id": 6682,
+    "license": "UNLICENSED",
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 6671,
+        "literals": [
+          "solidity",
+          ">=",
+          "0.8",
+          ".0",
+          "<",
+          "0.9",
+          ".0"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "1368:31:23"
+      },
+      {
+        "abstract": false,
+        "baseContracts": [],
+        "canonicalName": "IPFACollection",
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "documentation": {
+          "id": 6672,
+          "nodeType": "StructuredDocumentation",
+          "src": "1401:119:23",
+          "text": "@title Standard pay-for-access (PFA) collection contract\n interface for SHARE.\n @author brandon@formless.xyz"
+        },
+        "fullyImplemented": false,
+        "id": 6681,
+        "linearizedBaseContracts": [
+          6681
+        ],
+        "name": "IPFACollection",
+        "nameLocation": "1530:14:23",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "documentation": {
+              "id": 6673,
+              "nodeType": "StructuredDocumentation",
+              "src": "1551:415:23",
+              "text": "@notice Returns true if `account_` address is included in the\n payout distribution table of the collection.\n @dev Note that the standard implementation of this interface\n has a write-once (immutable post initialization) table\n for storing addresses. This means the return value of\n `contains` is stable in perpetuity after the initialization of\n a SHARE PFA collection."
+            },
+            "functionSelector": "5dbe47e8",
+            "id": 6680,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "contains",
+            "nameLocation": "1980:8:23",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 6676,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 6675,
+                  "mutability": "mutable",
+                  "name": "account_",
+                  "nameLocation": "1997:8:23",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 6680,
+                  "src": "1989:16:23",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 6674,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1989:7:23",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1988:18:23"
+            },
+            "returnParameters": {
+              "id": 6679,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 6678,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 6680,
+                  "src": "2030:4:23",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 6677,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2030:4:23",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2029:6:23"
+            },
+            "scope": 6681,
+            "src": "1971:65:23",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "scope": 6682,
+        "src": "1520:518:23",
+        "usedErrors": []
+      }
+    ],
+    "src": "1368:671:23"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.8.11+commit.d7f03943.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.4.16",
+  "updatedAt": "2024-06-24T20:41:54.217Z",
+  "devdoc": {
+    "author": "brandon@formless.xyz",
+    "kind": "dev",
+    "methods": {
+      "contains(address)": {
+        "details": "Note that the standard implementation of this interface has a write-once (immutable post initialization) table for storing addresses. This means the return value of `contains` is stable in perpetuity after the initialization of a SHARE PFA collection."
+      }
+    },
+    "title": "Standard pay-for-access (PFA) collection contract interface for SHARE.",
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {
+      "contains(address)": {
+        "notice": "Returns true if `account_` address is included in the payout distribution table of the collection."
+      }
+    },
+    "version": 1
+  }
+}

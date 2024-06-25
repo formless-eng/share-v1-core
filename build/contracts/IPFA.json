@@ -1,0 +1,890 @@
+{
+  "contractName": "IPFA",
+  "abi": [
+    {
+      "inputs": [],
+      "name": "pricePerAccess",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "pricePerAccess_",
+          "type": "uint256"
+        }
+      ],
+      "name": "setPricePerAccess",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "recipient",
+          "type": "address"
+        }
+      ],
+      "name": "access",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "recipient_",
+          "type": "address"
+        }
+      ],
+      "name": "grantTimestamp",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "grantTTL",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "supportsLicensing",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "pricePerLicense",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "recipient",
+          "type": "address"
+        }
+      ],
+      "name": "license",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "recipient_",
+          "type": "address"
+        }
+      ],
+      "name": "licenseTimestamp",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "metadata": "{\"compiler\":{\"version\":\"0.8.11+commit.d7f03943\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\"}],\"name\":\"access\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"grantTTL\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"recipient_\",\"type\":\"address\"}],\"name\":\"grantTimestamp\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\"}],\"name\":\"license\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"recipient_\",\"type\":\"address\"}],\"name\":\"licenseTimestamp\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"pricePerAccess\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"pricePerLicense\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"pricePerAccess_\",\"type\":\"uint256\"}],\"name\":\"setPricePerAccess\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"supportsLicensing\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"author\":\"brandon@formless.xyz\",\"kind\":\"dev\",\"methods\":{\"license(address)\":{\"details\":\"Proof of inclusion is in the form of source code verification of the licensee, as well as the assertion of immutable state of the licensee contract payout distribution table. Immutable state is verified using knowledge of the keccak256 hash of the runtime bytecode of the source code for approved licensees which implement a write-once distribution address table.\"}},\"title\":\"Standard pay-for-access (PFA) contract interface for SHARE.\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"access(uint256,address)\":{\"notice\":\"If called with a value equal to the price per access of this contract, records a grant timestamp on chain which is read by decentralized distribution network (DDN) microservices to decrypt and serve the associated content for the tokenURI.\"},\"grantTTL()\":{\"notice\":\"Returns the time-to-live (TTL) in seconds of an awarded access grant for this PFA. Access to the associated content expires at `grant award timestamp + grant TTL`.\"},\"grantTimestamp(address)\":{\"notice\":\"Returns the timestamp in seconds of the award of a grant recorded on chain for the access of the content associated with this PFA.\"},\"license(address)\":{\"notice\":\"If called with a `recipient` (licensee) contract which has proof of inclusion of this PFA (licensor) address in its payout distribution table, records a license timestamp on chain which is read by decentralized distribution (DDN) microservices to decrypt and serve the associated content for the tokenURI to users who have paid to access the licensee contract.\"},\"licenseTimestamp(address)\":{\"notice\":\"Returns the timestamp in seconds of the award of a grant recorded on chain for the access of the content associated with this PFA.\"},\"pricePerAccess()\":{\"notice\":\"Returns the price per access in wei for content backed by this contract.\"},\"pricePerLicense()\":{\"notice\":\"Returns the price per license in wei for content backed by this contract.\"},\"setPricePerAccess(uint256)\":{\"notice\":\"Sets the price per access in wei for content backed by this contract.\"},\"supportsLicensing()\":{\"notice\":\"Returns true if this PFA supports licensing, where licensing is the ability for a separate contract to forward payment to this PFA in exchange for the ability to perpetually serve the underlying content on its behalf. For example, licensing may be used to achieve transaction gated playlisting of a collection of PFAs.\"}},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/interfaces/IPFA.sol\":\"IPFA\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"project:/contracts/interfaces/IPFA.sol\":{\"keccak256\":\"0xf4c65e380ec2926f5fbcdb1c4ebe9daf8954f45ed4351dd5313a67db848f6ff7\",\"license\":\"UNLICENSED\",\"urls\":[\"bzz-raw://349aafe3b1e9f4bf65ca104f64e4074c42cab06ed9eb261e5d91e100f12125da\",\"dweb:/ipfs/QmXXE4ZbKsTC15SsjBRv4nHpS5vkcUf8rhPvDPNQ27CXnc\"]}},\"version\":1}",
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "immutableReferences": {},
+  "generatedSources": [],
+  "deployedGeneratedSources": [],
+  "sourceMap": "",
+  "deployedSourceMap": "",
+  "source": "// SPDX-License-Identifier: UNLICENSED\n// ⣿⣿⣿⣿⣿⠀⠀⣰⣿⣿⣿⣷⡀⠀⠀⣶⣶⣶⣦⡀⠀⠀⠀⣶⣶⡄⠀⠀⣶⣶⡆⠀⠀⣶⣶⠀⠀⠀⠀⢰⣶⣶⣶⣶⢀⠀⠀⣤⣶⣶⣦⡀⠀⠀⠀⣴⣶⣶⣦⠀\n// ⣿⣿⠀⠀⠀⠀⠀⣿⣿⠀⢸⣿⡇⠀⠀⣿⣿⠀⢻⣿⠀⠀⠀⣿⣿⣿⠀⢸⣿⣿⡇⠀⠀⣿⣿⠀⠀⠀⠀⢸⣿⡇⠀⠀⠀⠀⢸⣿⡇⠀⣿⣿⠀⠀⣾⣿⠁⠈⣿⡇\n// ⣿⣿⠀⠀⠀⠀⠀⣿⣿⠀⢸⣿⡇⠀⠀⣿⣿⠀⣸⣿⠀⠀⠀⣿⣿⣿⡀⣿⡟⣿⡇⠀⠀⣿⣿⠀⠀⠀⠀⢸⣿⡇⠀⠀⠀⠀⠀⣿⣿⡀⠀⠀⠀⠀⠘⣿⣷⠀⠀⠀\n// ⣿⣿⠿⠿⠀⠀⠀⣿⣿⠀⢸⣿⡇⠀⠀⣿⣿⣿⣿⡟⠀⠀⠀⣿⣿⣿⣷⣿⠀⣿⡇⠀⠀⣿⣿⠀⠀⠀⠀⢸⣿⡿⠿⠀⠀⠀⠀⠀⢿⣿⣦⠀⠀⠀⠀⠈⣿⣿⡄⠀\n// ⣿⣿⠀⠀⠀⠀⠀⣿⣿⠀⢸⣿⡇⠀⠀⣿⣿⠈⣿⣷⠀⠀⠀⣿⣿⢸⣿⣿⠈⣿⡇⠀⠀⣿⣿⠀⠀⠀⠀⢸⣿⡇⠀⠀⠀⠀⢀⣀⠀⠙⣿⣧⠀⠀⣀⣀⠀⠻⣿⡆\n// ⣿⣿⠀⠀⠀⠀⠀⢿⣿⣤⣾⣿⠇⠀⠀⣿⣿⠀⣿⣿⠀⠀⠀⣿⣿⠀⣿⡇⠈⣿⡇⠀⠀⣿⣿⣤⣤⡄⠀⢸⣿⣧⣤⣤⡄⠀⢸⣿⣆⠀⣿⣿⠀⠀⣿⣿⡀⢀⣿⣿\n// ⠛⠛⠀⠀⠀⠀⠀⠈⠛⠿⠿⠛⠀⠀⠀⠛⠛⠀⠘⠛⠃⠀⠀⠛⠛⠀⠛⠀⠈⠛⠃⠀⠀⠛⠛⠛⠛⠃⠀⠘⠛⠛⠛⠛⠃⠀⠀⠙⠿⠿⠟⠁⠀⠀⠀⠛⠿⠿⠛⠀\n// https://formless.xyz/opportunities\n//⠀\npragma solidity >=0.8.0 <0.9.0;\n\n/// @title Standard pay-for-access (PFA) contract interface for SHARE.\n/// @author brandon@formless.xyz\ninterface IPFA {\n    /// @notice Returns the price per access in wei for content backed\n    /// by this contract.\n    function pricePerAccess() external view returns (uint256);\n\n    /// @notice Sets the price per access in wei for content backed\n    /// by this contract.\n    function setPricePerAccess(uint256 pricePerAccess_) external;\n\n    /// @notice If called with a value equal to the price per access\n    /// of this contract, records a grant timestamp on chain which is\n    /// read by decentralized distribution network (DDN) microservices\n    /// to decrypt and serve the associated content for the tokenURI.\n    function access(uint256 tokenId, address recipient) external payable;\n\n    /// @notice Returns the timestamp in seconds of the award of a\n    /// grant recorded on chain for the access of the content\n    /// associated with this PFA.\n    function grantTimestamp(address recipient_) external view returns (uint256);\n\n    /// @notice Returns the time-to-live (TTL) in seconds of an\n    /// awarded access grant for this PFA. Access to the associated\n    ///content expires at `grant award timestamp + grant TTL`.\n    function grantTTL() external view returns (uint256);\n\n    /// @notice Returns true if this PFA supports licensing, where\n    /// licensing is the ability for a separate contract to forward\n    /// payment to this PFA in exchange for the ability to perpetually\n    /// serve the underlying content on its behalf. For example,\n    /// licensing may be used to achieve transaction gated playlisting\n    /// of a collection of PFAs.\n    function supportsLicensing() external view returns (bool);\n\n    /// @notice Returns the price per license in wei for content\n    /// backed by this contract.\n    function pricePerLicense() external view returns (uint256);\n\n    /// @notice If called with a `recipient` (licensee) contract which\n    /// has proof of inclusion of this PFA (licensor) address in its\n    /// payout distribution table, records a license timestamp on\n    /// chain which is read by decentralized distribution (DDN)\n    /// microservices to decrypt and serve the associated content for\n    /// the tokenURI to users who have paid to access the licensee\n    /// contract.\n    /// @dev Proof of inclusion is in the form of source code\n    /// verification of the licensee, as well as the assertion of\n    /// immutable state of the licensee contract payout distribution\n    /// table. Immutable state is verified using knowledge of the\n    /// keccak256 hash of the runtime bytecode of the source code\n    /// for approved licensees which implement a write-once\n    /// distribution address table.\n    function license(address recipient) external payable;\n\n    /// @notice Returns the timestamp in seconds of the award of a\n    /// grant recorded on chain for the access of the content\n    /// associated with this PFA.\n    function licenseTimestamp(address recipient_)\n        external\n        view\n        returns (uint256);\n}\n",
+  "sourcePath": "/Users/xiang2011w/Desktop/formless/smartContractGithub/share-v1-core/contracts/interfaces/IPFA.sol",
+  "ast": {
+    "absolutePath": "project:/contracts/interfaces/IPFA.sol",
+    "exportedSymbols": {
+      "IPFA": [
+        6669
+      ]
+    },
+    "id": 6670,
+    "license": "UNLICENSED",
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 6607,
+        "literals": [
+          "solidity",
+          ">=",
+          "0.8",
+          ".0",
+          "<",
+          "0.9",
+          ".0"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "1371:31:22"
+      },
+      {
+        "abstract": false,
+        "baseContracts": [],
+        "canonicalName": "IPFA",
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "documentation": {
+          "id": 6608,
+          "nodeType": "StructuredDocumentation",
+          "src": "1404:104:22",
+          "text": "@title Standard pay-for-access (PFA) contract interface for SHARE.\n @author brandon@formless.xyz"
+        },
+        "fullyImplemented": false,
+        "id": 6669,
+        "linearizedBaseContracts": [
+          6669
+        ],
+        "name": "IPFA",
+        "nameLocation": "1518:4:22",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "documentation": {
+              "id": 6609,
+              "nodeType": "StructuredDocumentation",
+              "src": "1529:92:22",
+              "text": "@notice Returns the price per access in wei for content backed\n by this contract."
+            },
+            "functionSelector": "5bc3c82c",
+            "id": 6614,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "pricePerAccess",
+            "nameLocation": "1635:14:22",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 6610,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1649:2:22"
+            },
+            "returnParameters": {
+              "id": 6613,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 6612,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 6614,
+                  "src": "1675:7:22",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 6611,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1675:7:22",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1674:9:22"
+            },
+            "scope": 6669,
+            "src": "1626:58:22",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "documentation": {
+              "id": 6615,
+              "nodeType": "StructuredDocumentation",
+              "src": "1690:89:22",
+              "text": "@notice Sets the price per access in wei for content backed\n by this contract."
+            },
+            "functionSelector": "4d6eeb76",
+            "id": 6620,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "setPricePerAccess",
+            "nameLocation": "1793:17:22",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 6618,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 6617,
+                  "mutability": "mutable",
+                  "name": "pricePerAccess_",
+                  "nameLocation": "1819:15:22",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 6620,
+                  "src": "1811:23:22",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 6616,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1811:7:22",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1810:25:22"
+            },
+            "returnParameters": {
+              "id": 6619,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1844:0:22"
+            },
+            "scope": 6669,
+            "src": "1784:61:22",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "documentation": {
+              "id": 6621,
+              "nodeType": "StructuredDocumentation",
+              "src": "1851:275:22",
+              "text": "@notice If called with a value equal to the price per access\n of this contract, records a grant timestamp on chain which is\n read by decentralized distribution network (DDN) microservices\n to decrypt and serve the associated content for the tokenURI."
+            },
+            "functionSelector": "95e9463f",
+            "id": 6628,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "access",
+            "nameLocation": "2140:6:22",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 6626,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 6623,
+                  "mutability": "mutable",
+                  "name": "tokenId",
+                  "nameLocation": "2155:7:22",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 6628,
+                  "src": "2147:15:22",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 6622,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2147:7:22",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 6625,
+                  "mutability": "mutable",
+                  "name": "recipient",
+                  "nameLocation": "2172:9:22",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 6628,
+                  "src": "2164:17:22",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 6624,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2164:7:22",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2146:36:22"
+            },
+            "returnParameters": {
+              "id": 6627,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "2199:0:22"
+            },
+            "scope": 6669,
+            "src": "2131:69:22",
+            "stateMutability": "payable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "documentation": {
+              "id": 6629,
+              "nodeType": "StructuredDocumentation",
+              "src": "2206:158:22",
+              "text": "@notice Returns the timestamp in seconds of the award of a\n grant recorded on chain for the access of the content\n associated with this PFA."
+            },
+            "functionSelector": "2cc1bd9e",
+            "id": 6636,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "grantTimestamp",
+            "nameLocation": "2378:14:22",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 6632,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 6631,
+                  "mutability": "mutable",
+                  "name": "recipient_",
+                  "nameLocation": "2401:10:22",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 6636,
+                  "src": "2393:18:22",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 6630,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2393:7:22",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2392:20:22"
+            },
+            "returnParameters": {
+              "id": 6635,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 6634,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 6636,
+                  "src": "2436:7:22",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 6633,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2436:7:22",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2435:9:22"
+            },
+            "scope": 6669,
+            "src": "2369:76:22",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "documentation": {
+              "id": 6637,
+              "nodeType": "StructuredDocumentation",
+              "src": "2451:190:22",
+              "text": "@notice Returns the time-to-live (TTL) in seconds of an\n awarded access grant for this PFA. Access to the associated\ncontent expires at `grant award timestamp + grant TTL`."
+            },
+            "functionSelector": "0122407e",
+            "id": 6642,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "grantTTL",
+            "nameLocation": "2655:8:22",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 6638,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "2663:2:22"
+            },
+            "returnParameters": {
+              "id": 6641,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 6640,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 6642,
+                  "src": "2689:7:22",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 6639,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2689:7:22",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2688:9:22"
+            },
+            "scope": 6669,
+            "src": "2646:52:22",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "documentation": {
+              "id": 6643,
+              "nodeType": "StructuredDocumentation",
+              "src": "2704:370:22",
+              "text": "@notice Returns true if this PFA supports licensing, where\n licensing is the ability for a separate contract to forward\n payment to this PFA in exchange for the ability to perpetually\n serve the underlying content on its behalf. For example,\n licensing may be used to achieve transaction gated playlisting\n of a collection of PFAs."
+            },
+            "functionSelector": "a92ddbb3",
+            "id": 6648,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "supportsLicensing",
+            "nameLocation": "3088:17:22",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 6644,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "3105:2:22"
+            },
+            "returnParameters": {
+              "id": 6647,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 6646,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 6648,
+                  "src": "3131:4:22",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 6645,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "3131:4:22",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "3130:6:22"
+            },
+            "scope": 6669,
+            "src": "3079:58:22",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "documentation": {
+              "id": 6649,
+              "nodeType": "StructuredDocumentation",
+              "src": "3143:93:22",
+              "text": "@notice Returns the price per license in wei for content\n backed by this contract."
+            },
+            "functionSelector": "ce1ebbf8",
+            "id": 6654,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "pricePerLicense",
+            "nameLocation": "3250:15:22",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 6650,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "3265:2:22"
+            },
+            "returnParameters": {
+              "id": 6653,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 6652,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 6654,
+                  "src": "3291:7:22",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 6651,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "3291:7:22",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "3290:9:22"
+            },
+            "scope": 6669,
+            "src": "3241:59:22",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "documentation": {
+              "id": 6655,
+              "nodeType": "StructuredDocumentation",
+              "src": "3306:845:22",
+              "text": "@notice If called with a `recipient` (licensee) contract which\n has proof of inclusion of this PFA (licensor) address in its\n payout distribution table, records a license timestamp on\n chain which is read by decentralized distribution (DDN)\n microservices to decrypt and serve the associated content for\n the tokenURI to users who have paid to access the licensee\n contract.\n @dev Proof of inclusion is in the form of source code\n verification of the licensee, as well as the assertion of\n immutable state of the licensee contract payout distribution\n table. Immutable state is verified using knowledge of the\n keccak256 hash of the runtime bytecode of the source code\n for approved licensees which implement a write-once\n distribution address table."
+            },
+            "functionSelector": "d6062e44",
+            "id": 6660,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "license",
+            "nameLocation": "4165:7:22",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 6658,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 6657,
+                  "mutability": "mutable",
+                  "name": "recipient",
+                  "nameLocation": "4181:9:22",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 6660,
+                  "src": "4173:17:22",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 6656,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "4173:7:22",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "4172:19:22"
+            },
+            "returnParameters": {
+              "id": 6659,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "4208:0:22"
+            },
+            "scope": 6669,
+            "src": "4156:53:22",
+            "stateMutability": "payable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "documentation": {
+              "id": 6661,
+              "nodeType": "StructuredDocumentation",
+              "src": "4215:158:22",
+              "text": "@notice Returns the timestamp in seconds of the award of a\n grant recorded on chain for the access of the content\n associated with this PFA."
+            },
+            "functionSelector": "98a47451",
+            "id": 6668,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "licenseTimestamp",
+            "nameLocation": "4387:16:22",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 6664,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 6663,
+                  "mutability": "mutable",
+                  "name": "recipient_",
+                  "nameLocation": "4412:10:22",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 6668,
+                  "src": "4404:18:22",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 6662,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "4404:7:22",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "4403:20:22"
+            },
+            "returnParameters": {
+              "id": 6667,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 6666,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 6668,
+                  "src": "4471:7:22",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 6665,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "4471:7:22",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "4470:9:22"
+            },
+            "scope": 6669,
+            "src": "4378:102:22",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "scope": 6670,
+        "src": "1508:2974:22",
+        "usedErrors": []
+      }
+    ],
+    "src": "1371:3112:22"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.8.11+commit.d7f03943.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.4.16",
+  "updatedAt": "2024-06-24T20:41:54.216Z",
+  "devdoc": {
+    "author": "brandon@formless.xyz",
+    "kind": "dev",
+    "methods": {
+      "license(address)": {
+        "details": "Proof of inclusion is in the form of source code verification of the licensee, as well as the assertion of immutable state of the licensee contract payout distribution table. Immutable state is verified using knowledge of the keccak256 hash of the runtime bytecode of the source code for approved licensees which implement a write-once distribution address table."
+      }
+    },
+    "title": "Standard pay-for-access (PFA) contract interface for SHARE.",
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {
+      "access(uint256,address)": {
+        "notice": "If called with a value equal to the price per access of this contract, records a grant timestamp on chain which is read by decentralized distribution network (DDN) microservices to decrypt and serve the associated content for the tokenURI."
+      },
+      "grantTTL()": {
+        "notice": "Returns the time-to-live (TTL) in seconds of an awarded access grant for this PFA. Access to the associated content expires at `grant award timestamp + grant TTL`."
+      },
+      "grantTimestamp(address)": {
+        "notice": "Returns the timestamp in seconds of the award of a grant recorded on chain for the access of the content associated with this PFA."
+      },
+      "license(address)": {
+        "notice": "If called with a `recipient` (licensee) contract which has proof of inclusion of this PFA (licensor) address in its payout distribution table, records a license timestamp on chain which is read by decentralized distribution (DDN) microservices to decrypt and serve the associated content for the tokenURI to users who have paid to access the licensee contract."
+      },
+      "licenseTimestamp(address)": {
+        "notice": "Returns the timestamp in seconds of the award of a grant recorded on chain for the access of the content associated with this PFA."
+      },
+      "pricePerAccess()": {
+        "notice": "Returns the price per access in wei for content backed by this contract."
+      },
+      "pricePerLicense()": {
+        "notice": "Returns the price per license in wei for content backed by this contract."
+      },
+      "setPricePerAccess(uint256)": {
+        "notice": "Sets the price per access in wei for content backed by this contract."
+      },
+      "supportsLicensing()": {
+        "notice": "Returns true if this PFA supports licensing, where licensing is the ability for a separate contract to forward payment to this PFA in exchange for the ability to perpetually serve the underlying content on its behalf. For example, licensing may be used to achieve transaction gated playlisting of a collection of PFAs."
+      }
+    },
+    "version": 1
+  }
+}

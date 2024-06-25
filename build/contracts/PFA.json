@@ -1,0 +1,3141 @@
+{
+  "contractName": "PFA",
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "recipient",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        }
+      ],
+      "name": "Grant",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "licensee",
+          "type": "address"
+        }
+      ],
+      "name": "License",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "VERSION",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "_transactionCount",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "initialized",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "pricePerAccess",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "pricePerLicense",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "pricePerAccess_",
+          "type": "uint256"
+        }
+      ],
+      "name": "setPricePerAccess",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "recipient",
+          "type": "address"
+        }
+      ],
+      "name": "access",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "supportsLicensing",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "recipient_",
+          "type": "address"
+        }
+      ],
+      "name": "grantTimestamp",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "recipient_",
+          "type": "address"
+        }
+      ],
+      "name": "licenseTimestamp",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "grantTTL",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "recipient_",
+          "type": "address"
+        }
+      ],
+      "name": "license",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    }
+  ],
+  "metadata": "{\"compiler\":{\"version\":\"0.8.11+commit.d7f03943\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"Grant\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"licensee\",\"type\":\"address\"}],\"name\":\"License\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"VERSION\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"_transactionCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\"}],\"name\":\"access\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"grantTTL\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"recipient_\",\"type\":\"address\"}],\"name\":\"grantTimestamp\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"initialized\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"recipient_\",\"type\":\"address\"}],\"name\":\"license\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"recipient_\",\"type\":\"address\"}],\"name\":\"licenseTimestamp\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"pricePerAccess\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"pricePerLicense\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"pricePerAccess_\",\"type\":\"uint256\"}],\"name\":\"setPricePerAccess\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"supportsLicensing\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"author\":\"brandon@formless.xyz\",\"kind\":\"dev\",\"methods\":{\"license(address)\":{\"details\":\"Proof of inclusion is in the form of source code verification of the licensee, as well as the assertion of immutable state of the licensee contract payout distribution table. Immutable state is verified using knowledge of the keccak256 hash of the runtime bytecode of the source code for approved licensees which implement a write-once distribution address table.\"},\"owner()\":{\"details\":\"Returns the address of the current owner.\"},\"renounceOwnership()\":{\"details\":\"Leaves the contract without owner. It will not be possible to call `onlyOwner` functions. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby disabling any functionality that is only available to the owner.\"}},\"title\":\"Standard pay-for-access (PFA) abstract base.\",\"version\":1},\"userdoc\":{\"events\":{\"Grant(address,uint256)\":{\"notice\":\"Emitted when a successful access grant is awarded to a recipient address.\"},\"License(address)\":{\"notice\":\"Emitted when a successful license grant is awarded to a recipient (licensee) address.\"}},\"kind\":\"user\",\"methods\":{\"access(uint256,address)\":{\"notice\":\"If called with a value equal to the price per access of this contract, records a grant timestamp on chain which is read by decentralized distribution network (DDN) microservices to decrypt and serve the associated content for the tokenURI.\"},\"grantTTL()\":{\"notice\":\"Returns the time-to-live (TTL) in seconds of an awarded access grant for this PFA. Access to the associated content expires at `grant award timestamp + grant TTL`.\"},\"grantTimestamp(address)\":{\"notice\":\"Returns the timestamp in seconds of the award of a grant recorded on chain for the access of the content associated with this PFA.\"},\"initialized()\":{\"notice\":\"Returns true if and only if the contract has been initialized by invoking the `initialize` function.\"},\"license(address)\":{\"notice\":\"If called with a `recipient` (licensee) contract which has proof of inclusion of this PFA (licensor) address in its payout distribution table, records a license timestamp on chain which is read by decentralized distribution network (DDN) microservices to decrypt and serve the associated content for the tokenURI to users who have paid to access the licensee contract.\"},\"licenseTimestamp(address)\":{\"notice\":\"Returns the timestamp in seconds of the award of a grant recorded on chain for the licensing of the content associated with this PFA.\"},\"pricePerAccess()\":{\"notice\":\"Returns non-zero value if this asset requires payment for access. Zero otherwise.\"},\"pricePerLicense()\":{\"notice\":\"Returns non-zero value if this asset requires payment for licensing. Zero otherwise. This value is immutable after contract initialization.\"},\"setPricePerAccess(uint256)\":{\"notice\":\"Sets the price per access in wei for content backed by this contract.\"},\"supportsLicensing()\":{\"notice\":\"Returns true if this PFA supports licensing, where licensing is the ability for a separate contract to forward payment to this PFA in exchange for the ability to perpetually serve the underlying content on its behalf. For example, licensing may be used to achieve transaction gated playlisting of a collection of PFAs.\"},\"transferOwnership(address)\":{\"notice\":\"Transfers ownership of the contract to `newOwner` if and only if `newOwner` satisfies the limited ownership requirements established in the constructor, otherwise, reverts the transaction.\"}},\"notice\":\"This base contract is a base implementation of the IPFA interface.\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/PFA.sol\":\"PFA\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"@openzeppelin/contracts/access/Ownable.sol\":{\"keccak256\":\"0xba43b97fba0d32eb4254f6a5a297b39a19a247082a02d6e69349e071e2946218\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://fc980984badf3984b6303b377711220e067722bbd6a135b24669ff5069ef9f32\",\"dweb:/ipfs/QmPHXMSXj99XjSVM21YsY6aNtLLjLVXDbyN76J5HQYvvrz\"]},\"@openzeppelin/contracts/security/ReentrancyGuard.sol\":{\"keccak256\":\"0xa535a5df777d44e945dd24aa43a11e44b024140fc340ad0dfe42acf4002aade1\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://41319e7f621f2dc3733511332c4fd032f8e32ad2aa7fd6f665c19741d9941a34\",\"dweb:/ipfs/QmcYR3bd862GD1Bc7jwrU9bGxrhUu5na1oP964bDCu2id1\"]},\"@openzeppelin/contracts/utils/Address.sol\":{\"keccak256\":\"0x006dd67219697fe68d7fbfdea512e7c4cb64a43565ed86171d67e844982da6fa\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://2455248c8ddd9cc6a7af76a13973cddf222072427e7b0e2a7d1aff345145e931\",\"dweb:/ipfs/QmfYjnjRbWqYpuxurqveE6HtzsY1Xx323J428AKQgtBJZm\"]},\"@openzeppelin/contracts/utils/Context.sol\":{\"keccak256\":\"0xa92e4fa126feb6907daa0513ddd816b2eb91f30a808de54f63c17d0e162c3439\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://a367861093b74443b137564d3f3c472f70bcf114739e62059c939f25e315706c\",\"dweb:/ipfs/Qmd7JMpcxD9RuQjK3uM3EzJUgSqdN8vzp8eytEiuwxQJ6h\"]},\"project:/contracts/LimitedOwnable.sol\":{\"keccak256\":\"0x41dc6683227e410648f6aaf1ac2882244dc0943271c140517d3dc2610a681f08\",\"license\":\"UNLICENSED\",\"urls\":[\"bzz-raw://3ac53e8674a420092cbf7379263f5de13acc9e6515a1a0037596a5e82ed65710\",\"dweb:/ipfs/QmWjKZyGvdVmnw9GaurAi8JLQCBwfcoXfgMLRSBMjM28vA\"]},\"project:/contracts/PFA.sol\":{\"keccak256\":\"0x775849d1d3b665b9c5782c94f1292a245fcfe71d79e616c357cf6ef0b177b531\",\"license\":\"UNLICENSED\",\"urls\":[\"bzz-raw://edddb1e532eac13a1607966c940694303ae3df7adc002263c6b4b2755926da47\",\"dweb:/ipfs/QmdQq7sqKqccWK2HhFv1FdirfTfc2L1YGjjNSY7ctzmGBc\"]},\"project:/contracts/SHARE.sol\":{\"keccak256\":\"0x686f09b63f380c5b364330ca4f3193ee0117b434abd1f0086e52685359989162\",\"license\":\"UNLICENSED\",\"urls\":[\"bzz-raw://0fd18010742b916546483b1d4f0d8f29d19819690c792aaa97fe5052c1a0a301\",\"dweb:/ipfs/QmYpsxWbdjgPpu6DfRi8Pin5xXb4UZZkpqPmjQYpDL4ExG\"]},\"project:/contracts/interfaces/IPFA.sol\":{\"keccak256\":\"0xf4c65e380ec2926f5fbcdb1c4ebe9daf8954f45ed4351dd5313a67db848f6ff7\",\"license\":\"UNLICENSED\",\"urls\":[\"bzz-raw://349aafe3b1e9f4bf65ca104f64e4074c42cab06ed9eb261e5d91e100f12125da\",\"dweb:/ipfs/QmXXE4ZbKsTC15SsjBRv4nHpS5vkcUf8rhPvDPNQ27CXnc\"]},\"project:/contracts/interfaces/IPFACollection.sol\":{\"keccak256\":\"0x316124ba1aa53deb3f5ab8e2f9685bfcc4db798cf3aeff7c24c04bed923258d9\",\"license\":\"UNLICENSED\",\"urls\":[\"bzz-raw://6a0bcbb75227b411a93db0f46d71493123905469c779f88cf0e1da293853155d\",\"dweb:/ipfs/QmQawedoXL63ggdawvLxSFQeBkD5x8ucXBN98T2KoRNEzt\"]},\"project:/contracts/libraries/CodeVerification.sol\":{\"keccak256\":\"0x796781ece82aadaf4892b0f8b55dd9ddb76c8b61d78b26f77c885a576718f9b0\",\"license\":\"UNLICENSED\",\"urls\":[\"bzz-raw://2aab9cf3c0a6d7f8236bd74e9f348231c3579e73df4b0384787cee2c430d2792\",\"dweb:/ipfs/QmSTkjUc3AgoTCHxy34BbQgQyiVgYGGfKcEWcrKGf7avGe\"]},\"project:/contracts/libraries/Immutable.sol\":{\"keccak256\":\"0xf8cec9c85627a2bc7adbf5a2e70bb178043dac8fde87e1c8bb1afbb2c317857e\",\"license\":\"UNLICENSED\",\"urls\":[\"bzz-raw://c708de76a70feaf000e6b392b66a53474363d62d761f38c793ac9f1dcbb20532\",\"dweb:/ipfs/QmTd83C3giwpsccdzktbZkx2uniaj6UxkYvpVc5byhzTjf\"]}},\"version\":1}",
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "immutableReferences": {},
+  "generatedSources": [],
+  "deployedGeneratedSources": [],
+  "sourceMap": "",
+  "deployedSourceMap": "",
+  "source": "// SPDX-License-Identifier: UNLICENSED\n// ⣿⣿⣿⣿⣿⠀⠀⣰⣿⣿⣿⣷⡀⠀⠀⣶⣶⣶⣦⡀⠀⠀⠀⣶⣶⡄⠀⠀⣶⣶⡆⠀⠀⣶⣶⠀⠀⠀⠀⢰⣶⣶⣶⣶⢀⠀⠀⣤⣶⣶⣦⡀⠀⠀⠀⣴⣶⣶⣦⠀\n// ⣿⣿⠀⠀⠀⠀⠀⣿⣿⠀⢸⣿⡇⠀⠀⣿⣿⠀⢻⣿⠀⠀⠀⣿⣿⣿⠀⢸⣿⣿⡇⠀⠀⣿⣿⠀⠀⠀⠀⢸⣿⡇⠀⠀⠀⠀⢸⣿⡇⠀⣿⣿⠀⠀⣾⣿⠁⠈⣿⡇\n// ⣿⣿⠀⠀⠀⠀⠀⣿⣿⠀⢸⣿⡇⠀⠀⣿⣿⠀⣸⣿⠀⠀⠀⣿⣿⣿⡀⣿⡟⣿⡇⠀⠀⣿⣿⠀⠀⠀⠀⢸⣿⡇⠀⠀⠀⠀⠀⣿⣿⡀⠀⠀⠀⠀⠘⣿⣷⠀⠀⠀\n// ⣿⣿⠿⠿⠀⠀⠀⣿⣿⠀⢸⣿⡇⠀⠀⣿⣿⣿⣿⡟⠀⠀⠀⣿⣿⣿⣷⣿⠀⣿⡇⠀⠀⣿⣿⠀⠀⠀⠀⢸⣿⡿⠿⠀⠀⠀⠀⠀⢿⣿⣦⠀⠀⠀⠀⠈⣿⣿⡄⠀\n// ⣿⣿⠀⠀⠀⠀⠀⣿⣿⠀⢸⣿⡇⠀⠀⣿⣿⠈⣿⣷⠀⠀⠀⣿⣿⢸⣿⣿⠈⣿⡇⠀⠀⣿⣿⠀⠀⠀⠀⢸⣿⡇⠀⠀⠀⠀⢀⣀⠀⠙⣿⣧⠀⠀⣀⣀⠀⠻⣿⡆\n// ⣿⣿⠀⠀⠀⠀⠀⢿⣿⣤⣾⣿⠇⠀⠀⣿⣿⠀⣿⣿⠀⠀⠀⣿⣿⠀⣿⡇⠈⣿⡇⠀⠀⣿⣿⣤⣤⡄⠀⢸⣿⣧⣤⣤⡄⠀⢸⣿⣆⠀⣿⣿⠀⠀⣿⣿⡀⢀⣿⣿\n// ⠛⠛⠀⠀⠀⠀⠀⠈⠛⠿⠿⠛⠀⠀⠀⠛⠛⠀⠘⠛⠃⠀⠀⠛⠛⠀⠛⠀⠈⠛⠃⠀⠀⠛⠛⠛⠛⠃⠀⠘⠛⠛⠛⠛⠃⠀⠀⠙⠿⠿⠟⠁⠀⠀⠀⠛⠿⠿⠛⠀\n// https://formless.xyz/opportunities\n//\npragma solidity >=0.8.0 <0.9.0;\n\nimport \"./libraries/Immutable.sol\";\nimport \"./LimitedOwnable.sol\";\nimport \"./interfaces/IPFA.sol\";\nimport \"./interfaces/IPFACollection.sol\";\n\n/// @title Standard pay-for-access (PFA) abstract base.\n/// @author brandon@formless.xyz\n/// @notice This base contract is a base implementation of the IPFA\n/// interface.\nabstract contract PFA is IPFA, LimitedOwnable {\n    /// @notice Emitted when a successful access grant is awarded\n    /// to a recipient address.\n    event Grant(address indexed recipient, uint256 indexed tokenId);\n\n    /// @notice Emitted when a successful license grant is awarded\n    /// to a recipient (licensee) address.\n    event License(address indexed licensee);\n\n    Immutable.UnsignedInt256 internal _pricePerAccess;\n    Immutable.UnsignedInt256 internal _pricePerLicense;\n    Immutable.UnsignedInt256 internal _grantTTL;\n    Immutable.Boolean internal _supportsLicensing;\n    uint256 public _transactionCount = 0;\n\n    mapping(address => uint256) internal _grantTimestamps;\n    mapping(address => uint256) internal _licenseTimestamps;\n\n    /// @notice Returns non-zero value if this asset requires\n    /// payment for access. Zero otherwise.\n    function pricePerAccess() public view afterInit returns (uint256) {\n        return _pricePerAccess.value;\n    }\n\n    /// @notice Returns non-zero value if this asset requires\n    /// payment for licensing. Zero otherwise. This value is immutable\n    /// after contract initialization.\n    function pricePerLicense() public view afterInit returns (uint256) {\n        return _pricePerLicense.value;\n    }\n\n    /// @notice Sets the price per access in wei for content backed\n    /// by this contract.\n    function setPricePerAccess(uint256 pricePerAccess_)\n        public\n        override\n        nonReentrant\n        onlyOwner\n        afterInit\n    {\n        require(!_supportsLicensing.value, \"SHARE019\");\n        _pricePerAccess.locked = false;\n        Immutable.setUnsignedInt256(_pricePerAccess, pricePerAccess_);\n    }\n\n    /// @notice If called with a value equal to the price per access\n    /// of this contract, records a grant timestamp on chain which is\n    /// read by decentralized distribution network (DDN) microservices\n    /// to decrypt and serve the associated content for the tokenURI.\n    function access(uint256 tokenId, address recipient)\n        external\n        virtual\n        payable;\n\n    /// @notice Returns true if this PFA supports licensing, where\n    /// licensing is the ability for a separate contract to forward\n    /// payment to this PFA in exchange for the ability to perpetually\n    /// serve the underlying content on its behalf. For example,\n    /// licensing may be used to achieve transaction gated playlisting\n    /// of a collection of PFAs.\n    function supportsLicensing() external view afterInit returns (bool) {\n        return _supportsLicensing.value;\n    }\n\n    /// @notice Returns the timestamp in seconds of the award of a\n    /// grant recorded on chain for the access of the content\n    /// associated with this PFA.\n    function grantTimestamp(address recipient_)\n        public\n        override\n        view\n        afterInit\n        returns (uint256)\n    {\n        return _grantTimestamps[recipient_];\n    }\n\n    /// @notice Returns the timestamp in seconds of the award of a\n    /// grant recorded on chain for the licensing of the content\n    /// associated with this PFA.\n    function licenseTimestamp(address recipient_)\n        external\n        view\n        afterInit\n        returns (uint256)\n    {\n        return _licenseTimestamps[recipient_];\n    }\n\n    /// @notice Returns the time-to-live (TTL) in seconds of an\n    /// awarded access grant for this PFA. Access to the associated\n    ///content expires at `grant award timestamp + grant TTL`.\n    function grantTTL() external view afterInit returns (uint256) {\n        return _grantTTL.value;\n    }\n\n    /// @notice If called with a `recipient` (licensee) contract which\n    /// has proof of inclusion of this PFA (licensor) address in its\n    /// payout distribution table, records a license timestamp on\n    /// chain which is read by decentralized distribution network\n    /// (DDN) microservices to decrypt and serve the associated\n    /// content for the tokenURI to users who have paid to access\n    /// the licensee contract.\n    /// @dev Proof of inclusion is in the form of source code\n    /// verification of the licensee, as well as the assertion of\n    /// immutable state of the licensee contract payout distribution\n    /// table. Immutable state is verified using knowledge of the\n    /// keccak256 hash of the runtime bytecode of the source code\n    /// for approved licensees which implement a write-once\n    /// distribution address table.\n    function license(address recipient_) public payable nonReentrant afterInit {\n        require(_supportsLicensing.value, \"SHARE018\");\n        require(msg.value == _pricePerLicense.value, \"SHARE023\");\n        SHARE protocol = SHARE(shareContractAddress());\n        require(\n            protocol.isApprovedBuild(\n                recipient_,\n                CodeVerification.BuildType.PFA_COLLECTION\n            ),\n            \"SHARE000\"\n        );\n        require(IPFACollection(recipient_).contains(address(this)), \"SHARE001\");\n        _licenseTimestamps[recipient_] = block.timestamp;\n        emit License(recipient_);\n        _transactionCount++;\n    }\n}\n",
+  "sourcePath": "/Users/xiang2011w/Desktop/formless/smartContractGithub/share-v1-core/contracts/PFA.sol",
+  "ast": {
+    "absolutePath": "project:/contracts/PFA.sol",
+    "exportedSymbols": {
+      "Address": [
+        1595
+      ],
+      "CodeVerification": [
+        6709
+      ],
+      "Context": [
+        1625
+      ],
+      "IPFA": [
+        6669
+      ],
+      "IPFACollection": [
+        6681
+      ],
+      "Immutable": [
+        6914
+      ],
+      "LimitedOwnable": [
+        3668
+      ],
+      "Ownable": [
+        112
+      ],
+      "PFA": [
+        4100
+      ],
+      "ReentrancyGuard": [
+        177
+      ],
+      "SHARE": [
+        5573
+      ]
+    },
+    "id": 4101,
+    "license": "UNLICENSED",
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 3862,
+        "literals": [
+          "solidity",
+          ">=",
+          "0.8",
+          ".0",
+          "<",
+          "0.9",
+          ".0"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "1368:31:16"
+      },
+      {
+        "absolutePath": "project:/contracts/libraries/Immutable.sol",
+        "file": "./libraries/Immutable.sol",
+        "id": 3863,
+        "nameLocation": "-1:-1:-1",
+        "nodeType": "ImportDirective",
+        "scope": 4101,
+        "sourceUnit": 6915,
+        "src": "1401:35:16",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "absolutePath": "project:/contracts/LimitedOwnable.sol",
+        "file": "./LimitedOwnable.sol",
+        "id": 3864,
+        "nameLocation": "-1:-1:-1",
+        "nodeType": "ImportDirective",
+        "scope": 4101,
+        "sourceUnit": 3669,
+        "src": "1437:30:16",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "absolutePath": "project:/contracts/interfaces/IPFA.sol",
+        "file": "./interfaces/IPFA.sol",
+        "id": 3865,
+        "nameLocation": "-1:-1:-1",
+        "nodeType": "ImportDirective",
+        "scope": 4101,
+        "sourceUnit": 6670,
+        "src": "1468:31:16",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "absolutePath": "project:/contracts/interfaces/IPFACollection.sol",
+        "file": "./interfaces/IPFACollection.sol",
+        "id": 3866,
+        "nameLocation": "-1:-1:-1",
+        "nodeType": "ImportDirective",
+        "scope": 4101,
+        "sourceUnit": 6682,
+        "src": "1500:41:16",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "abstract": true,
+        "baseContracts": [
+          {
+            "baseName": {
+              "id": 3868,
+              "name": "IPFA",
+              "nodeType": "IdentifierPath",
+              "referencedDeclaration": 6669,
+              "src": "1740:4:16"
+            },
+            "id": 3869,
+            "nodeType": "InheritanceSpecifier",
+            "src": "1740:4:16"
+          },
+          {
+            "baseName": {
+              "id": 3870,
+              "name": "LimitedOwnable",
+              "nodeType": "IdentifierPath",
+              "referencedDeclaration": 3668,
+              "src": "1746:14:16"
+            },
+            "id": 3871,
+            "nodeType": "InheritanceSpecifier",
+            "src": "1746:14:16"
+          }
+        ],
+        "canonicalName": "PFA",
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": {
+          "id": 3867,
+          "nodeType": "StructuredDocumentation",
+          "src": "1543:172:16",
+          "text": "@title Standard pay-for-access (PFA) abstract base.\n @author brandon@formless.xyz\n @notice This base contract is a base implementation of the IPFA\n interface."
+        },
+        "fullyImplemented": false,
+        "id": 4100,
+        "linearizedBaseContracts": [
+          4100,
+          3668,
+          177,
+          112,
+          1625,
+          6669
+        ],
+        "name": "PFA",
+        "nameLocation": "1733:3:16",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "anonymous": false,
+            "documentation": {
+              "id": 3872,
+              "nodeType": "StructuredDocumentation",
+              "src": "1767:93:16",
+              "text": "@notice Emitted when a successful access grant is awarded\n to a recipient address."
+            },
+            "id": 3878,
+            "name": "Grant",
+            "nameLocation": "1871:5:16",
+            "nodeType": "EventDefinition",
+            "parameters": {
+              "id": 3877,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3874,
+                  "indexed": true,
+                  "mutability": "mutable",
+                  "name": "recipient",
+                  "nameLocation": "1893:9:16",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3878,
+                  "src": "1877:25:16",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 3873,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1877:7:16",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 3876,
+                  "indexed": true,
+                  "mutability": "mutable",
+                  "name": "tokenId",
+                  "nameLocation": "1920:7:16",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3878,
+                  "src": "1904:23:16",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 3875,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1904:7:16",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1876:52:16"
+            },
+            "src": "1865:64:16"
+          },
+          {
+            "anonymous": false,
+            "documentation": {
+              "id": 3879,
+              "nodeType": "StructuredDocumentation",
+              "src": "1935:105:16",
+              "text": "@notice Emitted when a successful license grant is awarded\n to a recipient (licensee) address."
+            },
+            "id": 3883,
+            "name": "License",
+            "nameLocation": "2051:7:16",
+            "nodeType": "EventDefinition",
+            "parameters": {
+              "id": 3882,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3881,
+                  "indexed": true,
+                  "mutability": "mutable",
+                  "name": "licensee",
+                  "nameLocation": "2075:8:16",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3883,
+                  "src": "2059:24:16",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 3880,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2059:7:16",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2058:26:16"
+            },
+            "src": "2045:40:16"
+          },
+          {
+            "constant": false,
+            "id": 3886,
+            "mutability": "mutable",
+            "name": "_pricePerAccess",
+            "nameLocation": "2125:15:16",
+            "nodeType": "VariableDeclaration",
+            "scope": 4100,
+            "src": "2091:49:16",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_struct$_UnsignedInt256_$6720_storage",
+              "typeString": "struct Immutable.UnsignedInt256"
+            },
+            "typeName": {
+              "id": 3885,
+              "nodeType": "UserDefinedTypeName",
+              "pathNode": {
+                "id": 3884,
+                "name": "Immutable.UnsignedInt256",
+                "nodeType": "IdentifierPath",
+                "referencedDeclaration": 6720,
+                "src": "2091:24:16"
+              },
+              "referencedDeclaration": 6720,
+              "src": "2091:24:16",
+              "typeDescriptions": {
+                "typeIdentifier": "t_struct$_UnsignedInt256_$6720_storage_ptr",
+                "typeString": "struct Immutable.UnsignedInt256"
+              }
+            },
+            "visibility": "internal"
+          },
+          {
+            "constant": false,
+            "id": 3889,
+            "mutability": "mutable",
+            "name": "_pricePerLicense",
+            "nameLocation": "2180:16:16",
+            "nodeType": "VariableDeclaration",
+            "scope": 4100,
+            "src": "2146:50:16",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_struct$_UnsignedInt256_$6720_storage",
+              "typeString": "struct Immutable.UnsignedInt256"
+            },
+            "typeName": {
+              "id": 3888,
+              "nodeType": "UserDefinedTypeName",
+              "pathNode": {
+                "id": 3887,
+                "name": "Immutable.UnsignedInt256",
+                "nodeType": "IdentifierPath",
+                "referencedDeclaration": 6720,
+                "src": "2146:24:16"
+              },
+              "referencedDeclaration": 6720,
+              "src": "2146:24:16",
+              "typeDescriptions": {
+                "typeIdentifier": "t_struct$_UnsignedInt256_$6720_storage_ptr",
+                "typeString": "struct Immutable.UnsignedInt256"
+              }
+            },
+            "visibility": "internal"
+          },
+          {
+            "constant": false,
+            "id": 3892,
+            "mutability": "mutable",
+            "name": "_grantTTL",
+            "nameLocation": "2236:9:16",
+            "nodeType": "VariableDeclaration",
+            "scope": 4100,
+            "src": "2202:43:16",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_struct$_UnsignedInt256_$6720_storage",
+              "typeString": "struct Immutable.UnsignedInt256"
+            },
+            "typeName": {
+              "id": 3891,
+              "nodeType": "UserDefinedTypeName",
+              "pathNode": {
+                "id": 3890,
+                "name": "Immutable.UnsignedInt256",
+                "nodeType": "IdentifierPath",
+                "referencedDeclaration": 6720,
+                "src": "2202:24:16"
+              },
+              "referencedDeclaration": 6720,
+              "src": "2202:24:16",
+              "typeDescriptions": {
+                "typeIdentifier": "t_struct$_UnsignedInt256_$6720_storage_ptr",
+                "typeString": "struct Immutable.UnsignedInt256"
+              }
+            },
+            "visibility": "internal"
+          },
+          {
+            "constant": false,
+            "id": 3895,
+            "mutability": "mutable",
+            "name": "_supportsLicensing",
+            "nameLocation": "2278:18:16",
+            "nodeType": "VariableDeclaration",
+            "scope": 4100,
+            "src": "2251:45:16",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_struct$_Boolean_$6730_storage",
+              "typeString": "struct Immutable.Boolean"
+            },
+            "typeName": {
+              "id": 3894,
+              "nodeType": "UserDefinedTypeName",
+              "pathNode": {
+                "id": 3893,
+                "name": "Immutable.Boolean",
+                "nodeType": "IdentifierPath",
+                "referencedDeclaration": 6730,
+                "src": "2251:17:16"
+              },
+              "referencedDeclaration": 6730,
+              "src": "2251:17:16",
+              "typeDescriptions": {
+                "typeIdentifier": "t_struct$_Boolean_$6730_storage_ptr",
+                "typeString": "struct Immutable.Boolean"
+              }
+            },
+            "visibility": "internal"
+          },
+          {
+            "constant": false,
+            "functionSelector": "06df4815",
+            "id": 3898,
+            "mutability": "mutable",
+            "name": "_transactionCount",
+            "nameLocation": "2317:17:16",
+            "nodeType": "VariableDeclaration",
+            "scope": 4100,
+            "src": "2302:36:16",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_uint256",
+              "typeString": "uint256"
+            },
+            "typeName": {
+              "id": 3896,
+              "name": "uint256",
+              "nodeType": "ElementaryTypeName",
+              "src": "2302:7:16",
+              "typeDescriptions": {
+                "typeIdentifier": "t_uint256",
+                "typeString": "uint256"
+              }
+            },
+            "value": {
+              "hexValue": "30",
+              "id": 3897,
+              "isConstant": false,
+              "isLValue": false,
+              "isPure": true,
+              "kind": "number",
+              "lValueRequested": false,
+              "nodeType": "Literal",
+              "src": "2337:1:16",
+              "typeDescriptions": {
+                "typeIdentifier": "t_rational_0_by_1",
+                "typeString": "int_const 0"
+              },
+              "value": "0"
+            },
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 3902,
+            "mutability": "mutable",
+            "name": "_grantTimestamps",
+            "nameLocation": "2382:16:16",
+            "nodeType": "VariableDeclaration",
+            "scope": 4100,
+            "src": "2345:53:16",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_mapping$_t_address_$_t_uint256_$",
+              "typeString": "mapping(address => uint256)"
+            },
+            "typeName": {
+              "id": 3901,
+              "keyType": {
+                "id": 3899,
+                "name": "address",
+                "nodeType": "ElementaryTypeName",
+                "src": "2353:7:16",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_address",
+                  "typeString": "address"
+                }
+              },
+              "nodeType": "Mapping",
+              "src": "2345:27:16",
+              "typeDescriptions": {
+                "typeIdentifier": "t_mapping$_t_address_$_t_uint256_$",
+                "typeString": "mapping(address => uint256)"
+              },
+              "valueType": {
+                "id": 3900,
+                "name": "uint256",
+                "nodeType": "ElementaryTypeName",
+                "src": "2364:7:16",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                }
+              }
+            },
+            "visibility": "internal"
+          },
+          {
+            "constant": false,
+            "id": 3906,
+            "mutability": "mutable",
+            "name": "_licenseTimestamps",
+            "nameLocation": "2441:18:16",
+            "nodeType": "VariableDeclaration",
+            "scope": 4100,
+            "src": "2404:55:16",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_mapping$_t_address_$_t_uint256_$",
+              "typeString": "mapping(address => uint256)"
+            },
+            "typeName": {
+              "id": 3905,
+              "keyType": {
+                "id": 3903,
+                "name": "address",
+                "nodeType": "ElementaryTypeName",
+                "src": "2412:7:16",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_address",
+                  "typeString": "address"
+                }
+              },
+              "nodeType": "Mapping",
+              "src": "2404:27:16",
+              "typeDescriptions": {
+                "typeIdentifier": "t_mapping$_t_address_$_t_uint256_$",
+                "typeString": "mapping(address => uint256)"
+              },
+              "valueType": {
+                "id": 3904,
+                "name": "uint256",
+                "nodeType": "ElementaryTypeName",
+                "src": "2423:7:16",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                }
+              }
+            },
+            "visibility": "internal"
+          },
+          {
+            "baseFunctions": [
+              6614
+            ],
+            "body": {
+              "id": 3917,
+              "nodeType": "Block",
+              "src": "2638:45:16",
+              "statements": [
+                {
+                  "expression": {
+                    "expression": {
+                      "id": 3914,
+                      "name": "_pricePerAccess",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 3886,
+                      "src": "2655:15:16",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_UnsignedInt256_$6720_storage",
+                        "typeString": "struct Immutable.UnsignedInt256 storage ref"
+                      }
+                    },
+                    "id": 3915,
+                    "isConstant": false,
+                    "isLValue": true,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "memberName": "value",
+                    "nodeType": "MemberAccess",
+                    "referencedDeclaration": 6717,
+                    "src": "2655:21:16",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "functionReturnParameters": 3913,
+                  "id": 3916,
+                  "nodeType": "Return",
+                  "src": "2648:28:16"
+                }
+              ]
+            },
+            "documentation": {
+              "id": 3907,
+              "nodeType": "StructuredDocumentation",
+              "src": "2466:101:16",
+              "text": "@notice Returns non-zero value if this asset requires\n payment for access. Zero otherwise."
+            },
+            "functionSelector": "5bc3c82c",
+            "id": 3918,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [
+              {
+                "id": 3910,
+                "kind": "modifierInvocation",
+                "modifierName": {
+                  "id": 3909,
+                  "name": "afterInit",
+                  "nodeType": "IdentifierPath",
+                  "referencedDeclaration": 3507,
+                  "src": "2610:9:16"
+                },
+                "nodeType": "ModifierInvocation",
+                "src": "2610:9:16"
+              }
+            ],
+            "name": "pricePerAccess",
+            "nameLocation": "2581:14:16",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 3908,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "2595:2:16"
+            },
+            "returnParameters": {
+              "id": 3913,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3912,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3918,
+                  "src": "2629:7:16",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 3911,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2629:7:16",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2628:9:16"
+            },
+            "scope": 4100,
+            "src": "2572:111:16",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "public"
+          },
+          {
+            "baseFunctions": [
+              6654
+            ],
+            "body": {
+              "id": 3929,
+              "nodeType": "Block",
+              "src": "2928:46:16",
+              "statements": [
+                {
+                  "expression": {
+                    "expression": {
+                      "id": 3926,
+                      "name": "_pricePerLicense",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 3889,
+                      "src": "2945:16:16",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_UnsignedInt256_$6720_storage",
+                        "typeString": "struct Immutable.UnsignedInt256 storage ref"
+                      }
+                    },
+                    "id": 3927,
+                    "isConstant": false,
+                    "isLValue": true,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "memberName": "value",
+                    "nodeType": "MemberAccess",
+                    "referencedDeclaration": 6717,
+                    "src": "2945:22:16",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "functionReturnParameters": 3925,
+                  "id": 3928,
+                  "nodeType": "Return",
+                  "src": "2938:29:16"
+                }
+              ]
+            },
+            "documentation": {
+              "id": 3919,
+              "nodeType": "StructuredDocumentation",
+              "src": "2689:167:16",
+              "text": "@notice Returns non-zero value if this asset requires\n payment for licensing. Zero otherwise. This value is immutable\n after contract initialization."
+            },
+            "functionSelector": "ce1ebbf8",
+            "id": 3930,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [
+              {
+                "id": 3922,
+                "kind": "modifierInvocation",
+                "modifierName": {
+                  "id": 3921,
+                  "name": "afterInit",
+                  "nodeType": "IdentifierPath",
+                  "referencedDeclaration": 3507,
+                  "src": "2900:9:16"
+                },
+                "nodeType": "ModifierInvocation",
+                "src": "2900:9:16"
+              }
+            ],
+            "name": "pricePerLicense",
+            "nameLocation": "2870:15:16",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 3920,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "2885:2:16"
+            },
+            "returnParameters": {
+              "id": 3925,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3924,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3930,
+                  "src": "2919:7:16",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 3923,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2919:7:16",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2918:9:16"
+            },
+            "scope": 4100,
+            "src": "2861:113:16",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "public"
+          },
+          {
+            "baseFunctions": [
+              6620
+            ],
+            "body": {
+              "id": 3963,
+              "nodeType": "Block",
+              "src": "3219:174:16",
+              "statements": [
+                {
+                  "expression": {
+                    "arguments": [
+                      {
+                        "id": 3946,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "nodeType": "UnaryOperation",
+                        "operator": "!",
+                        "prefix": true,
+                        "src": "3237:25:16",
+                        "subExpression": {
+                          "expression": {
+                            "id": 3944,
+                            "name": "_supportsLicensing",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 3895,
+                            "src": "3238:18:16",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_struct$_Boolean_$6730_storage",
+                              "typeString": "struct Immutable.Boolean storage ref"
+                            }
+                          },
+                          "id": 3945,
+                          "isConstant": false,
+                          "isLValue": true,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "memberName": "value",
+                          "nodeType": "MemberAccess",
+                          "referencedDeclaration": 6727,
+                          "src": "3238:24:16",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_bool",
+                            "typeString": "bool"
+                          }
+                        },
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      },
+                      {
+                        "hexValue": "5348415245303139",
+                        "id": 3947,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "string",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "3264:10:16",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_stringliteral_15a1a42bdf87285529e63feab60c628823a3ffc461fd50301e62f0e9a68cc877",
+                          "typeString": "literal_string \"SHARE019\""
+                        },
+                        "value": "SHARE019"
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        },
+                        {
+                          "typeIdentifier": "t_stringliteral_15a1a42bdf87285529e63feab60c628823a3ffc461fd50301e62f0e9a68cc877",
+                          "typeString": "literal_string \"SHARE019\""
+                        }
+                      ],
+                      "id": 3943,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        4294967278,
+                        4294967278
+                      ],
+                      "referencedDeclaration": 4294967278,
+                      "src": "3229:7:16",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
+                        "typeString": "function (bool,string memory) pure"
+                      }
+                    },
+                    "id": 3948,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "3229:46:16",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 3949,
+                  "nodeType": "ExpressionStatement",
+                  "src": "3229:46:16"
+                },
+                {
+                  "expression": {
+                    "id": 3954,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "expression": {
+                        "id": 3950,
+                        "name": "_pricePerAccess",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 3886,
+                        "src": "3285:15:16",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_UnsignedInt256_$6720_storage",
+                          "typeString": "struct Immutable.UnsignedInt256 storage ref"
+                        }
+                      },
+                      "id": 3952,
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "memberName": "locked",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 6719,
+                      "src": "3285:22:16",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bool",
+                        "typeString": "bool"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "hexValue": "66616c7365",
+                      "id": 3953,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": true,
+                      "kind": "bool",
+                      "lValueRequested": false,
+                      "nodeType": "Literal",
+                      "src": "3310:5:16",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bool",
+                        "typeString": "bool"
+                      },
+                      "value": "false"
+                    },
+                    "src": "3285:30:16",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "id": 3955,
+                  "nodeType": "ExpressionStatement",
+                  "src": "3285:30:16"
+                },
+                {
+                  "expression": {
+                    "arguments": [
+                      {
+                        "id": 3959,
+                        "name": "_pricePerAccess",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 3886,
+                        "src": "3353:15:16",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_UnsignedInt256_$6720_storage",
+                          "typeString": "struct Immutable.UnsignedInt256 storage ref"
+                        }
+                      },
+                      {
+                        "id": 3960,
+                        "name": "pricePerAccess_",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 3933,
+                        "src": "3370:15:16",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_struct$_UnsignedInt256_$6720_storage",
+                          "typeString": "struct Immutable.UnsignedInt256 storage ref"
+                        },
+                        {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      ],
+                      "expression": {
+                        "id": 3956,
+                        "name": "Immutable",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 6914,
+                        "src": "3325:9:16",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_type$_t_contract$_Immutable_$6914_$",
+                          "typeString": "type(library Immutable)"
+                        }
+                      },
+                      "id": 3958,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberName": "setUnsignedInt256",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 6778,
+                      "src": "3325:27:16",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_delegatecall_nonpayable$_t_struct$_UnsignedInt256_$6720_storage_ptr_$_t_uint256_$returns$__$",
+                        "typeString": "function (struct Immutable.UnsignedInt256 storage pointer,uint256)"
+                      }
+                    },
+                    "id": 3961,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "3325:61:16",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 3962,
+                  "nodeType": "ExpressionStatement",
+                  "src": "3325:61:16"
+                }
+              ]
+            },
+            "documentation": {
+              "id": 3931,
+              "nodeType": "StructuredDocumentation",
+              "src": "2980:89:16",
+              "text": "@notice Sets the price per access in wei for content backed\n by this contract."
+            },
+            "functionSelector": "4d6eeb76",
+            "id": 3964,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [
+              {
+                "id": 3937,
+                "kind": "modifierInvocation",
+                "modifierName": {
+                  "id": 3936,
+                  "name": "nonReentrant",
+                  "nodeType": "IdentifierPath",
+                  "referencedDeclaration": 142,
+                  "src": "3166:12:16"
+                },
+                "nodeType": "ModifierInvocation",
+                "src": "3166:12:16"
+              },
+              {
+                "id": 3939,
+                "kind": "modifierInvocation",
+                "modifierName": {
+                  "id": 3938,
+                  "name": "onlyOwner",
+                  "nodeType": "IdentifierPath",
+                  "referencedDeclaration": 31,
+                  "src": "3187:9:16"
+                },
+                "nodeType": "ModifierInvocation",
+                "src": "3187:9:16"
+              },
+              {
+                "id": 3941,
+                "kind": "modifierInvocation",
+                "modifierName": {
+                  "id": 3940,
+                  "name": "afterInit",
+                  "nodeType": "IdentifierPath",
+                  "referencedDeclaration": 3507,
+                  "src": "3205:9:16"
+                },
+                "nodeType": "ModifierInvocation",
+                "src": "3205:9:16"
+              }
+            ],
+            "name": "setPricePerAccess",
+            "nameLocation": "3083:17:16",
+            "nodeType": "FunctionDefinition",
+            "overrides": {
+              "id": 3935,
+              "nodeType": "OverrideSpecifier",
+              "overrides": [],
+              "src": "3149:8:16"
+            },
+            "parameters": {
+              "id": 3934,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3933,
+                  "mutability": "mutable",
+                  "name": "pricePerAccess_",
+                  "nameLocation": "3109:15:16",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3964,
+                  "src": "3101:23:16",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 3932,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "3101:7:16",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "3100:25:16"
+            },
+            "returnParameters": {
+              "id": 3942,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "3219:0:16"
+            },
+            "scope": 4100,
+            "src": "3074:319:16",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "public"
+          },
+          {
+            "baseFunctions": [
+              6628
+            ],
+            "documentation": {
+              "id": 3965,
+              "nodeType": "StructuredDocumentation",
+              "src": "3399:275:16",
+              "text": "@notice If called with a value equal to the price per access\n of this contract, records a grant timestamp on chain which is\n read by decentralized distribution network (DDN) microservices\n to decrypt and serve the associated content for the tokenURI."
+            },
+            "functionSelector": "95e9463f",
+            "id": 3972,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "access",
+            "nameLocation": "3688:6:16",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 3970,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3967,
+                  "mutability": "mutable",
+                  "name": "tokenId",
+                  "nameLocation": "3703:7:16",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3972,
+                  "src": "3695:15:16",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 3966,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "3695:7:16",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 3969,
+                  "mutability": "mutable",
+                  "name": "recipient",
+                  "nameLocation": "3720:9:16",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3972,
+                  "src": "3712:17:16",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 3968,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "3712:7:16",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "3694:36:16"
+            },
+            "returnParameters": {
+              "id": 3971,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "3779:0:16"
+            },
+            "scope": 4100,
+            "src": "3679:101:16",
+            "stateMutability": "payable",
+            "virtual": true,
+            "visibility": "external"
+          },
+          {
+            "baseFunctions": [
+              6648
+            ],
+            "body": {
+              "id": 3983,
+              "nodeType": "Block",
+              "src": "4229:48:16",
+              "statements": [
+                {
+                  "expression": {
+                    "expression": {
+                      "id": 3980,
+                      "name": "_supportsLicensing",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 3895,
+                      "src": "4246:18:16",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_Boolean_$6730_storage",
+                        "typeString": "struct Immutable.Boolean storage ref"
+                      }
+                    },
+                    "id": 3981,
+                    "isConstant": false,
+                    "isLValue": true,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "memberName": "value",
+                    "nodeType": "MemberAccess",
+                    "referencedDeclaration": 6727,
+                    "src": "4246:24:16",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "functionReturnParameters": 3979,
+                  "id": 3982,
+                  "nodeType": "Return",
+                  "src": "4239:31:16"
+                }
+              ]
+            },
+            "documentation": {
+              "id": 3973,
+              "nodeType": "StructuredDocumentation",
+              "src": "3786:370:16",
+              "text": "@notice Returns true if this PFA supports licensing, where\n licensing is the ability for a separate contract to forward\n payment to this PFA in exchange for the ability to perpetually\n serve the underlying content on its behalf. For example,\n licensing may be used to achieve transaction gated playlisting\n of a collection of PFAs."
+            },
+            "functionSelector": "a92ddbb3",
+            "id": 3984,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [
+              {
+                "id": 3976,
+                "kind": "modifierInvocation",
+                "modifierName": {
+                  "id": 3975,
+                  "name": "afterInit",
+                  "nodeType": "IdentifierPath",
+                  "referencedDeclaration": 3507,
+                  "src": "4204:9:16"
+                },
+                "nodeType": "ModifierInvocation",
+                "src": "4204:9:16"
+              }
+            ],
+            "name": "supportsLicensing",
+            "nameLocation": "4170:17:16",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 3974,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "4187:2:16"
+            },
+            "returnParameters": {
+              "id": 3979,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3978,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3984,
+                  "src": "4223:4:16",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 3977,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "4223:4:16",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "4222:6:16"
+            },
+            "scope": 4100,
+            "src": "4161:116:16",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "baseFunctions": [
+              6636
+            ],
+            "body": {
+              "id": 3999,
+              "nodeType": "Block",
+              "src": "4583:52:16",
+              "statements": [
+                {
+                  "expression": {
+                    "baseExpression": {
+                      "id": 3995,
+                      "name": "_grantTimestamps",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 3902,
+                      "src": "4600:16:16",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_mapping$_t_address_$_t_uint256_$",
+                        "typeString": "mapping(address => uint256)"
+                      }
+                    },
+                    "id": 3997,
+                    "indexExpression": {
+                      "id": 3996,
+                      "name": "recipient_",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 3987,
+                      "src": "4617:10:16",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "isConstant": false,
+                    "isLValue": true,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "nodeType": "IndexAccess",
+                    "src": "4600:28:16",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "functionReturnParameters": 3994,
+                  "id": 3998,
+                  "nodeType": "Return",
+                  "src": "4593:35:16"
+                }
+              ]
+            },
+            "documentation": {
+              "id": 3985,
+              "nodeType": "StructuredDocumentation",
+              "src": "4283:158:16",
+              "text": "@notice Returns the timestamp in seconds of the award of a\n grant recorded on chain for the access of the content\n associated with this PFA."
+            },
+            "functionSelector": "2cc1bd9e",
+            "id": 4000,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [
+              {
+                "id": 3991,
+                "kind": "modifierInvocation",
+                "modifierName": {
+                  "id": 3990,
+                  "name": "afterInit",
+                  "nodeType": "IdentifierPath",
+                  "referencedDeclaration": 3507,
+                  "src": "4543:9:16"
+                },
+                "nodeType": "ModifierInvocation",
+                "src": "4543:9:16"
+              }
+            ],
+            "name": "grantTimestamp",
+            "nameLocation": "4455:14:16",
+            "nodeType": "FunctionDefinition",
+            "overrides": {
+              "id": 3989,
+              "nodeType": "OverrideSpecifier",
+              "overrides": [],
+              "src": "4513:8:16"
+            },
+            "parameters": {
+              "id": 3988,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3987,
+                  "mutability": "mutable",
+                  "name": "recipient_",
+                  "nameLocation": "4478:10:16",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4000,
+                  "src": "4470:18:16",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 3986,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "4470:7:16",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "4469:20:16"
+            },
+            "returnParameters": {
+              "id": 3994,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3993,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4000,
+                  "src": "4570:7:16",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 3992,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "4570:7:16",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "4569:9:16"
+            },
+            "scope": 4100,
+            "src": "4446:189:16",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "public"
+          },
+          {
+            "baseFunctions": [
+              6668
+            ],
+            "body": {
+              "id": 4014,
+              "nodeType": "Block",
+              "src": "4931:54:16",
+              "statements": [
+                {
+                  "expression": {
+                    "baseExpression": {
+                      "id": 4010,
+                      "name": "_licenseTimestamps",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 3906,
+                      "src": "4948:18:16",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_mapping$_t_address_$_t_uint256_$",
+                        "typeString": "mapping(address => uint256)"
+                      }
+                    },
+                    "id": 4012,
+                    "indexExpression": {
+                      "id": 4011,
+                      "name": "recipient_",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 4003,
+                      "src": "4967:10:16",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "isConstant": false,
+                    "isLValue": true,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "nodeType": "IndexAccess",
+                    "src": "4948:30:16",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "functionReturnParameters": 4009,
+                  "id": 4013,
+                  "nodeType": "Return",
+                  "src": "4941:37:16"
+                }
+              ]
+            },
+            "documentation": {
+              "id": 4001,
+              "nodeType": "StructuredDocumentation",
+              "src": "4641:161:16",
+              "text": "@notice Returns the timestamp in seconds of the award of a\n grant recorded on chain for the licensing of the content\n associated with this PFA."
+            },
+            "functionSelector": "98a47451",
+            "id": 4015,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [
+              {
+                "id": 4006,
+                "kind": "modifierInvocation",
+                "modifierName": {
+                  "id": 4005,
+                  "name": "afterInit",
+                  "nodeType": "IdentifierPath",
+                  "referencedDeclaration": 3507,
+                  "src": "4891:9:16"
+                },
+                "nodeType": "ModifierInvocation",
+                "src": "4891:9:16"
+              }
+            ],
+            "name": "licenseTimestamp",
+            "nameLocation": "4816:16:16",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 4004,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 4003,
+                  "mutability": "mutable",
+                  "name": "recipient_",
+                  "nameLocation": "4841:10:16",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4015,
+                  "src": "4833:18:16",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 4002,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "4833:7:16",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "4832:20:16"
+            },
+            "returnParameters": {
+              "id": 4009,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 4008,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4015,
+                  "src": "4918:7:16",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 4007,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "4918:7:16",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "4917:9:16"
+            },
+            "scope": 4100,
+            "src": "4807:178:16",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "baseFunctions": [
+              6642
+            ],
+            "body": {
+              "id": 4026,
+              "nodeType": "Block",
+              "src": "5248:39:16",
+              "statements": [
+                {
+                  "expression": {
+                    "expression": {
+                      "id": 4023,
+                      "name": "_grantTTL",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 3892,
+                      "src": "5265:9:16",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_UnsignedInt256_$6720_storage",
+                        "typeString": "struct Immutable.UnsignedInt256 storage ref"
+                      }
+                    },
+                    "id": 4024,
+                    "isConstant": false,
+                    "isLValue": true,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "memberName": "value",
+                    "nodeType": "MemberAccess",
+                    "referencedDeclaration": 6717,
+                    "src": "5265:15:16",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "functionReturnParameters": 4022,
+                  "id": 4025,
+                  "nodeType": "Return",
+                  "src": "5258:22:16"
+                }
+              ]
+            },
+            "documentation": {
+              "id": 4016,
+              "nodeType": "StructuredDocumentation",
+              "src": "4991:190:16",
+              "text": "@notice Returns the time-to-live (TTL) in seconds of an\n awarded access grant for this PFA. Access to the associated\ncontent expires at `grant award timestamp + grant TTL`."
+            },
+            "functionSelector": "0122407e",
+            "id": 4027,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [
+              {
+                "id": 4019,
+                "kind": "modifierInvocation",
+                "modifierName": {
+                  "id": 4018,
+                  "name": "afterInit",
+                  "nodeType": "IdentifierPath",
+                  "referencedDeclaration": 3507,
+                  "src": "5220:9:16"
+                },
+                "nodeType": "ModifierInvocation",
+                "src": "5220:9:16"
+              }
+            ],
+            "name": "grantTTL",
+            "nameLocation": "5195:8:16",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 4017,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "5203:2:16"
+            },
+            "returnParameters": {
+              "id": 4022,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 4021,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4027,
+                  "src": "5239:7:16",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 4020,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "5239:7:16",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "5238:9:16"
+            },
+            "scope": 4100,
+            "src": "5186:101:16",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "baseFunctions": [
+              6660
+            ],
+            "body": {
+              "id": 4098,
+              "nodeType": "Block",
+              "src": "6226:576:16",
+              "statements": [
+                {
+                  "expression": {
+                    "arguments": [
+                      {
+                        "expression": {
+                          "id": 4038,
+                          "name": "_supportsLicensing",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 3895,
+                          "src": "6244:18:16",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_struct$_Boolean_$6730_storage",
+                            "typeString": "struct Immutable.Boolean storage ref"
+                          }
+                        },
+                        "id": 4039,
+                        "isConstant": false,
+                        "isLValue": true,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "memberName": "value",
+                        "nodeType": "MemberAccess",
+                        "referencedDeclaration": 6727,
+                        "src": "6244:24:16",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      },
+                      {
+                        "hexValue": "5348415245303138",
+                        "id": 4040,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "string",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "6270:10:16",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_stringliteral_30f6aa57bba26a6f56c9cd0457f30fe3d65c0b2ea01f214332ddef422c72d00f",
+                          "typeString": "literal_string \"SHARE018\""
+                        },
+                        "value": "SHARE018"
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        },
+                        {
+                          "typeIdentifier": "t_stringliteral_30f6aa57bba26a6f56c9cd0457f30fe3d65c0b2ea01f214332ddef422c72d00f",
+                          "typeString": "literal_string \"SHARE018\""
+                        }
+                      ],
+                      "id": 4037,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        4294967278,
+                        4294967278
+                      ],
+                      "referencedDeclaration": 4294967278,
+                      "src": "6236:7:16",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
+                        "typeString": "function (bool,string memory) pure"
+                      }
+                    },
+                    "id": 4041,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "6236:45:16",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 4042,
+                  "nodeType": "ExpressionStatement",
+                  "src": "6236:45:16"
+                },
+                {
+                  "expression": {
+                    "arguments": [
+                      {
+                        "commonType": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        },
+                        "id": 4048,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "leftExpression": {
+                          "expression": {
+                            "id": 4044,
+                            "name": "msg",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 4294967281,
+                            "src": "6299:3:16",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_magic_message",
+                              "typeString": "msg"
+                            }
+                          },
+                          "id": 4045,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "memberName": "value",
+                          "nodeType": "MemberAccess",
+                          "src": "6299:9:16",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                          }
+                        },
+                        "nodeType": "BinaryOperation",
+                        "operator": "==",
+                        "rightExpression": {
+                          "expression": {
+                            "id": 4046,
+                            "name": "_pricePerLicense",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 3889,
+                            "src": "6312:16:16",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_struct$_UnsignedInt256_$6720_storage",
+                              "typeString": "struct Immutable.UnsignedInt256 storage ref"
+                            }
+                          },
+                          "id": 4047,
+                          "isConstant": false,
+                          "isLValue": true,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "memberName": "value",
+                          "nodeType": "MemberAccess",
+                          "referencedDeclaration": 6717,
+                          "src": "6312:22:16",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                          }
+                        },
+                        "src": "6299:35:16",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      },
+                      {
+                        "hexValue": "5348415245303233",
+                        "id": 4049,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "string",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "6336:10:16",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_stringliteral_eeb4cb5810cfd794b7bdb407221e5e0b232fb8afdadbdf51fa449e01c9fa699c",
+                          "typeString": "literal_string \"SHARE023\""
+                        },
+                        "value": "SHARE023"
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        },
+                        {
+                          "typeIdentifier": "t_stringliteral_eeb4cb5810cfd794b7bdb407221e5e0b232fb8afdadbdf51fa449e01c9fa699c",
+                          "typeString": "literal_string \"SHARE023\""
+                        }
+                      ],
+                      "id": 4043,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        4294967278,
+                        4294967278
+                      ],
+                      "referencedDeclaration": 4294967278,
+                      "src": "6291:7:16",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
+                        "typeString": "function (bool,string memory) pure"
+                      }
+                    },
+                    "id": 4050,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "6291:56:16",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 4051,
+                  "nodeType": "ExpressionStatement",
+                  "src": "6291:56:16"
+                },
+                {
+                  "assignments": [
+                    4054
+                  ],
+                  "declarations": [
+                    {
+                      "constant": false,
+                      "id": 4054,
+                      "mutability": "mutable",
+                      "name": "protocol",
+                      "nameLocation": "6363:8:16",
+                      "nodeType": "VariableDeclaration",
+                      "scope": 4098,
+                      "src": "6357:14:16",
+                      "stateVariable": false,
+                      "storageLocation": "default",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_contract$_SHARE_$5573",
+                        "typeString": "contract SHARE"
+                      },
+                      "typeName": {
+                        "id": 4053,
+                        "nodeType": "UserDefinedTypeName",
+                        "pathNode": {
+                          "id": 4052,
+                          "name": "SHARE",
+                          "nodeType": "IdentifierPath",
+                          "referencedDeclaration": 5573,
+                          "src": "6357:5:16"
+                        },
+                        "referencedDeclaration": 5573,
+                        "src": "6357:5:16",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_contract$_SHARE_$5573",
+                          "typeString": "contract SHARE"
+                        }
+                      },
+                      "visibility": "internal"
+                    }
+                  ],
+                  "id": 4059,
+                  "initialValue": {
+                    "arguments": [
+                      {
+                        "arguments": [],
+                        "expression": {
+                          "argumentTypes": [],
+                          "id": 4056,
+                          "name": "shareContractAddress",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 3597,
+                          "src": "6380:20:16",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_function_internal_view$__$returns$_t_address_$",
+                            "typeString": "function () view returns (address)"
+                          }
+                        },
+                        "id": 4057,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "kind": "functionCall",
+                        "lValueRequested": false,
+                        "names": [],
+                        "nodeType": "FunctionCall",
+                        "src": "6380:22:16",
+                        "tryCall": false,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      ],
+                      "id": 4055,
+                      "name": "SHARE",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 5573,
+                      "src": "6374:5:16",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_type$_t_contract$_SHARE_$5573_$",
+                        "typeString": "type(contract SHARE)"
+                      }
+                    },
+                    "id": 4058,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "typeConversion",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "6374:29:16",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_contract$_SHARE_$5573",
+                      "typeString": "contract SHARE"
+                    }
+                  },
+                  "nodeType": "VariableDeclarationStatement",
+                  "src": "6357:46:16"
+                },
+                {
+                  "expression": {
+                    "arguments": [
+                      {
+                        "arguments": [
+                          {
+                            "id": 4063,
+                            "name": "recipient_",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 4030,
+                            "src": "6476:10:16",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_address",
+                              "typeString": "address"
+                            }
+                          },
+                          {
+                            "expression": {
+                              "expression": {
+                                "id": 4064,
+                                "name": "CodeVerification",
+                                "nodeType": "Identifier",
+                                "overloadedDeclarations": [],
+                                "referencedDeclaration": 6709,
+                                "src": "6504:16:16",
+                                "typeDescriptions": {
+                                  "typeIdentifier": "t_type$_t_contract$_CodeVerification_$6709_$",
+                                  "typeString": "type(library CodeVerification)"
+                                }
+                              },
+                              "id": 4065,
+                              "isConstant": false,
+                              "isLValue": false,
+                              "isPure": false,
+                              "lValueRequested": false,
+                              "memberName": "BuildType",
+                              "nodeType": "MemberAccess",
+                              "referencedDeclaration": 6690,
+                              "src": "6504:26:16",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_type$_t_enum$_BuildType_$6690_$",
+                                "typeString": "type(enum CodeVerification.BuildType)"
+                              }
+                            },
+                            "id": 4066,
+                            "isConstant": false,
+                            "isLValue": false,
+                            "isPure": true,
+                            "lValueRequested": false,
+                            "memberName": "PFA_COLLECTION",
+                            "nodeType": "MemberAccess",
+                            "referencedDeclaration": 6689,
+                            "src": "6504:41:16",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_enum$_BuildType_$6690",
+                              "typeString": "enum CodeVerification.BuildType"
+                            }
+                          }
+                        ],
+                        "expression": {
+                          "argumentTypes": [
+                            {
+                              "typeIdentifier": "t_address",
+                              "typeString": "address"
+                            },
+                            {
+                              "typeIdentifier": "t_enum$_BuildType_$6690",
+                              "typeString": "enum CodeVerification.BuildType"
+                            }
+                          ],
+                          "expression": {
+                            "id": 4061,
+                            "name": "protocol",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 4054,
+                            "src": "6434:8:16",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_contract$_SHARE_$5573",
+                              "typeString": "contract SHARE"
+                            }
+                          },
+                          "id": 4062,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "memberName": "isApprovedBuild",
+                          "nodeType": "MemberAccess",
+                          "referencedDeclaration": 5537,
+                          "src": "6434:24:16",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_function_external_view$_t_address_$_t_enum$_BuildType_$6690_$returns$_t_bool_$",
+                            "typeString": "function (address,enum CodeVerification.BuildType) view external returns (bool)"
+                          }
+                        },
+                        "id": 4067,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "kind": "functionCall",
+                        "lValueRequested": false,
+                        "names": [],
+                        "nodeType": "FunctionCall",
+                        "src": "6434:125:16",
+                        "tryCall": false,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      },
+                      {
+                        "hexValue": "5348415245303030",
+                        "id": 4068,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "string",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "6573:10:16",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_stringliteral_77880b0c9bcfe4e387287efb9ed62dcb8d4a27d0955727402202c5c83dd289b1",
+                          "typeString": "literal_string \"SHARE000\""
+                        },
+                        "value": "SHARE000"
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        },
+                        {
+                          "typeIdentifier": "t_stringliteral_77880b0c9bcfe4e387287efb9ed62dcb8d4a27d0955727402202c5c83dd289b1",
+                          "typeString": "literal_string \"SHARE000\""
+                        }
+                      ],
+                      "id": 4060,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        4294967278,
+                        4294967278
+                      ],
+                      "referencedDeclaration": 4294967278,
+                      "src": "6413:7:16",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
+                        "typeString": "function (bool,string memory) pure"
+                      }
+                    },
+                    "id": 4069,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "6413:180:16",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 4070,
+                  "nodeType": "ExpressionStatement",
+                  "src": "6413:180:16"
+                },
+                {
+                  "expression": {
+                    "arguments": [
+                      {
+                        "arguments": [
+                          {
+                            "arguments": [
+                              {
+                                "id": 4078,
+                                "name": "this",
+                                "nodeType": "Identifier",
+                                "overloadedDeclarations": [],
+                                "referencedDeclaration": 4294967268,
+                                "src": "6655:4:16",
+                                "typeDescriptions": {
+                                  "typeIdentifier": "t_contract$_PFA_$4100",
+                                  "typeString": "contract PFA"
+                                }
+                              }
+                            ],
+                            "expression": {
+                              "argumentTypes": [
+                                {
+                                  "typeIdentifier": "t_contract$_PFA_$4100",
+                                  "typeString": "contract PFA"
+                                }
+                              ],
+                              "id": 4077,
+                              "isConstant": false,
+                              "isLValue": false,
+                              "isPure": true,
+                              "lValueRequested": false,
+                              "nodeType": "ElementaryTypeNameExpression",
+                              "src": "6647:7:16",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_type$_t_address_$",
+                                "typeString": "type(address)"
+                              },
+                              "typeName": {
+                                "id": 4076,
+                                "name": "address",
+                                "nodeType": "ElementaryTypeName",
+                                "src": "6647:7:16",
+                                "typeDescriptions": {}
+                              }
+                            },
+                            "id": 4079,
+                            "isConstant": false,
+                            "isLValue": false,
+                            "isPure": false,
+                            "kind": "typeConversion",
+                            "lValueRequested": false,
+                            "names": [],
+                            "nodeType": "FunctionCall",
+                            "src": "6647:13:16",
+                            "tryCall": false,
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_address",
+                              "typeString": "address"
+                            }
+                          }
+                        ],
+                        "expression": {
+                          "argumentTypes": [
+                            {
+                              "typeIdentifier": "t_address",
+                              "typeString": "address"
+                            }
+                          ],
+                          "expression": {
+                            "arguments": [
+                              {
+                                "id": 4073,
+                                "name": "recipient_",
+                                "nodeType": "Identifier",
+                                "overloadedDeclarations": [],
+                                "referencedDeclaration": 4030,
+                                "src": "6626:10:16",
+                                "typeDescriptions": {
+                                  "typeIdentifier": "t_address",
+                                  "typeString": "address"
+                                }
+                              }
+                            ],
+                            "expression": {
+                              "argumentTypes": [
+                                {
+                                  "typeIdentifier": "t_address",
+                                  "typeString": "address"
+                                }
+                              ],
+                              "id": 4072,
+                              "name": "IPFACollection",
+                              "nodeType": "Identifier",
+                              "overloadedDeclarations": [],
+                              "referencedDeclaration": 6681,
+                              "src": "6611:14:16",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_type$_t_contract$_IPFACollection_$6681_$",
+                                "typeString": "type(contract IPFACollection)"
+                              }
+                            },
+                            "id": 4074,
+                            "isConstant": false,
+                            "isLValue": false,
+                            "isPure": false,
+                            "kind": "typeConversion",
+                            "lValueRequested": false,
+                            "names": [],
+                            "nodeType": "FunctionCall",
+                            "src": "6611:26:16",
+                            "tryCall": false,
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_contract$_IPFACollection_$6681",
+                              "typeString": "contract IPFACollection"
+                            }
+                          },
+                          "id": 4075,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "memberName": "contains",
+                          "nodeType": "MemberAccess",
+                          "referencedDeclaration": 6680,
+                          "src": "6611:35:16",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_function_external_view$_t_address_$returns$_t_bool_$",
+                            "typeString": "function (address) view external returns (bool)"
+                          }
+                        },
+                        "id": 4080,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "kind": "functionCall",
+                        "lValueRequested": false,
+                        "names": [],
+                        "nodeType": "FunctionCall",
+                        "src": "6611:50:16",
+                        "tryCall": false,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      },
+                      {
+                        "hexValue": "5348415245303031",
+                        "id": 4081,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "string",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "6663:10:16",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_stringliteral_0b4177f5a88d1515fc9ae3bf219c4d144100bccd9ece0b9242fb07444ad58f12",
+                          "typeString": "literal_string \"SHARE001\""
+                        },
+                        "value": "SHARE001"
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        },
+                        {
+                          "typeIdentifier": "t_stringliteral_0b4177f5a88d1515fc9ae3bf219c4d144100bccd9ece0b9242fb07444ad58f12",
+                          "typeString": "literal_string \"SHARE001\""
+                        }
+                      ],
+                      "id": 4071,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        4294967278,
+                        4294967278
+                      ],
+                      "referencedDeclaration": 4294967278,
+                      "src": "6603:7:16",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
+                        "typeString": "function (bool,string memory) pure"
+                      }
+                    },
+                    "id": 4082,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "6603:71:16",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 4083,
+                  "nodeType": "ExpressionStatement",
+                  "src": "6603:71:16"
+                },
+                {
+                  "expression": {
+                    "id": 4089,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "baseExpression": {
+                        "id": 4084,
+                        "name": "_licenseTimestamps",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 3906,
+                        "src": "6684:18:16",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_mapping$_t_address_$_t_uint256_$",
+                          "typeString": "mapping(address => uint256)"
+                        }
+                      },
+                      "id": 4086,
+                      "indexExpression": {
+                        "id": 4085,
+                        "name": "recipient_",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 4030,
+                        "src": "6703:10:16",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      },
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "nodeType": "IndexAccess",
+                      "src": "6684:30:16",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "expression": {
+                        "id": 4087,
+                        "name": "block",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 4294967292,
+                        "src": "6717:5:16",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_magic_block",
+                          "typeString": "block"
+                        }
+                      },
+                      "id": 4088,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberName": "timestamp",
+                      "nodeType": "MemberAccess",
+                      "src": "6717:15:16",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "src": "6684:48:16",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "id": 4090,
+                  "nodeType": "ExpressionStatement",
+                  "src": "6684:48:16"
+                },
+                {
+                  "eventCall": {
+                    "arguments": [
+                      {
+                        "id": 4092,
+                        "name": "recipient_",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 4030,
+                        "src": "6755:10:16",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      ],
+                      "id": 4091,
+                      "name": "License",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 3883,
+                      "src": "6747:7:16",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_event_nonpayable$_t_address_$returns$__$",
+                        "typeString": "function (address)"
+                      }
+                    },
+                    "id": 4093,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "6747:19:16",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 4094,
+                  "nodeType": "EmitStatement",
+                  "src": "6742:24:16"
+                },
+                {
+                  "expression": {
+                    "id": 4096,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "nodeType": "UnaryOperation",
+                    "operator": "++",
+                    "prefix": false,
+                    "src": "6776:19:16",
+                    "subExpression": {
+                      "id": 4095,
+                      "name": "_transactionCount",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 3898,
+                      "src": "6776:17:16",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "id": 4097,
+                  "nodeType": "ExpressionStatement",
+                  "src": "6776:19:16"
+                }
+              ]
+            },
+            "documentation": {
+              "id": 4028,
+              "nodeType": "StructuredDocumentation",
+              "src": "5293:853:16",
+              "text": "@notice If called with a `recipient` (licensee) contract which\n has proof of inclusion of this PFA (licensor) address in its\n payout distribution table, records a license timestamp on\n chain which is read by decentralized distribution network\n (DDN) microservices to decrypt and serve the associated\n content for the tokenURI to users who have paid to access\n the licensee contract.\n @dev Proof of inclusion is in the form of source code\n verification of the licensee, as well as the assertion of\n immutable state of the licensee contract payout distribution\n table. Immutable state is verified using knowledge of the\n keccak256 hash of the runtime bytecode of the source code\n for approved licensees which implement a write-once\n distribution address table."
+            },
+            "functionSelector": "d6062e44",
+            "id": 4099,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [
+              {
+                "id": 4033,
+                "kind": "modifierInvocation",
+                "modifierName": {
+                  "id": 4032,
+                  "name": "nonReentrant",
+                  "nodeType": "IdentifierPath",
+                  "referencedDeclaration": 142,
+                  "src": "6203:12:16"
+                },
+                "nodeType": "ModifierInvocation",
+                "src": "6203:12:16"
+              },
+              {
+                "id": 4035,
+                "kind": "modifierInvocation",
+                "modifierName": {
+                  "id": 4034,
+                  "name": "afterInit",
+                  "nodeType": "IdentifierPath",
+                  "referencedDeclaration": 3507,
+                  "src": "6216:9:16"
+                },
+                "nodeType": "ModifierInvocation",
+                "src": "6216:9:16"
+              }
+            ],
+            "name": "license",
+            "nameLocation": "6160:7:16",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 4031,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 4030,
+                  "mutability": "mutable",
+                  "name": "recipient_",
+                  "nameLocation": "6176:10:16",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4099,
+                  "src": "6168:18:16",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 4029,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "6168:7:16",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "6167:20:16"
+            },
+            "returnParameters": {
+              "id": 4036,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "6226:0:16"
+            },
+            "scope": 4100,
+            "src": "6151:651:16",
+            "stateMutability": "payable",
+            "virtual": false,
+            "visibility": "public"
+          }
+        ],
+        "scope": 4101,
+        "src": "1715:5089:16",
+        "usedErrors": []
+      }
+    ],
+    "src": "1368:5437:16"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.8.11+commit.d7f03943.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.4.16",
+  "updatedAt": "2024-06-24T20:41:54.160Z",
+  "devdoc": {
+    "author": "brandon@formless.xyz",
+    "kind": "dev",
+    "methods": {
+      "license(address)": {
+        "details": "Proof of inclusion is in the form of source code verification of the licensee, as well as the assertion of immutable state of the licensee contract payout distribution table. Immutable state is verified using knowledge of the keccak256 hash of the runtime bytecode of the source code for approved licensees which implement a write-once distribution address table."
+      },
+      "owner()": {
+        "details": "Returns the address of the current owner."
+      },
+      "renounceOwnership()": {
+        "details": "Leaves the contract without owner. It will not be possible to call `onlyOwner` functions. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby disabling any functionality that is only available to the owner."
+      }
+    },
+    "title": "Standard pay-for-access (PFA) abstract base.",
+    "version": 1
+  },
+  "userdoc": {
+    "events": {
+      "Grant(address,uint256)": {
+        "notice": "Emitted when a successful access grant is awarded to a recipient address."
+      },
+      "License(address)": {
+        "notice": "Emitted when a successful license grant is awarded to a recipient (licensee) address."
+      }
+    },
+    "kind": "user",
+    "methods": {
+      "access(uint256,address)": {
+        "notice": "If called with a value equal to the price per access of this contract, records a grant timestamp on chain which is read by decentralized distribution network (DDN) microservices to decrypt and serve the associated content for the tokenURI."
+      },
+      "grantTTL()": {
+        "notice": "Returns the time-to-live (TTL) in seconds of an awarded access grant for this PFA. Access to the associated content expires at `grant award timestamp + grant TTL`."
+      },
+      "grantTimestamp(address)": {
+        "notice": "Returns the timestamp in seconds of the award of a grant recorded on chain for the access of the content associated with this PFA."
+      },
+      "initialized()": {
+        "notice": "Returns true if and only if the contract has been initialized by invoking the `initialize` function."
+      },
+      "license(address)": {
+        "notice": "If called with a `recipient` (licensee) contract which has proof of inclusion of this PFA (licensor) address in its payout distribution table, records a license timestamp on chain which is read by decentralized distribution network (DDN) microservices to decrypt and serve the associated content for the tokenURI to users who have paid to access the licensee contract."
+      },
+      "licenseTimestamp(address)": {
+        "notice": "Returns the timestamp in seconds of the award of a grant recorded on chain for the licensing of the content associated with this PFA."
+      },
+      "pricePerAccess()": {
+        "notice": "Returns non-zero value if this asset requires payment for access. Zero otherwise."
+      },
+      "pricePerLicense()": {
+        "notice": "Returns non-zero value if this asset requires payment for licensing. Zero otherwise. This value is immutable after contract initialization."
+      },
+      "setPricePerAccess(uint256)": {
+        "notice": "Sets the price per access in wei for content backed by this contract."
+      },
+      "supportsLicensing()": {
+        "notice": "Returns true if this PFA supports licensing, where licensing is the ability for a separate contract to forward payment to this PFA in exchange for the ability to perpetually serve the underlying content on its behalf. For example, licensing may be used to achieve transaction gated playlisting of a collection of PFAs."
+      },
+      "transferOwnership(address)": {
+        "notice": "Transfers ownership of the contract to `newOwner` if and only if `newOwner` satisfies the limited ownership requirements established in the constructor, otherwise, reverts the transaction."
+      }
+    },
+    "notice": "This base contract is a base implementation of the IPFA interface.",
+    "version": 1
+  }
+}
