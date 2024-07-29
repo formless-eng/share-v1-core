@@ -107,7 +107,7 @@ contract("SL2RD", (accounts) => {
         shareContract.address /* shareContractAddress_ */,
         operatorRegistry.address /* operatorRegistryAddress_ */
       );
-      for (let partitionIndex = 0; partitionIndex < 5; partitionIndex += 1) {
+      for (let partitionIndex = 0; partitionIndex < 10; partitionIndex += 1) {
         await splitContract.multipartAddPartition(
           partitionIndex /* partitionIndex_ */,
           ownerAddresses.slice(
@@ -137,6 +137,63 @@ contract("SL2RD", (accounts) => {
         );
       }
       await splitContract.multipartInitializationEnd();
+    } catch (error) {
+      console.log(error);
+      console.log(error.message);
+      assert(false, "Initialization with 1000 splits failed");
+    }
+  });
+
+  specify("Multipart contract initialization with 10000 splits", async () => {
+    const shareContract = await SHARE.deployed();
+    const operatorRegistry = await OperatorRegistry.deployed();
+    const splitContract = await SL2RD.new();
+    const uniformCollaboratorsIds = [];
+    const ownerAddresses = [];
+
+    for (let i = 0; i < 10000; i += 1) {
+      uniformCollaboratorsIds.push(Math.floor(Math.random() * 3));
+      ownerAddresses.push(accounts[0]);
+    }
+    console.log(uniformCollaboratorsIds);
+    try {
+      await splitContract.multipartInitializationBegin(
+        0 /* communitySplitsBasisPoints_ */,
+        shareContract.address /* shareContractAddress_ */,
+        operatorRegistry.address /* operatorRegistryAddress_ */
+      );
+      for (let partitionIndex = 0; partitionIndex < 100; partitionIndex += 1) {
+        await splitContract.multipartAddPartition(
+          partitionIndex /* partitionIndex_ */,
+          ownerAddresses.slice(
+            calculateSplitIndexUsingPartition(
+              partitionIndex,
+              MAX_SL2RD_PARTITION_SIZE,
+              0
+            ),
+            calculateSplitIndexUsingPartition(
+              partitionIndex,
+              MAX_SL2RD_PARTITION_SIZE,
+              MAX_SL2RD_PARTITION_SIZE
+            )
+          ) /* addresses_ */,
+          uniformCollaboratorsIds.slice(
+            calculateSplitIndexUsingPartition(
+              partitionIndex,
+              MAX_SL2RD_PARTITION_SIZE,
+              0
+            ),
+            calculateSplitIndexUsingPartition(
+              partitionIndex,
+              MAX_SL2RD_PARTITION_SIZE,
+              MAX_SL2RD_PARTITION_SIZE
+            )
+          ) /* tokenIds_ */
+        );
+      }
+      await splitContract.multipartInitializationEnd();
+      const distributionTable = await splitContract.splitDistributionTable();
+      assert(distributionTable.length === 10000);
     } catch (error) {
       console.log(error);
       console.log(error.message);
