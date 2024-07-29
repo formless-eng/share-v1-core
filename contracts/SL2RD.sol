@@ -238,7 +238,8 @@ contract SL2RD is
         }
 
         // Mint all of the slots to the corresponding address (default owner).
-        for (uint256 i = 0; i < _tokenIds.value.length; i++) {
+        uint256 startIndex = partitionIndex_ * tokenIds_.length;
+        for (uint256 i = startIndex; i < startIndex + tokenIds_.length; i++) {
             // Duplicate verification ensures tokenIds are minted once.
             if (_tokenOwners[_tokenIds.value[i]] == address(0)) {
                 emit MintingToken(_tokenIds.value[i], _addresses.value[i]);
