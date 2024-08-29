@@ -124,7 +124,7 @@ contract SHARE is Ownable, ReentrancyGuard {
             isApprovedBuild(
                 contractAddress_,
                 CodeVerification.BuildType.PFA_UNIT
-            ) &&
+            ) ||
                 isApprovedBuild(
                     contractAddress_,
                     CodeVerification.BuildType.PFA_COLLECTION
@@ -155,7 +155,7 @@ contract SHARE is Ownable, ReentrancyGuard {
             isApprovedBuild(
                 licensorContract_,
                 CodeVerification.BuildType.PFA_UNIT
-            ) &&
+            ) ||
                 isApprovedBuild(
                     licensorContract_,
                     CodeVerification.BuildType.PFA_COLLECTION
