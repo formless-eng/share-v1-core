@@ -76,7 +76,7 @@ contract PFAUnit is
         nonReentrant
         afterInit
     {
-        require(msg.value == _pricePerAccess.value, "SHARE005");
+        require(msg.value >= _pricePerAccess.value, "SHARE005");
         address owner = owner();
         // Since this contract is a LimitedOwnable, the code which
         // may reside at the owner address is restricted to approved

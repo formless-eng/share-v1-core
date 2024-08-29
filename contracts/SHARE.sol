@@ -19,8 +19,8 @@ import "./interfaces/IPFA.sol";
 /// @author brandon@formless.xyz
 /// @notice A protocol which works in conjunction with SHARE
 /// decentralized distribution network (DDN) microservice endpoints
-/// to perform content distribtion on blockchain with creator
-/// controlled pay-for-access (PFA) micro-transactions.
+/// to perform distribtion services on blockchain with creator
+/// controlled terms.
 contract SHARE is Ownable, ReentrancyGuard {
     /// @notice Emitted when a successful access grant is awarded
     /// to a recipient address for a given PFA contract.
@@ -35,8 +35,8 @@ contract SHARE is Ownable, ReentrancyGuard {
     event License(address indexed licensor, address indexed licensee);
 
     string public constant VERSION = "1.0.0";
-    bytes32
-        private constant EOA_KECCAK256 = 0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470;
+    bytes32 private constant EOA_KECCAK256 =
+        0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470;
     uint256 public _transactionFeeNumerator = 1;
     uint256 public _transactionFeeDenominator = 20;
     uint256 public _transactionCount = 0;
@@ -71,11 +71,10 @@ contract SHARE is Ownable, ReentrancyGuard {
     /// using the SHARE protocol contract if the URI microservice
     /// endpoint is self-hosted, however the use of SHARE provided
     /// DDN endpoints requires an associated payment to the protocol.
-    function setTransactionFee(uint256 numerator_, uint256 denominator_)
-        public
-        nonReentrant
-        onlyOwner
-    {
+    function setTransactionFee(
+        uint256 numerator_,
+        uint256 denominator_
+    ) public nonReentrant onlyOwner {
         _transactionFeeNumerator = numerator_;
         _transactionFeeDenominator = denominator_;
     }
@@ -83,11 +82,10 @@ contract SHARE is Ownable, ReentrancyGuard {
     /// @notice Returns the consumer facing gross price to access the
     /// the asset. This price is calculated using `access price` +
     ///`access price` * `transaction fee`.
-    function grossPricePerAccess(address contractAddress_, uint256 tokenId_)
-        public
-        view
-        returns (uint256)
-    {
+    function grossPricePerAccess(
+        address contractAddress_,
+        uint256 tokenId_
+    ) public view returns (uint256) {
         require(tokenId_ == UNIT_TOKEN_INDEX, "SHARE004");
         IPFA asset = IPFA(contractAddress_);
         uint256 pricePerAccess = asset.pricePerAccess();
@@ -102,11 +100,9 @@ contract SHARE is Ownable, ReentrancyGuard {
     /// @notice Returns the licensee facing gross price to license the
     /// the asset. This price is calculated using `license price` +
     ///`license price` * `transaction fee`.
-    function grossPricePerLicense(address contractAddress_)
-        public
-        view
-        returns (uint256)
-    {
+    function grossPricePerLicense(
+        address contractAddress_
+    ) public view returns (uint256) {
         IPFA asset = IPFA(contractAddress_);
         uint256 pricePerLicense = asset.pricePerLicense();
         // Note that this contract is implemented with Solidity
@@ -120,14 +116,24 @@ contract SHARE is Ownable, ReentrancyGuard {
     /// @notice Instantiates the creator contract and calls the
     /// access method. If successful, this transaction produces a
     /// grant awarded to the sender with a corresponding TTL.
-    function access(address contractAddress_, uint256 tokenId_)
-        public
-        payable
-        nonReentrant
-    {
+    function access(
+        address contractAddress_,
+        uint256 tokenId_
+    ) public payable nonReentrant {
+        require(
+            isApprovedBuild(
+                contractAddress_,
+                CodeVerification.BuildType.PFA_UNIT
+            ) ||
+                isApprovedBuild(
+                    contractAddress_,
+                    CodeVerification.BuildType.PFA_COLLECTION
+                ),
+            "SHARE039"
+        );
         IPFA asset = IPFA(contractAddress_);
         uint256 grossPrice = grossPricePerAccess(contractAddress_, tokenId_);
-        require(msg.value == grossPrice, "SHARE011");
+        require(msg.value >= grossPrice, "SHARE011");
         asset.access{value: asset.pricePerAccess()}(tokenId_, msg.sender);
         _grantTimestamps[contractAddress_][msg.sender] = block.timestamp;
         emit Grant(msg.sender, contractAddress_, tokenId_);
@@ -141,14 +147,35 @@ contract SHARE is Ownable, ReentrancyGuard {
     /// distribution network (DDN) microservices to decrypt and serve
     /// the associated content for the tokenURI to users who have
     /// paid to access the licensee contract.
-    function license(address licensorContract_, address licenseeContract_)
-        public
-        payable
-        nonReentrant
-    {
+    function license(
+        address licensorContract_,
+        address licenseeContract_
+    ) public payable nonReentrant {
+        require(
+            isApprovedBuild(
+                licensorContract_,
+                CodeVerification.BuildType.PFA_UNIT
+            ) ||
+                isApprovedBuild(
+                    licensorContract_,
+                    CodeVerification.BuildType.PFA_COLLECTION
+                ),
+            "SHARE039"
+        );
+        require(
+            isApprovedBuild(
+                licenseeContract_,
+                CodeVerification.BuildType.PFA_UNIT
+            ) ||
+                isApprovedBuild(
+                    licenseeContract_,
+                    CodeVerification.BuildType.PFA_COLLECTION
+                ),
+            "SHARE000"
+        );
         require(msg.sender == Ownable(licenseeContract_).owner(), "SHARE016");
         uint256 grossPrice = grossPricePerLicense(licensorContract_);
-        require(msg.value == grossPrice, "SHARE024");
+        require(msg.value >= grossPrice, "SHARE024");
         IPFA asset = IPFA(licensorContract_);
         asset.license{value: asset.pricePerLicense()}(licenseeContract_);
         _licenseTimestamps[licensorContract_][licenseeContract_] = block
@@ -159,11 +186,10 @@ contract SHARE is Ownable, ReentrancyGuard {
     /// @notice Returns the timestamp in seconds of the award of a
     /// grant recorded on chain for the access of the content
     /// associated with the supplied PFA and recipient address.
-    function grantTimestamp(address contractAddress_, address recipient_)
-        public
-        view
-        returns (uint256)
-    {
+    function grantTimestamp(
+        address contractAddress_,
+        address recipient_
+    ) public view returns (uint256) {
         return _grantTimestamps[contractAddress_][recipient_];
     }
 
@@ -184,11 +210,9 @@ contract SHARE is Ownable, ReentrancyGuard {
 
     /// @notice Enables or disables protocol source code verification
     /// for contracts interacting with the protocol.
-    function setCodeVerificationEnabled(bool enable)
-        public
-        nonReentrant
-        onlyOwner
-    {
+    function setCodeVerificationEnabled(
+        bool enable
+    ) public nonReentrant onlyOwner {
         _codeVerificationEnabled = enable;
     }
 
