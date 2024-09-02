@@ -52,6 +52,12 @@ npm install
 truffle test
 ```
 
+## Running Individual Unit Tests
+
+```shell
+truffle test -g "License denial non-approved collection build"
+```
+
 ## Truffle interactive blockchain console
 
 To interact with deployed contracts you can use the truffle console:
@@ -152,6 +158,7 @@ The command above deploys the contracts as specified in `2_SL2RD_migration.js`.
 - `SHARE036` : `Payment to operator address during funding operation unsuccessful.`
 - `SHARE037` : `Transferring community allocated slots is prohibited until distribution process is complete.`
 - `SHARE038` : `Partition size must be less than or equal to the maximum partition size specified by this contract.`
+- `SHARE039` : `Access and license transactions may only be performed on approved contract builds.`
 
 ## Audits and Formal Verification
 

@@ -151,7 +151,7 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
         address owner = owner(); /* collection owner */
         address itemOwner = item.owner();
 
-        require(msg.value == _pricePerAccess.value, "SHARE010");
+        require(msg.value >= _pricePerAccess.value, "SHARE010");
 
         _currentAddressIndex =
             (_currentAddressIndex + 1) %

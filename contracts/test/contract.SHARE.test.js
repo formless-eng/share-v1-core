@@ -13,18 +13,9 @@ const LICENSE_TTL_PRECISION_SEC = 10;
 contract("SHARE", (accounts) => {
   specify("Contract initialization", async () => {
     const shareContract = await SHARE.deployed();
-    assert.equal(
-      accounts[DEFAULT_ADDRESS_INDEX],
-      await shareContract.owner()
-    );
-    assert.equal(
-      await shareContract._transactionFeeNumerator.call(),
-      1
-    );
-    assert.equal(
-      await shareContract._transactionFeeDenominator.call(),
-      20
-    );
+    assert.equal(accounts[DEFAULT_ADDRESS_INDEX], await shareContract.owner());
+    assert.equal(await shareContract._transactionFeeNumerator.call(), 1);
+    assert.equal(await shareContract._transactionFeeDenominator.call(), 20);
   });
 
   specify("Only owner sets transaction fee", async () => {
@@ -52,15 +43,9 @@ contract("SHARE", (accounts) => {
       throw Error("Expected error");
     }
 
-    assert.equal(
-      await shareContract._transactionFeeNumerator.call(),
-      1
-    );
+    assert.equal(await shareContract._transactionFeeNumerator.call(), 1);
 
-    assert.equal(
-      await shareContract._transactionFeeDenominator.call(),
-      10
-    );
+    assert.equal(await shareContract._transactionFeeDenominator.call(), 10);
   });
 
   specify("Gross price per access", async () => {
@@ -76,12 +61,8 @@ contract("SHARE", (accounts) => {
     );
 
     const transactionFee =
-      (
-        await shareContract._transactionFeeNumerator.call()
-      ).toNumber() /
-      (
-        await shareContract._transactionFeeDenominator.call()
-      ).toNumber();
+      (await shareContract._transactionFeeNumerator.call()).toNumber() /
+      (await shareContract._transactionFeeDenominator.call()).toNumber();
 
     assert.equal(
       (
@@ -107,18 +88,12 @@ contract("SHARE", (accounts) => {
     );
 
     const transactionFee =
-      (
-        await shareContract._transactionFeeNumerator.call()
-      ).toNumber() /
-      (
-        await shareContract._transactionFeeDenominator.call()
-      ).toNumber();
+      (await shareContract._transactionFeeNumerator.call()).toNumber() /
+      (await shareContract._transactionFeeDenominator.call()).toNumber();
 
     assert.equal(
       (
-        await shareContract.grossPricePerLicense(
-          assetContract.address
-        )
+        await shareContract.grossPricePerLicense(assetContract.address)
       ).toNumber(),
       1000000000 * (1 + transactionFee)
     );
@@ -133,50 +108,43 @@ contract("SHARE", (accounts) => {
     let exceedsValueWeiExceptionThrown = false;
 
     try {
-      await shareContract.access(
-        assetContract.address,
-        UNIT_TOKEN_INDEX,
-        {
-          from: accounts[DEFAULT_ADDRESS_INDEX],
-          value: insufficientValueWei,
-        }
-      );
+      await shareContract.access(assetContract.address, UNIT_TOKEN_INDEX, {
+        from: accounts[DEFAULT_ADDRESS_INDEX],
+        value: insufficientValueWei,
+      });
     } catch (error) {
       insufficientValueWeiExceptionThrown = true;
     }
 
     try {
-      await shareContract.access(
-        assetContract.address,
-        UNIT_TOKEN_INDEX,
-        {
-          from: accounts[DEFAULT_ADDRESS_INDEX],
-          value: exceedsValueWei,
-        }
-      );
+      await shareContract.access(assetContract.address, UNIT_TOKEN_INDEX, {
+        from: accounts[DEFAULT_ADDRESS_INDEX],
+        value: exceedsValueWei,
+      });
     } catch (error) {
       exceedsValueWeiExceptionThrown = true;
     }
 
     assert.isTrue(
-      insufficientValueWeiExceptionThrown &&
-        exceedsValueWeiExceptionThrown
+      insufficientValueWeiExceptionThrown && exceedsValueWeiExceptionThrown
     );
   });
 
   specify("Access grant", async () => {
     const shareContract = await SHARE.deployed();
     const assetContract = await PFAUnit.deployed();
-
-    await shareContract.access(
-      assetContract.address,
-      UNIT_TOKEN_INDEX,
-      {
-        from: accounts[NON_OWNER_ADDRESS_INDEX],
-        value: "1050000000",
-      }
+    const verifier = await CodeVerification.deployed();
+    await shareContract.addApprovedBuild(
+      await verifier.readCodeHash(assetContract.address),
+      /* codeHash = keccak256(PFA code) */ 2 /* buildType_ = PFA_UNIT  */,
+      "solc" /* compilerBinaryTarget_ */,
+      "0.8.11+commit.d7f03943" /* compilerVersion_ */,
+      accounts[NON_OWNER_ADDRESS_INDEX] /* authorAddress_ */
     );
-
+    await shareContract.access(assetContract.address, UNIT_TOKEN_INDEX, {
+      from: accounts[NON_OWNER_ADDRESS_INDEX],
+      value: "1050000000",
+    });
     assert.equal(
       (
         await assetContract.getPastEvents("Grant", {
@@ -193,21 +161,22 @@ contract("SHARE", (accounts) => {
   specify("Access grant recorded on SHARE contract", async () => {
     const shareContract = await SHARE.new();
     const assetContract = await PFAUnit.deployed();
-
-    await shareContract.access(
-      assetContract.address,
-      UNIT_TOKEN_INDEX,
-      {
-        from: accounts[NON_OWNER_ADDRESS_INDEX],
-        value: "1050000000",
-      }
+    const verifier = await CodeVerification.deployed();
+    await shareContract.addApprovedBuild(
+      await verifier.readCodeHash(assetContract.address),
+      /* codeHash = keccak256(PFA code) */ 2 /* buildType_ = PFA_UNIT  */,
+      "solc" /* compilerBinaryTarget_ */,
+      "0.8.11+commit.d7f03943" /* compilerVersion_ */,
+      accounts[NON_OWNER_ADDRESS_INDEX] /* authorAddress_ */
     );
-
+    await shareContract.access(assetContract.address, UNIT_TOKEN_INDEX, {
+      from: accounts[NON_OWNER_ADDRESS_INDEX],
+      value: "1050000000",
+    });
     const grantTimestamp = await shareContract.grantTimestamp(
       assetContract.address,
       accounts[NON_OWNER_ADDRESS_INDEX]
     );
-
     assert.isBelow(
       Math.abs(grantTimestamp - Math.round(Date.now() / 1000)),
       GRANT_TTL_PRECISION_SEC
@@ -233,6 +202,13 @@ contract("SHARE", (accounts) => {
       "0.8.11+commit.d7f03943" /* compilerVersion_ */,
       accounts[NON_OWNER_ADDRESS_INDEX] /* authorAddress_ */
     );
+    await shareContract.addApprovedBuild(
+      await verifier.readCodeHash(assetContract.address),
+      /* codeHash = keccak256(PFA code) */ 2 /* buildType_ = PFA_UNIT  */,
+      "solc" /* compilerBinaryTarget_ */,
+      "0.8.11+commit.d7f03943" /* compilerVersion_ */,
+      accounts[NON_OWNER_ADDRESS_INDEX] /* authorAddress_ */
+    );
     const uniformCollaborators = [
       accounts[0],
       accounts[1],
@@ -250,14 +226,10 @@ contract("SHARE", (accounts) => {
 
     for (let i = 0; i < uniformCollaborators.length; i++) {
       const recipientAddress = uniformCollaborators[i];
-      await shareContract.access(
-        assetContract.address,
-        UNIT_TOKEN_INDEX,
-        {
-          from: accounts[NON_OWNER_ADDRESS_INDEX],
-          value: "1050000000",
-        }
-      );
+      await shareContract.access(assetContract.address, UNIT_TOKEN_INDEX, {
+        from: accounts[NON_OWNER_ADDRESS_INDEX],
+        value: "1050000000",
+      });
 
       const events = await splitContract.getPastEvents("Payment", {
         filter: { recipient: recipientAddress },
@@ -279,14 +251,10 @@ contract("SHARE", (accounts) => {
   specify("Access grant TTL", async () => {
     const shareContract = await SHARE.deployed();
     const assetContract = await PFAUnit.deployed();
-    await shareContract.access(
-      assetContract.address,
-      UNIT_TOKEN_INDEX,
-      {
-        from: accounts[NON_OWNER_ADDRESS_INDEX],
-        value: "1050000000",
-      }
-    );
+    await shareContract.access(assetContract.address, UNIT_TOKEN_INDEX, {
+      from: accounts[NON_OWNER_ADDRESS_INDEX],
+      value: "1050000000",
+    });
 
     const grantTimestamp = await assetContract.grantTimestamp(
       accounts[NON_OWNER_ADDRESS_INDEX],
@@ -296,33 +264,39 @@ contract("SHARE", (accounts) => {
     );
 
     assert.isBelow(
-      Math.abs(
-        grantTimestamp.toString() - Math.round(Date.now() / 1000)
-      ),
+      Math.abs(grantTimestamp.toString() - Math.round(Date.now() / 1000)),
       GRANT_TTL_PRECISION_SEC
     );
   });
 
-  specify(
-    "License denial non-approved collection build",
-    async () => {
-      const shareContract = await SHARE.deployed();
-      const assetContract = await PFAUnit.deployed();
-      const collectionContract = await PFACollection.deployed();
-      try {
-        await shareContract.license(
-          assetContract.address /* licensor */,
-          collectionContract.address /* licensee */,
-          {
-            from: accounts[DEFAULT_ADDRESS_INDEX],
-          }
-        );
-        throw Error("Expected error");
-      } catch (error) {
-        assert(error.message.includes("SHARE000"));
-      }
+  specify("License denial non-approved collection build", async () => {
+    const shareContract = await SHARE.deployed();
+    const assetContract = await PFAUnit.deployed();
+    const collectionContract = await PFACollection.deployed();
+    const verifier = await CodeVerification.deployed();
+    await shareContract.addApprovedBuild(
+      await verifier.readCodeHash(
+        assetContract.address
+      ) /* codeHash = keccak256(PFA code) */,
+      2 /* buildType_ = PFA_UNIT  */,
+      "solc" /* compilerBinaryTarget_ */,
+      "0.8.11+commit.d7f03943" /* compilerVersion_ */,
+      accounts[DEFAULT_ADDRESS_INDEX] /* authorAddress_ */
+    );
+    try {
+      await shareContract.license(
+        assetContract.address /* licensor */,
+        collectionContract.address /* licensee */,
+        {
+          from: accounts[DEFAULT_ADDRESS_INDEX],
+        }
+      );
+      throw Error("Expected error");
+    } catch (error) {
+      console.log(error);
+      assert(error.message.includes("SHARE000"));
     }
-  );
+  });
 
   specify("License denial missing proof of inclusion", async () => {
     const shareContract = await SHARE.deployed();
@@ -341,8 +315,17 @@ contract("SHARE", (accounts) => {
     await shareContract.addApprovedBuild(
       await verifier.readCodeHash(
         collectionContract.address
-      ) /* codeHash = keccak256(S2RD code) */,
+      ) /* codeHash = keccak256(collection code) */,
       3 /* buildType_ = COLLECTION  */,
+      "solc" /* compilerBinaryTarget_ */,
+      "0.8.11+commit.d7f03943" /* compilerVersion_ */,
+      accounts[DEFAULT_ADDRESS_INDEX] /* authorAddress_ */
+    );
+    await shareContract.addApprovedBuild(
+      await verifier.readCodeHash(
+        assetContract.address
+      ) /* codeHash = keccak256(PFA code) */,
+      2 /* buildType_ = PFA_UNIT  */,
       "solc" /* compilerBinaryTarget_ */,
       "0.8.11+commit.d7f03943" /* compilerVersion_ */,
       accounts[DEFAULT_ADDRESS_INDEX] /* authorAddress_ */
@@ -366,16 +349,13 @@ contract("SHARE", (accounts) => {
     const shareContractBalancePreWithdrawal = await web3.eth.getBalance(
       shareContract.address
     );
-
     await shareContract.withdraw();
-
     assert.notEqual(shareContractBalancePreWithdrawal, 0);
     assert.equal(await web3.eth.getBalance(shareContract.address), 0);
   });
 
   specify("Can't withdraw from non-owner", async () => {
     const shareContract = await SHARE.deployed();
-
     try {
       console.log(
         await shareContract.withdraw({
@@ -389,57 +369,54 @@ contract("SHARE", (accounts) => {
   });
 });
 
-contract(
-  "License denial collection with price < single PFA",
-  (accounts) => {
-    specify("License grant", async () => {
-      const shareContract = await SHARE.deployed();
-      const assetContract = await PFAUnit.deployed();
-      const collectionContract = await PFACollection.deployed();
-      const verifier = await CodeVerification.deployed();
-      await shareContract.addApprovedBuild(
-        await verifier.readCodeHash(
-          assetContract.address
-        ) /* codeHash = keccak256(S2RD code) */,
-        2 /* buildType_ = PFA_UNIT  */,
-        "solc" /* compilerBinaryTarget_ */,
-        "0.8.11+commit.d7f03943" /* compilerVersion_ */,
-        accounts[DEFAULT_ADDRESS_INDEX] /* authorAddress_ */
-      );
-      await shareContract.addApprovedBuild(
-        await verifier.readCodeHash(
-          collectionContract.address
-        ) /* codeHash = keccak256(S2RD code) */,
-        3 /* buildType_ = COLLECTION  */,
-        "solc" /* compilerBinaryTarget_ */,
-        "0.8.11+commit.d7f03943" /* compilerVersion_ */,
-        accounts[DEFAULT_ADDRESS_INDEX] /* authorAddress_ */
-      );
-      await assetContract.initialize(
+contract("License denial collection with price < single PFA", (accounts) => {
+  specify("License grant", async () => {
+    const shareContract = await SHARE.deployed();
+    const assetContract = await PFAUnit.deployed();
+    const collectionContract = await PFACollection.deployed();
+    const verifier = await CodeVerification.deployed();
+    await shareContract.addApprovedBuild(
+      await verifier.readCodeHash(
+        assetContract.address
+      ) /* codeHash = keccak256(S2RD code) */,
+      2 /* buildType_ = PFA_UNIT  */,
+      "solc" /* compilerBinaryTarget_ */,
+      "0.8.11+commit.d7f03943" /* compilerVersion_ */,
+      accounts[DEFAULT_ADDRESS_INDEX] /* authorAddress_ */
+    );
+    await shareContract.addApprovedBuild(
+      await verifier.readCodeHash(
+        collectionContract.address
+      ) /* codeHash = keccak256(S2RD code) */,
+      3 /* buildType_ = COLLECTION  */,
+      "solc" /* compilerBinaryTarget_ */,
+      "0.8.11+commit.d7f03943" /* compilerVersion_ */,
+      accounts[DEFAULT_ADDRESS_INDEX] /* authorAddress_ */
+    );
+    await assetContract.initialize(
+      "/test/token/uri" /* tokenURI_ */,
+      "2000000000" /* pricePerAccess (wei) */,
+      300 /* grantTTL_ */,
+      true /* supportsLicensing */,
+      0 /* pricePerLicense_ */,
+      shareContract.address /* shareContractAddress_ */
+    );
+    try {
+      await collectionContract.initialize(
+        [assetContract.address] /* addresses_ */,
         "/test/token/uri" /* tokenURI_ */,
-        "2000000000" /* pricePerAccess (wei) */,
+        "1000000000" /* pricePerAccess (wei) */,
         300 /* grantTTL_ */,
         true /* supportsLicensing */,
         0 /* pricePerLicense_ */,
         shareContract.address /* shareContractAddress_ */
       );
-      try {
-        await collectionContract.initialize(
-          [assetContract.address] /* addresses_ */,
-          "/test/token/uri" /* tokenURI_ */,
-          "1000000000" /* pricePerAccess (wei) */,
-          300 /* grantTTL_ */,
-          true /* supportsLicensing */,
-          0 /* pricePerLicense_ */,
-          shareContract.address /* shareContractAddress_ */
-        );
-        throw Error("Expected error");
-      } catch (error) {
-        assert(error.message.includes("SHARE015"));
-      }
-    });
-  }
-);
+      throw Error("Expected error");
+    } catch (error) {
+      assert(error.message.includes("SHARE015"));
+    }
+  });
+});
 
 contract("License denial licensing not supported", (accounts) => {
   specify("License denial licensing not supported", async () => {
@@ -673,9 +650,7 @@ contract("License grant", (accounts) => {
       }
     );
     assert.isBelow(
-      Math.abs(
-        licenseTimestamp.toString() - Math.round(Date.now() / 1000)
-      ),
+      Math.abs(licenseTimestamp.toString() - Math.round(Date.now() / 1000)),
       LICENSE_TTL_PRECISION_SEC
     );
   });
@@ -683,16 +658,19 @@ contract("License grant", (accounts) => {
   specify("Protocol transaction count increment", async () => {
     const shareContract = await SHARE.new();
     const assetContract = await PFAUnit.deployed();
-
+    const verifier = await CodeVerification.deployed();
+    await shareContract.addApprovedBuild(
+      await verifier.readCodeHash(assetContract.address),
+      /* codeHash = keccak256(PFA code) */ 2 /* buildType_ = PFA_UNIT  */,
+      "solc" /* compilerBinaryTarget_ */,
+      "0.8.11+commit.d7f03943" /* compilerVersion_ */,
+      accounts[NON_OWNER_ADDRESS_INDEX] /* authorAddress_ */
+    );
     for (let i = 0; i < 50; i++) {
-      await shareContract.access(
-        assetContract.address,
-        UNIT_TOKEN_INDEX,
-        {
-          from: accounts[NON_OWNER_ADDRESS_INDEX],
-          value: "1050000000",
-        }
-      );
+      await shareContract.access(assetContract.address, UNIT_TOKEN_INDEX, {
+        from: accounts[NON_OWNER_ADDRESS_INDEX],
+        value: "1050000000",
+      });
       const txCount = await shareContract._transactionCount.call();
       console.log(`tx count: ${txCount}`);
       assert.equal(txCount, i + 1);
