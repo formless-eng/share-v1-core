@@ -63,18 +63,18 @@ truffle test -g "License denial non-approved collection build"
 To interact with deployed contracts you can use the truffle console:
 
 ```shell
-MNEMONIC_PHRASE=$MNEMONIC RPC_ENDPIONT_OPTIMISM_GOERLI=$RPC_ENDPOINT_OPTIMISM_GOERLI RPC_ENDPOINT_POLYGON_MUMBAI=$RPC_ENDPOINT_POLYGON_MUMBAI truffle console --network=optimism_goerli
+MNEMONIC_PHRASE=$MNEMONIC RPC_ENDPIONT_OPTIMISM=$RPC_ENDPOINT_OPTIMISM RPC_ENDPOINT_POLYGON_MAINNET=$RPC_ENDPOINT_POLYGON_MAINNET truffle console --network=optimism
 ```
 
 From the console you can then call "migrate" which will execute the code in `migrations/1_initial_migration.js` and deploy the respective contracts to the selected blockchain. From the console you can instantiate a reference to the contract using:
 
 ```javascript
-truffle(optimism_goerli)> let share_instance = await SHARE.at("0x02C4C02247a7bEA0A27825FBE7a11B0C1eA5e7bc");
+truffle(optimism)> let share_instance = await SHARE.at("0x02C4C02247a7bEA0A27825FBE7a11B0C1eA5e7bc");
 
 ```
 
 ```shell
-truffle(optimism_goerli)> share_instance.addApprovedBuild("0x0000000000000000000000000000000000000000000000000000000000000000", 0, "solc", "0.8.11+commit.d7f03943", "0x005D2246cE91890DbdeD3195a94095c560d5c363");
+truffle(optimism)> share_instance.addApprovedBuild("0x0000000000000000000000000000000000000000000000000000000000000000", 0, "solc", "0.8.11+commit.d7f03943", "0x005D2246cE91890DbdeD3195a94095c560d5c363");
 ```
 
 ```json
@@ -162,7 +162,8 @@ The command above deploys the contracts as specified in `2_SL2RD_migration.js`.
 
 ## Audits and Formal Verification
 
-- Solidity Finance <a href="https://solidity.finance/audits/SHARE/">Audit</a> completed. No external threats were identified.
+- Sourcehat <a href="https://sourcehat.com/audits/SHARE/">Audit</a> completed August 30, 2024. No external threats were identified.
+- Solidity Finance <a href="https://solidity.finance/audits/SHARE/">Audit</a> completed May 23, 2022. No external threats were identified.
 
 ## Security and Liability
 
