@@ -15,6 +15,17 @@ import "./LimitedOwnable.sol";
 import "./OperatorRegistry.sol";
 import "./libraries/Immutable.sol";
 
+/// @title Swift Liquid Rotating Royalty Distributor V2 (SL2RD_V2).
+/// @author brandon@formless.xyz
+/// @notice This contract implements a variant of the rotational payment
+/// distribution algorithm specified in SL2RD. In this variant,
+/// "slots" are denoted as "shares", each of which are represented by
+/// fungible ERC20 tokens. This enables the contract owner to list
+/// the contract on a decentralized exchange such as Uniswap, forming
+/// a token economy around individual properties. The linked list
+/// implementation results in the ability to add and remove shareholders
+/// in constant computational cost, while maintaining constant cost
+/// payment distribution.
 contract SL2RD_V2 is LimitedOwnable, ERC20 {
     /// @notice Emitted when a payment is sent to a shareholder
     /// listed within this payment distribution contract.
@@ -70,7 +81,7 @@ contract SL2RD_V2 is LimitedOwnable, ERC20 {
         address operatorRegistryAddress_,
         bool testMode_
     ) public onlyOwner {
-        require(!super.initialized(), "Already initialized");
+        require(!super.initialized(), "SHARE040");
         _name = name_;
         _symbol = symbol_;
         _totalPublicShares = totalPublicShares_;
@@ -150,7 +161,13 @@ contract SL2RD_V2 is LimitedOwnable, ERC20 {
         }
     }
 
-    // NOTE: This is for Uniswap. It should not be called by operators in SHARE.
+    /// @notice Allows for ERC20 tokens to be transferred to a new address.
+    /// @dev Overrides the ERC20 version to add additional check that ensures
+    /// the recipient address is a SHARE approved wallet hash as well as
+    /// internal linked list updates. This function is designed to be
+    /// called from exchange platforms such as Uniswap and therefore there is
+    /// no onlyOwnerOrOperator modifier. SHARE protocol registered operators
+    /// should not call this function.
     function transfer(
         address to,
         uint256 value
@@ -160,6 +177,17 @@ contract SL2RD_V2 is LimitedOwnable, ERC20 {
         return true;
     }
 
+    /// @notice Allows for ERC20 tokens to be transferred to a new address.
+    /// @dev Overrides the ERC20 version to add additional check that ensures
+    /// the recipient address is a SHARE approved wallet hash as well as
+    /// internal linked list updates. This function is designed to be
+    /// called from token holders as well as SHARE protocol registered
+    /// operators. If the caller is a SHARE protocol registered operator,
+    /// the `from` value must be the contract owner. In other words,
+    /// only the contract owner is delegating any priviledges to the
+    /// SHARE protocol registered operator. Shareholders that are not
+    /// the contract owner must call this function directly or approve
+    /// delegation to an exchange contract.
     function transferFrom(
         address from,
         address to,
@@ -175,12 +203,11 @@ contract SL2RD_V2 is LimitedOwnable, ERC20 {
             _shareOperatorRegistry.isOperator(msg.sender) ||
             msg.sender == owner()
         ) {
-            require(_testMode || from == owner(), "NOT AUTHORIZED");
+            require(_testMode || from == owner(), "SHARE041");
             super._approve(from /* owner */, msg.sender /* spender */, value);
         }
 
         if (balanceOf(to) == 0) {
-            // Add shareholder node to linked list
             addShareholderNode(to);
         }
 
