@@ -90,6 +90,7 @@ contract SL2RD_V2 is LimitedOwnable, ERC20 {
         require(!super.initialized(), "SHARE040");
         _name = name_;
         _symbol = symbol_;
+        _totalShares = totalShares_;
         _totalPublicShares = totalPublicShares_;
         _paymentBatchSize = paymentBatchSize_;
         setShareContractAddress(shareContractAddress_);
@@ -135,6 +136,10 @@ contract SL2RD_V2 is LimitedOwnable, ERC20 {
 
     function symbol() public view override returns (string memory) {
         return _symbol;
+    }
+
+    function decimals() public view override returns (uint8) {
+        return 0;
     }
 
     function totalShares() public view returns (uint256) {
@@ -213,10 +218,45 @@ contract SL2RD_V2 is LimitedOwnable, ERC20 {
         address to,
         uint256 value
     ) public override returns (bool) {
-        address owner = _msgSender();
-        transferFrom(owner, to, value);
+        // address owner = _msgSender();
+        // transferFrom(owner, to, value);
+        // return true;
+
+        if (balanceOf(to) == 0) {
+            addShareholderNode(to);
+        }
+
+        super.transfer(to, value);
+
+        if (balanceOf(msg.sender) == 0) {
+            deleteShareholderNode(msg.sender);
+        }
+
         return true;
     }
+
+    // function transferFrom(address from, address to, uint256 value) public virtual returns (bool) {
+    //     address spender = _msgSender();
+    //     _spendAllowance(from, spender, value);
+    //     _transfer(from, to, value);
+    //     return true;
+    // }
+
+    // function transfer(address to, uint256 value) public virtual returns (bool) {
+    //     address owner = _msgSender();
+    //     _transfer(owner, to, value);
+    //     return true;
+    // }
+
+    // function _transfer(address from, address to, uint256 value) internal {
+    //     if (from == address(0)) {
+    //         revert ERC20InvalidSender(address(0));
+    //     }
+    //     if (to == address(0)) {
+    //         revert ERC20InvalidReceiver(address(0));
+    //     }
+    //     _update(from, to, value);
+    // }
 
     /// @notice Allows for ERC20 tokens to be transferred to a new address.
     /// @dev Overrides the ERC20 version to add additional check that ensures
@@ -235,10 +275,11 @@ contract SL2RD_V2 is LimitedOwnable, ERC20 {
         uint256 value
     ) public override returns (bool) {
         // Check if 'to' address is a SHARE approved wallet.
-        require(
-            _protocol.isApprovedBuild(to, CodeVerification.BuildType.WALLET),
-            "SHARE007"
-        );
+        // NOTE: This might need to include approved Uniswap contracts...
+        // require(
+        //     _protocol.isApprovedBuild(to, CodeVerification.BuildType.WALLET),
+        //     "SHARE007"
+        // );
 
         if (
             _shareOperatorRegistry.isOperator(msg.sender) ||
