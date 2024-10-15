@@ -141,6 +141,14 @@ contract SL2RD_V2 is LimitedOwnable, ERC20 {
         return _totalShares;
     }
 
+    function totalPublicShares() public view returns (uint256) {
+        return _totalPublicShares;
+    }
+
+    function countPublicSharesDistributed() public view returns (uint256) {
+        return _publicSharesDistributed;
+    }
+
     function shareholderBalances(
         uint256 start,
         uint256 count
