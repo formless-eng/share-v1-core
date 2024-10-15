@@ -338,5 +338,5 @@ contract SL2RD_V2 is LimitedOwnable, ERC20 {
     function countAllocatedCommunitySlots() public view returns (uint256) {
         return _publicSharesDistributed;
     }
-    // ----- BEGIN: Split backward compatibility interface for SHARE UI V2 -----
+    // ----- END: Split backward compatibility interface for SHARE UI V2 -----
 }
