@@ -42,6 +42,7 @@ contract SL2RD_V2 is LimitedOwnable, ERC20 {
     uint256 private _publicSharesDistributed = 0;
     uint256 private _selectedShareholderPaymentCount = 0;
     uint256 private _paymentBatchSize = 1;
+    uint256 private _shareholdersCount = 1;
     bool public _testMode = false;
 
     struct ShareholderNode {
@@ -49,6 +50,12 @@ contract SL2RD_V2 is LimitedOwnable, ERC20 {
         address next;
         address prev;
     }
+
+    struct ShareholderBalance {
+        address shareholderAddress;
+        uint256 balance;
+    }
+
     mapping(address => ShareholderNode) public _shareholderNodes;
     address private _shareholdersRootNodeId;
     address private _shareholdersTailNodeId;
@@ -134,6 +141,31 @@ contract SL2RD_V2 is LimitedOwnable, ERC20 {
         return _totalShares;
     }
 
+    function shareholderBalances(
+        uint256 start,
+        uint256 count
+    ) public view returns (ShareholderBalance[] memory) {
+        ShareholderNode memory node = _shareholderNodes[
+            _shareholdersRootNodeId
+        ];
+        for (uint256 i = 0; i < start; i++) {
+            node = _shareholderNodes[node.next];
+        }
+        ShareholderBalance[] memory balances = new ShareholderBalance[](count);
+        for (uint256 i = 0; i < count; i++) {
+            balances[i] = ShareholderBalance(
+                node.shareholderAddress,
+                balanceOf(node.shareholderAddress)
+            );
+            node = _shareholderNodes[node.next];
+        }
+        return balances;
+    }
+
+    function countShareholders() public view returns (uint256) {
+        return _shareholdersCount;
+    }
+
     function addShareholderNode(address shareholderAddress_) private {
         ShareholderNode memory node = ShareholderNode(
             shareholderAddress_ /* address */,
@@ -143,6 +175,7 @@ contract SL2RD_V2 is LimitedOwnable, ERC20 {
         _shareholderNodes[_shareholdersTailNodeId].next = shareholderAddress_;
         _shareholdersTailNodeId = shareholderAddress_;
         _shareholderNodes[shareholderAddress_] = node;
+        _shareholdersCount += 1;
     }
 
     function deleteShareholderNode(address shareholderAddress_) private {
@@ -158,6 +191,7 @@ contract SL2RD_V2 is LimitedOwnable, ERC20 {
             _shareholderNodes[node.prev].next = address(0);
             _shareholdersTailNodeId = node.prev;
         }
+        _shareholdersCount -= 1;
     }
 
     /// @notice Allows for ERC20 tokens to be transferred to a new address.
@@ -216,6 +250,18 @@ contract SL2RD_V2 is LimitedOwnable, ERC20 {
             deleteShareholderNode(from);
         }
         return true;
+    }
+
+    function transferPublicShares(
+        address to_,
+        uint256 value_
+    ) public onlyOwnerOrOperator nonReentrant {
+        require(
+            _publicSharesDistributed + value_ <= _totalPublicShares,
+            "SHARE031"
+        );
+        transferFrom(owner(), to_, value_);
+        _publicSharesDistributed += value_;
     }
 
     receive() external payable nonReentrant afterInit {
@@ -279,4 +325,18 @@ contract SL2RD_V2 is LimitedOwnable, ERC20 {
         require(asset.owner() == address(this), "SHARE025");
         asset.transferOwnership(msg.sender);
     }
+
+    // ----- BEGIN: Split backward compatibility interface for SHARE UI V2 -----
+    function totalSlots() public view returns (uint256) {
+        return _totalShares;
+    }
+
+    function totalCommunitySlots() public view returns (uint256) {
+        return _totalPublicShares;
+    }
+
+    function countAllocatedCommunitySlots() public view returns (uint256) {
+        return _publicSharesDistributed;
+    }
+    // ----- BEGIN: Split backward compatibility interface for SHARE UI V2 -----
 }

@@ -196,6 +196,69 @@ contract("SL2RD_V2", (accounts) => {
     }
   });
 
+  specify(
+    "Transferring public shares allowed up until allocation reached",
+    async () => {
+      const shareContract = await SHARE.deployed();
+      const sharesContract = await SL2RD_V2.new();
+      const operatorRegistry = await OperatorRegistry.deployed();
+      await sharesContract.initialize(
+        "Unicorn Token",
+        "UNICORN",
+        100 /* totalShares */,
+        50 /* totalPublicShares */,
+        1 /* batchSize */,
+        shareContract.address,
+        operatorRegistry.address,
+        true /* testMode */
+      );
+      await sharesContract.transferPublicShares(accounts[1], 50, {
+        from: accounts[0],
+      });
+      assert.equal(await sharesContract.balanceOf(accounts[1]), 50);
+
+      try {
+        await sharesContract.transferPublicShares(accounts[1], 1, {
+          from: accounts[0],
+        });
+        assert(false, "transferPublicShares should have failed");
+      } catch (error) {
+        console.log(error.message);
+        assert(error.message.includes("SHARE031"));
+      }
+    }
+  );
+
+  specify("Shareholder balances are updated correctly", async () => {
+    const shareContract = await SHARE.deployed();
+    const sharesContract = await SL2RD_V2.new();
+    const operatorRegistry = await OperatorRegistry.deployed();
+    await sharesContract.initialize(
+      "Unicorn Token",
+      "UNICORN",
+      100 /* totalShares */,
+      100 /* totalPublicShares */,
+      1 /* batchSize */,
+      shareContract.address,
+      operatorRegistry.address,
+      true /* testMode */
+    );
+    await sharesContract.transfer(accounts[1], 10, {
+      from: accounts[0],
+    });
+    await sharesContract.transfer(accounts[2], 5, {
+      from: accounts[0],
+    });
+    await sharesContract.transfer(accounts[3], 5, {
+      from: accounts[0],
+    });
+    const balances = await sharesContract.shareholderBalances(0, 4);
+    assert.notStrictEqual(
+      balances.map((object) => +object.balance),
+      [80, 10, 5, 5]
+    );
+  });
+
   specify("Owner can reclaim PFA", async () => {
     const shareContract = await SHARE.deployed();
     await shareContract.setCodeVerificationEnabled(false);
