@@ -29,7 +29,7 @@ contract("SL2RD_V2", (accounts) => {
       "Unicorn Token",
       "UNICORN",
       10e6 /* totalShares */,
-      10e6 /* totalPublicShares */,
+      10e3 /* totalPublicShares */,
       1000 /* batchSize */,
       shareContract.address,
       operatorRegistry.address,
@@ -39,6 +39,34 @@ contract("SL2RD_V2", (accounts) => {
     assert.equal(await sharesContract.symbol(), "UNICORN");
     assert.equal(await sharesContract.totalSupply(), 10e6);
     assert.equal(await sharesContract.paymentBatchSize(), 1000);
+    assert.equal(await sharesContract.decimals(), 0);
+    assert.equal(await sharesContract.totalPublicShares(), 10e3);
+    assert.equal(await sharesContract.countPublicSharesDistributed(), 0);
+    assert.equal(await sharesContract.totalSlots(), 10e6);
+    assert.equal(await sharesContract.totalCommunitySlots(), 10e3);
+    assert.equal(await sharesContract.countAllocatedCommunitySlots(), 0);
+  });
+
+  specify("Contract setters", async () => {
+    const shareContract = await SHARE.deployed();
+    const operatorRegistry = await OperatorRegistry.deployed();
+    const sharesContract = await SL2RD_V2.new();
+    await sharesContract.initialize(
+      "Unicorn Token",
+      "UNICORN",
+      10e6 /* totalShares */,
+      10e6 /* totalPublicShares */,
+      1000 /* batchSize */,
+      shareContract.address,
+      operatorRegistry.address,
+      false /* testMode */
+    );
+    await sharesContract.setPaymentBatchSize(100);
+    await sharesContract.setDecimals(18);
+    await sharesContract.setCodeVerificationEnabled(false);
+    assert.equal(await sharesContract.paymentBatchSize(), 100);
+    assert.equal(await sharesContract.decimals(), 18);
+    assert.equal(await sharesContract._codeVerificationEnabled(), false);
   });
 
   specify(

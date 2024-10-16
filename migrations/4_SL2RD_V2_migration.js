@@ -9,5 +9,6 @@ module.exports = async (deployer) => {
 
   // Deploy SL2RD_V2
   await deployer.link(Immutable, SL2RD_V2);
+  await deployer.link(CodeVerification, SL2RD_V2);
   await deployer.deploy(SL2RD_V2);
 };

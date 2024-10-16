@@ -13,6 +13,7 @@ pragma solidity >=0.8.0 <0.9.0;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./LimitedOwnable.sol";
 import "./OperatorRegistry.sol";
+import "./libraries/CodeVerification.sol";
 
 /// @title Swift Liquid Rotating Royalty Distributor V2 (SL2RD_V2).
 /// @author brandon@formless.xyz
