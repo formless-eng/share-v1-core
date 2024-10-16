@@ -35,7 +35,6 @@ contract SL2RD_V2 is LimitedOwnable, ERC20 {
         uint256 indexed batchSize,
         uint256 value
     );
-    event AddShareholderNode();
 
     OperatorRegistry private _shareOperatorRegistry;
     SHARE private _protocol;
