@@ -214,7 +214,9 @@ contract("SL2RD_V2", (accounts) => {
               console.log(mostRecentEvent);
               assert.equal(events.length, (i + 1) * paymentBatchSize);
               assert.equal(
-                normalizeAddress(mostRecentEvent.returnValues.to.toLowerCase()),
+                normalizeAddress(
+                  mostRecentEvent.returnValues.recipient.toLowerCase()
+                ),
                 normalizeAddress(expectedShareholderPaymentsTable[i])
               );
               assert.equal(mostRecentEvent.returnValues.value, 1);

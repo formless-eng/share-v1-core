@@ -29,7 +29,12 @@ import "./libraries/CodeVerification.sol";
 contract SL2RD_V2 is LimitedOwnable, ERC20 {
     /// @notice Emitted when a payment is sent to a shareholder
     /// listed within this payment distribution contract.
-    event Payment(address indexed from, address indexed to, uint256 value);
+    event Payment(
+        address indexed from,
+        address indexed recipient,
+        uint256 indexed batchSize,
+        uint256 value
+    );
     event AddShareholderNode();
 
     OperatorRegistry private _shareOperatorRegistry;
@@ -379,6 +384,7 @@ contract SL2RD_V2 is LimitedOwnable, ERC20 {
             emit Payment(
                 msg.sender,
                 selectedShareholderNode.shareholderAddress,
+                _paymentBatchSize,
                 msg.value
             );
             _selectedShareholderPaymentCount += 1;
