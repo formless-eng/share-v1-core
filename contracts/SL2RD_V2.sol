@@ -35,15 +35,18 @@ contract SL2RD_V2 is LimitedOwnable, ERC20 {
     SHARE private _protocol;
     string public constant TOKEN_NAME = "SHARE";
     string public constant TOKEN_SYMBOL = "SHARE";
+    uint8 private _decimals = 0;
     string private _name;
     string private _symbol;
     uint256 private _totalShares = 0;
     uint256 private _totalPublicShares = 0;
     uint256 private _publicSharesDistributed = 0;
     uint256 private _selectedShareholderPaymentCount = 0;
-    uint256 private _paymentBatchSize = 1;
     uint256 private _shareholdersCount = 1;
+    uint256 private _paymentBatchSize = 1;
     bool public _testMode = false;
+    bool public _codeVerificationEnabled = true;
+    mapping(bytes32 => bool) internal _approvedLiquidityPoolHashes;
 
     struct ShareholderNode {
         address shareholderAddress;
@@ -77,6 +80,20 @@ contract SL2RD_V2 is LimitedOwnable, ERC20 {
         LimitedOwnable(true /* WALLET */, false /* SPLIT */)
     {}
 
+    /// @notice Initializes this contract.
+    /// @param name_ The name of the token.
+    /// @param symbol_ The symbol of the token.
+    /// @param totalShares_ The total number of shares to be minted.
+    /// @param totalPublicShares_ The total number of public shares to be
+    /// distributed.
+    /// @param paymentBatchSize_ Set to greater than one to enable multiple
+    /// payments per pointer iteration, which is useful for reducing the
+    /// time between payouts while keeping gas cost low for the overall
+    /// payments stream.
+    /// @param shareContractAddress_ The address of the SHARE protocol contract.
+    /// @param operatorRegistryAddress_ The address of the SHARE operator registry.
+    /// @param testMode_ Set to true to enable test mode, which allows for
+    /// the contract owner to transfer shares to any address.
     function initialize(
         string memory name_,
         string memory symbol_,
@@ -110,62 +127,83 @@ contract SL2RD_V2 is LimitedOwnable, ERC20 {
         setInitialized();
     }
 
+    /// @notice Allows the contract owner to set the payment batch size.
+    /// @param paymentBatchSize_ The number of payments to be made per
+    /// iteration of the payment distribution algorithm.
     function setPaymentBatchSize(
         uint256 paymentBatchSize_
     ) public nonReentrant onlyOwner {
         _paymentBatchSize = paymentBatchSize_;
     }
 
+    /// @notice Returns payment batch size.
     function paymentBatchSize() public view returns (uint256) {
         return _paymentBatchSize;
     }
 
+    /// @notice Returns the root node of the linked list of shareholders.
     function shareholdersRootNodeId() public view returns (address) {
         return _shareholdersRootNodeId;
     }
 
+    /// @notice Returns a shareholder node object given a shareholder address.
     function getShareholder(
         address shareholderNodeId_
     ) public view returns (ShareholderNode memory) {
         return _shareholderNodes[shareholderNodeId_];
     }
 
+    /// @notice Returns the token name.
     function name() public view override returns (string memory) {
         return _name;
     }
 
+    /// @notice Returns the token symbol.
     function symbol() public view override returns (string memory) {
         return _symbol;
     }
 
-    function decimals() public view override returns (uint8) {
-        return 0;
+    /// @notice Allows the contract owner to set the token decimal number.
+    /// @param decimals_ The number of decimals for the token.
+    function setDecimals(uint8 decimals_) public nonReentrant onlyOwner {
+        _decimals = decimals_;
     }
 
+    /// @notice Returns the decimals number for the token display.
+    function decimals() public view override returns (uint8) {
+        return _decimals;
+    }
+
+    /// @notice Returns the total number of shares minted.
     function totalShares() public view returns (uint256) {
         return _totalShares;
     }
 
+    /// @notice Returns the total number of public shares to be distributed.
     function totalPublicShares() public view returns (uint256) {
         return _totalPublicShares;
     }
 
+    /// @notice Returns the total number of public shares distributed.
     function countPublicSharesDistributed() public view returns (uint256) {
         return _publicSharesDistributed;
     }
 
+    /// @notice Returns a list of shareholder address to balance mappings.
+    /// @param start_ The index of the first shareholder to return.
+    /// @param count_ The number of shareholders to return.
     function shareholderBalances(
-        uint256 start,
-        uint256 count
+        uint256 start_,
+        uint256 count_
     ) public view returns (ShareholderBalance[] memory) {
         ShareholderNode memory node = _shareholderNodes[
             _shareholdersRootNodeId
         ];
-        for (uint256 i = 0; i < start; i++) {
+        for (uint256 i = 0; i < start_; i++) {
             node = _shareholderNodes[node.next];
         }
-        ShareholderBalance[] memory balances = new ShareholderBalance[](count);
-        for (uint256 i = 0; i < count; i++) {
+        ShareholderBalance[] memory balances = new ShareholderBalance[](count_);
+        for (uint256 i = 0; i < count_; i++) {
             balances[i] = ShareholderBalance(
                 node.shareholderAddress,
                 balanceOf(node.shareholderAddress)
@@ -175,10 +213,12 @@ contract SL2RD_V2 is LimitedOwnable, ERC20 {
         return balances;
     }
 
+    /// @notice Returns the number of shareholders.
     function countShareholders() public view returns (uint256) {
         return _shareholdersCount;
     }
 
+    /// @notice Adds a shareholder node to the internal linked list.
     function addShareholderNode(address shareholderAddress_) private {
         ShareholderNode memory node = ShareholderNode(
             shareholderAddress_ /* address */,
@@ -191,6 +231,7 @@ contract SL2RD_V2 is LimitedOwnable, ERC20 {
         _shareholdersCount += 1;
     }
 
+    /// @notice Deletes a shareholder node from the internal linked list.
     function deleteShareholderNode(address shareholderAddress_) private {
         ShareholderNode memory node = _shareholderNodes[shareholderAddress_];
         if (_shareholderNodes[node.prev].shareholderAddress != address(0)) {
@@ -215,48 +256,18 @@ contract SL2RD_V2 is LimitedOwnable, ERC20 {
     /// no onlyOwnerOrOperator modifier. SHARE protocol registered operators
     /// should not call this function.
     function transfer(
-        address to,
-        uint256 value
+        address to_,
+        uint256 value_
     ) public override returns (bool) {
-        // address owner = _msgSender();
-        // transferFrom(owner, to, value);
-        // return true;
-
-        if (balanceOf(to) == 0) {
-            addShareholderNode(to);
+        if (balanceOf(to_) == 0) {
+            addShareholderNode(to_);
         }
-
-        super.transfer(to, value);
-
+        super.transfer(to_, value_);
         if (balanceOf(msg.sender) == 0) {
             deleteShareholderNode(msg.sender);
         }
-
         return true;
     }
-
-    // function transferFrom(address from, address to, uint256 value) public virtual returns (bool) {
-    //     address spender = _msgSender();
-    //     _spendAllowance(from, spender, value);
-    //     _transfer(from, to, value);
-    //     return true;
-    // }
-
-    // function transfer(address to, uint256 value) public virtual returns (bool) {
-    //     address owner = _msgSender();
-    //     _transfer(owner, to, value);
-    //     return true;
-    // }
-
-    // function _transfer(address from, address to, uint256 value) internal {
-    //     if (from == address(0)) {
-    //         revert ERC20InvalidSender(address(0));
-    //     }
-    //     if (to == address(0)) {
-    //         revert ERC20InvalidReceiver(address(0));
-    //     }
-    //     _update(from, to, value);
-    // }
 
     /// @notice Allows for ERC20 tokens to be transferred to a new address.
     /// @dev Overrides the ERC20 version to add additional check that ensures
@@ -270,37 +281,45 @@ contract SL2RD_V2 is LimitedOwnable, ERC20 {
     /// the contract owner must call this function directly or approve
     /// delegation to an exchange contract.
     function transferFrom(
-        address from,
-        address to,
-        uint256 value
+        address from_,
+        address to_,
+        uint256 value_
     ) public override returns (bool) {
-        // Check if 'to' address is a SHARE approved wallet.
-        // NOTE: This might need to include approved Uniswap contracts...
-        // require(
-        //     _protocol.isApprovedBuild(to, CodeVerification.BuildType.WALLET),
-        //     "SHARE007"
-        // );
+        if (_codeVerificationEnabled) {
+            require(
+                _protocol.isApprovedBuild(
+                    to_,
+                    CodeVerification.BuildType.WALLET
+                ) ||
+                    isApprovedLiquidityPoolContract(
+                        CodeVerification.readCodeHash(to_)
+                    ),
+                "SHARE007"
+            );
+        }
 
         if (
             _shareOperatorRegistry.isOperator(msg.sender) ||
             msg.sender == owner()
         ) {
-            require(_testMode || from == owner(), "SHARE041");
-            super._approve(from /* owner */, msg.sender /* spender */, value);
+            require(_testMode || from_ == owner(), "SHARE041");
+            super._approve(from_ /* owner */, msg.sender /* spender */, value_);
         }
 
-        if (balanceOf(to) == 0) {
-            addShareholderNode(to);
+        if (balanceOf(to_) == 0) {
+            addShareholderNode(to_);
         }
-
-        super.transferFrom(from, to, value);
-
-        if (balanceOf(from) == 0) {
-            deleteShareholderNode(from);
+        super.transferFrom(from_, to_, value_);
+        if (balanceOf(from_) == 0) {
+            deleteShareholderNode(from_);
         }
         return true;
     }
 
+    /// @notice Transfers shares from public allocation (e.g. owned by the contract owner)
+    /// to a new shareholder.
+    /// @param to_ The address of the shareholder to transfer shares to.
+    /// @param value_ The number of shares to transfer.
     function transferPublicShares(
         address to_,
         uint256 value_
@@ -313,6 +332,10 @@ contract SL2RD_V2 is LimitedOwnable, ERC20 {
         _publicSharesDistributed += value_;
     }
 
+    /// @notice Pays out to shareholders in a round-robin fashion, where each
+    /// shareholder receives a number of payments in proportion to their balance
+    /// over a sequence of payments. The number of payments per iteration is
+    /// determined by the payment batch size parameter.
     receive() external payable nonReentrant afterInit {
         uint256 paymentValue = msg.value / _paymentBatchSize;
         for (uint256 i = 0; i < _paymentBatchSize; i++) {
@@ -349,6 +372,56 @@ contract SL2RD_V2 is LimitedOwnable, ERC20 {
         }
     }
 
+    /// @notice Enables code verification for destination shareholder addresses,
+    /// such as Uniswap liquidity pool contracts.
+    /// @param enable_ Set to true to enable code verification.
+    function setCodeVerificationEnabled(
+        bool enable_
+    ) public nonReentrant onlyOwner {
+        _codeVerificationEnabled = enable_;
+    }
+
+    /// @notice Adds an approved contract hash to the list of approved
+    /// hashes.
+    /// @param codeHash_ The keccak256 hash of the runtime bytecode of the
+    function addApprovedLiquidityPoolContract(
+        bytes32 codeHash_
+    ) public onlyOwner nonReentrant {
+        _approvedLiquidityPoolHashes[codeHash_] = true;
+    }
+
+    /// @notice Returns true if the supplied hash is included
+    /// in the set of approved hashes.
+    /// @param hash_ The keccak256 hash of the runtime bytecode of a
+    /// candidate contract.
+    function isApprovedLiquidityPoolContract(
+        bytes32 hash_
+    ) public view returns (bool) {
+        if (!_codeVerificationEnabled) {
+            return true;
+        } else {
+            return _approvedLiquidityPoolHashes[hash_];
+        }
+    }
+
+    /// @notice Returns the total ownership slots created for this contract.
+    /// @dev For backward compatibility with SL2RD_V1.
+    function totalSlots() public view returns (uint256) {
+        return _totalShares;
+    }
+
+    /// @notice Returns the initial allocation of community slots.
+    /// @dev For backward compatibility with SL2RD_V1.
+    function totalCommunitySlots() public view returns (uint256) {
+        return _totalPublicShares;
+    }
+
+    /// @notice Returns the number of community slots allocated.
+    /// @dev For backward compatibility with SL2RD_V1.
+    function countAllocatedCommunitySlots() public view returns (uint256) {
+        return _publicSharesDistributed;
+    }
+
     /// @notice Reclaims a contract owned by this SL2RD, e.g. if a PFA
     /// is owned by this split, the split owner may transfer
     /// ownership of the PFA back to their account. This is intended
@@ -374,18 +447,4 @@ contract SL2RD_V2 is LimitedOwnable, ERC20 {
         require(asset.owner() == address(this), "SHARE025");
         asset.transferOwnership(msg.sender);
     }
-
-    // ----- BEGIN: Split backward compatibility interface for SHARE UI V2 -----
-    function totalSlots() public view returns (uint256) {
-        return _totalShares;
-    }
-
-    function totalCommunitySlots() public view returns (uint256) {
-        return _totalPublicShares;
-    }
-
-    function countAllocatedCommunitySlots() public view returns (uint256) {
-        return _publicSharesDistributed;
-    }
-    // ----- END: Split backward compatibility interface for SHARE UI V2 -----
 }
