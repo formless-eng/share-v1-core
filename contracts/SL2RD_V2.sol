@@ -260,6 +260,18 @@ contract SL2RD_V2 is LimitedOwnable, ERC20 {
         address to_,
         uint256 value_
     ) public override returns (bool) {
+        if (_codeVerificationEnabled) {
+            require(
+                _protocol.isApprovedBuild(
+                    to_,
+                    CodeVerification.BuildType.WALLET
+                ) ||
+                    isApprovedLiquidityPoolCodeHash(
+                        CodeVerification.readCodeHash(to_)
+                    ),
+                "SHARE007"
+            );
+        }
         if (balanceOf(to_) == 0) {
             addShareholderNode(to_);
         }
@@ -292,7 +304,7 @@ contract SL2RD_V2 is LimitedOwnable, ERC20 {
                     to_,
                     CodeVerification.BuildType.WALLET
                 ) ||
-                    isApprovedLiquidityPoolContract(
+                    isApprovedLiquidityPoolCodeHash(
                         CodeVerification.readCodeHash(to_)
                     ),
                 "SHARE007"
@@ -385,7 +397,7 @@ contract SL2RD_V2 is LimitedOwnable, ERC20 {
     /// @notice Adds an approved contract hash to the list of approved
     /// hashes.
     /// @param codeHash_ The keccak256 hash of the runtime bytecode of the
-    function addApprovedLiquidityPoolContract(
+    function approveLiquidityPoolCodeHash(
         bytes32 codeHash_
     ) public onlyOwner nonReentrant {
         _approvedLiquidityPoolHashes[codeHash_] = true;
@@ -395,7 +407,7 @@ contract SL2RD_V2 is LimitedOwnable, ERC20 {
     /// in the set of approved hashes.
     /// @param hash_ The keccak256 hash of the runtime bytecode of a
     /// candidate contract.
-    function isApprovedLiquidityPoolContract(
+    function isApprovedLiquidityPoolCodeHash(
         bytes32 hash_
     ) public view returns (bool) {
         if (!_codeVerificationEnabled) {

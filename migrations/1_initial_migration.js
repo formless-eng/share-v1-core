@@ -9,6 +9,7 @@ const CodeVerification = artifacts.require("CodeVerification");
 const Immutable = artifacts.require("Immutable");
 const MockImmutable = artifacts.require("MockImmutable");
 const MockPFARevertsOnAccess = artifacts.require("MockPFARevertsOnAccess");
+const MockLiquidityPool = artifacts.require("MockLiquidityPool");
 
 module.exports = async (deployer) => {
   // Deploy library contracts
@@ -16,6 +17,7 @@ module.exports = async (deployer) => {
   await deployer.deploy(Immutable);
   await deployer.link(Immutable, MockImmutable);
   await deployer.deploy(MockImmutable);
+  await deployer.deploy(MockLiquidityPool);
 
   // Deploy SHARE protocol contract.
   await deployer.link(CodeVerification, SHARE);
