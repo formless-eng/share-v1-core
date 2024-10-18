@@ -159,6 +159,8 @@ The command above deploys the contracts as specified in `2_SL2RD_migration.js`.
 - `SHARE037` : `Transferring community allocated slots is prohibited until distribution process is complete.`
 - `SHARE038` : `Partition size must be less than or equal to the maximum partition size specified by this contract.`
 - `SHARE039` : `Access and license transactions may only be performed on approved contract builds.`
+- `SHARE040` : `This contract has already been initialized.`
+- `SHARE041` : `The sender of this transaction is not approved for transferring tokens from the specified address and cannot be automatically approved.`
 
 ## Audits and Formal Verification
 

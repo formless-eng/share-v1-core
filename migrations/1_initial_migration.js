@@ -3,13 +3,13 @@ const PFAUnit = artifacts.require("PFAUnit");
 const PFACollection = artifacts.require("PFACollection");
 const S2RD = artifacts.require("S2RD");
 const SL2RD = artifacts.require("SL2RD");
+const SL2RD_V2 = artifacts.require("SL2RD_V2");
 const OperatorRegistry = artifacts.require("OperatorRegistry");
 const CodeVerification = artifacts.require("CodeVerification");
 const Immutable = artifacts.require("Immutable");
 const MockImmutable = artifacts.require("MockImmutable");
-const MockPFARevertsOnAccess = artifacts.require(
-  "MockPFARevertsOnAccess"
-);
+const MockPFARevertsOnAccess = artifacts.require("MockPFARevertsOnAccess");
+const MockLiquidityPool = artifacts.require("MockLiquidityPool");
 
 module.exports = async (deployer) => {
   // Deploy library contracts
@@ -17,6 +17,7 @@ module.exports = async (deployer) => {
   await deployer.deploy(Immutable);
   await deployer.link(Immutable, MockImmutable);
   await deployer.deploy(MockImmutable);
+  await deployer.deploy(MockLiquidityPool);
 
   // Deploy SHARE protocol contract.
   await deployer.link(CodeVerification, SHARE);
@@ -42,4 +43,9 @@ module.exports = async (deployer) => {
   // Deploy PFACollection
   await deployer.link(Immutable, PFACollection);
   await deployer.deploy(PFACollection);
+
+  // Deploy SL2RD_V2 contract
+  await deployer.link(Immutable, SL2RD_V2);
+  await deployer.link(CodeVerification, SL2RD_V2);
+  await deployer.deploy(SL2RD_V2);
 };
