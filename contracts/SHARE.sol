@@ -147,13 +147,17 @@ contract SHARE is Ownable, ReentrancyGuard {
             ERC165(contractAddress_).supportsInterface(type(IPFA).interfaceId)
         ) {
             address distributor = asset.distributorAddress();
-            uint256 distributionFeeNumerator = asset.distributionFeeNumerator();
-            uint256 distributionFeeDenominator = asset
-                .distributionFeeDenominator();
-            uint256 distributionFee = ((grossPrice - asset.pricePerAccess()) *
-                distributionFeeNumerator) / distributionFeeDenominator;
-            payable(distributor).transfer(distributionFee);
-            emit Payment(msg.sender, distributor, distributionFee);
+            if (distributor != address(0)) {
+                uint256 distributionFeeNumerator = asset
+                    .distributionFeeNumerator();
+                uint256 distributionFeeDenominator = asset
+                    .distributionFeeDenominator();
+                uint256 distributionFee = ((grossPrice -
+                    asset.pricePerAccess()) * distributionFeeNumerator) /
+                    distributionFeeDenominator;
+                payable(distributor).transfer(distributionFee);
+                emit Payment(msg.sender, distributor, distributionFee);
+            }
         }
 
         _grantTimestamps[contractAddress_][msg.sender] = block.timestamp;
