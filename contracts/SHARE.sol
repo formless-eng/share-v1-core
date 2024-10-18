@@ -12,7 +12,7 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import {ERC165} from "@openzeppelin/utils/introspection/ERC165.sol";
+import "@openzeppelin/utils/introspection/ERC165.sol";
 import "./libraries/CodeVerification.sol";
 import "./interfaces/IPFA.sol";
 

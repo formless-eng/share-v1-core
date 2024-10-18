@@ -19,10 +19,7 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 /// @title Standard pay-for-access (PFA) contract. Also implements
 /// ERC-721 standard (G_NFT).
 /// @author brandon@formless.xyz
-contract PFAUnit is
-    PFA,
-    ERC721 /* G_NFT */
-{
+contract PFAUnit is PFA, ERC721 /* G_NFT */ {
     /// @notice Emitted when a payment is sent to the owner of this
     /// PFA.
     event PaymentToOwner(address indexed owner, uint256 value);
@@ -36,10 +33,7 @@ contract PFAUnit is
     constructor()
         public
         ERC721(NAME, SYMBOL)
-        LimitedOwnable(
-            true, /* WALLET */
-            true /* SPLIT */
-        )
+        LimitedOwnable(true /* WALLET */, true /* SPLIT */)
     {
         _safeMint(msg.sender, UNIT_TOKEN_INDEX);
     }
@@ -69,13 +63,10 @@ contract PFAUnit is
     /// of this contract, records a grant timestamp on chain which is
     /// read by decentralized distribution network (DDN) microservices
     /// to decrypt and serve the associated content for the tokenURI.
-    function access(uint256 tokenId_, address recipient_)
-        public
-        override
-        payable
-        nonReentrant
-        afterInit
-    {
+    function access(
+        uint256 tokenId_,
+        address recipient_
+    ) public payable override nonReentrant afterInit {
         require(msg.value >= _pricePerAccess.value, "SHARE005");
         address owner = owner();
         // Since this contract is a LimitedOwnable, the code which
@@ -96,12 +87,9 @@ contract PFAUnit is
     /// @dev In SHARE, this URI corresponds to a decentralized
     /// distribution network (DDN) microservice endpoint which
     /// conditionally renders token metadata based on contract state.
-    function tokenURI(uint256 tokenId_)
-        public
-        override
-        view
-        returns (string memory)
-    {
+    function tokenURI(
+        uint256 tokenId_
+    ) public view override returns (string memory) {
         require(tokenId_ == UNIT_TOKEN_INDEX, "SHARE004");
         return _tokenURI;
     }
@@ -110,11 +98,18 @@ contract PFAUnit is
     /// @dev In SHARE, this URI corresponds to a decentralized
     /// distribution network (DDN) microservice endpoint which
     /// conditionally renders token metadata based on contract state.
-    function setTokenURI(string memory tokenURI_)
-        public
-        nonReentrant
-        onlyOwner
-    {
+    function setTokenURI(
+        string memory tokenURI_
+    ) public nonReentrant onlyOwner {
         _tokenURI = tokenURI_;
+    }
+
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view virtual override returns (bool) {
+        return
+            interfaceId == type(IERC165).interfaceId ||
+            interfaceId == type(IERC721).interfaceId ||
+            interfaceId == type(IPFA).interfaceId;
     }
 }
