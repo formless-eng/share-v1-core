@@ -63,10 +63,8 @@ contract("SL2RD_V2", (accounts) => {
       operatorRegistry.address,
       false /* testMode */
     );
-    await splitContract.setPaymentBatchSize(100);
     await splitContract.setDecimals(18);
     await splitContract.setCodeVerificationEnabled(false);
-    assert.equal(await splitContract.paymentBatchSize(), 100);
     assert.equal(await splitContract.decimals(), 18);
     assert.equal(await splitContract._codeVerificationEnabled(), false);
   });

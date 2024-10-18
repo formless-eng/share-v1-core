@@ -132,15 +132,6 @@ contract SL2RD_V2 is LimitedOwnable, ERC20 {
         setInitialized();
     }
 
-    /// @notice Allows the contract owner to set the payment batch size.
-    /// @param paymentBatchSize_ The number of payments to be made per
-    /// iteration of the payment distribution algorithm.
-    function setPaymentBatchSize(
-        uint256 paymentBatchSize_
-    ) public nonReentrant onlyOwner {
-        _paymentBatchSize = paymentBatchSize_;
-    }
-
     /// @notice Returns payment batch size.
     function paymentBatchSize() public view returns (uint256) {
         return _paymentBatchSize;
