@@ -12,6 +12,7 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import {ERC165} from "@openzeppelin/utils/introspection/ERC165.sol";
 import "./libraries/CodeVerification.sol";
 import "./interfaces/IPFA.sol";
 
@@ -28,6 +29,11 @@ contract SHARE is Ownable, ReentrancyGuard {
         address indexed recipient,
         address indexed contractAddress,
         uint256 indexed tokenId
+    );
+    event Payment(
+        address indexed from,
+        address indexed recipient,
+        uint256 value
     );
 
     /// @notice Emitted when a successful license grant is awarded
@@ -135,6 +141,21 @@ contract SHARE is Ownable, ReentrancyGuard {
         uint256 grossPrice = grossPricePerAccess(contractAddress_, tokenId_);
         require(msg.value >= grossPrice, "SHARE011");
         asset.access{value: asset.pricePerAccess()}(tokenId_, msg.sender);
+
+        // Payout a distributor if associated with the asset.
+        if (
+            ERC165(contractAddress_).supportsInterface(type(IPFA).interfaceId)
+        ) {
+            address distributor = asset.distributorAddress();
+            uint256 distributionFeeNumerator = asset.distributionFeeNumerator();
+            uint256 distributionFeeDenominator = asset
+                .distributionFeeDenominator();
+            uint256 distributionFee = ((grossPrice - asset.pricePerAccess()) *
+                distributionFeeNumerator) / distributionFeeDenominator;
+            payable(distributor).transfer(distributionFee);
+            emit Payment(msg.sender, distributor, distributionFee);
+        }
+
         _grantTimestamps[contractAddress_][msg.sender] = block.timestamp;
         emit Grant(msg.sender, contractAddress_, tokenId_);
         _transactionCount++;
