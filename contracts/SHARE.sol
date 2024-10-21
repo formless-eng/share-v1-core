@@ -46,6 +46,7 @@ contract SHARE is Ownable, ReentrancyGuard {
     uint256 public _transactionFeeNumerator = 1;
     uint256 public _transactionFeeDenominator = 20;
     uint256 public _transactionCount = 0;
+    uint256 public _transactionVolume = 0;
     bool public _codeVerificationEnabled = true;
     uint256 private constant UNIT_TOKEN_INDEX = 0;
 
@@ -163,6 +164,7 @@ contract SHARE is Ownable, ReentrancyGuard {
         _grantTimestamps[contractAddress_][msg.sender] = block.timestamp;
         emit Grant(msg.sender, contractAddress_, tokenId_);
         _transactionCount++;
+        _transactionVolume += msg.value;
     }
 
     /// @notice If called with a `licenseeContract_` contract which
