@@ -676,4 +676,90 @@ contract("License grant", (accounts) => {
       assert.equal(txCount, i + 1);
     }
   });
+
+  specify("Protocol transaction volume increment", async () => {
+    const shareContract = await SHARE.new();
+    const assetContract = await PFAUnit.new();
+    const verifier = await CodeVerification.deployed();
+    await assetContract.initialize(
+      "/test/token/uri" /* tokenURI_ */,
+      "1000000000" /* pricePerAccess_ */,
+      300 /* grantTTL_ */,
+      true /* supportsLicensing_ */,
+      0 /* pricePerLicense_ */,
+      shareContract.address /* shareContractAddress_ */
+    );
+    await shareContract.addApprovedBuild(
+      await verifier.readCodeHash(assetContract.address),
+      /* codeHash = keccak256(PFA code) */ 2 /* buildType_ = PFA_UNIT  */,
+      "solc" /* compilerBinaryTarget_ */,
+      "0.8.11+commit.d7f03943" /* compilerVersion_ */,
+      accounts[NON_OWNER_ADDRESS_INDEX] /* authorAddress_ */
+    );
+    for (let i = 0; i < 50; i++) {
+      await shareContract.access(assetContract.address, UNIT_TOKEN_INDEX, {
+        from: accounts[NON_OWNER_ADDRESS_INDEX],
+        value: "1050000000",
+      });
+      const txVolume = await shareContract._transactionVolume.call();
+      console.log(`tx volume: ${txVolume}`);
+      assert.equal(txVolume, (i + 1) * 1050000000);
+    }
+  });
+
+  specify("Access grant with 50% distribution fee enabled on PFA", async () => {
+    const shareContract = await SHARE.deployed();
+    const assetContract = await PFAUnit.new();
+    const verifier = await CodeVerification.deployed();
+    await shareContract.addApprovedBuild(
+      await verifier.readCodeHash(assetContract.address),
+      /* codeHash = keccak256(PFA code) */ 2 /* buildType_ = PFA_UNIT  */,
+      "solc" /* compilerBinaryTarget_ */,
+      "0.8.11+commit.d7f03943" /* compilerVersion_ */,
+      accounts[NON_OWNER_ADDRESS_INDEX] /* authorAddress_ */
+    );
+    await assetContract.initialize(
+      "/test/token/uri" /* tokenURI_ */,
+      "1000000000" /* pricePerAccess_ */,
+      300 /* grantTTL_ */,
+      true /* supportsLicensing_ */,
+      0 /* pricePerLicense_ */,
+      shareContract.address /* shareContractAddress_ */
+    );
+    await assetContract.setDistributor(
+      accounts[3],
+      1 /* distributionFeeNumerator_ */,
+      2 /* distributionFeeDenominator_ */,
+      {
+        from: accounts[DEFAULT_ADDRESS_INDEX],
+      }
+    );
+    await shareContract.access(assetContract.address, UNIT_TOKEN_INDEX, {
+      from: accounts[NON_OWNER_ADDRESS_INDEX],
+      value: "1050000000",
+    });
+    assert.equal(
+      (
+        await assetContract.getPastEvents("Grant", {
+          filter: {
+            recipient: accounts[NON_OWNER_ADDRESS_INDEX],
+            tokenId: UNIT_TOKEN_INDEX,
+          },
+        })
+      ).length,
+      1
+    );
+    assert.equal(
+      (
+        await shareContract.getPastEvents("Payment", {
+          filter: {
+            from: accounts[NON_OWNER_ADDRESS_INDEX],
+            recipient: accounts[3],
+            value: "25000000",
+          },
+        })
+      ).length,
+      1
+    );
+  });
 });

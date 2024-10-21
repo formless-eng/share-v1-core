@@ -33,6 +33,9 @@ abstract contract PFA is IPFA, LimitedOwnable {
     Immutable.UnsignedInt256 internal _grantTTL;
     Immutable.Boolean internal _supportsLicensing;
     uint256 public _transactionCount = 0;
+    Immutable.Address public _distributorAddress;
+    Immutable.UnsignedInt256 public _distributionFeeNumerator;
+    Immutable.UnsignedInt256 public _distributionFeeDenominator;
 
     mapping(address => uint256) internal _grantTimestamps;
     mapping(address => uint256) internal _licenseTimestamps;
@@ -52,26 +55,72 @@ abstract contract PFA is IPFA, LimitedOwnable {
 
     /// @notice Sets the price per access in wei for content backed
     /// by this contract.
-    function setPricePerAccess(uint256 pricePerAccess_)
-        public
-        override
-        nonReentrant
-        onlyOwner
-        afterInit
-    {
+    function setPricePerAccess(
+        uint256 pricePerAccess_
+    ) public override nonReentrant onlyOwner afterInit {
         require(!_supportsLicensing.value, "SHARE019");
         _pricePerAccess.locked = false;
         Immutable.setUnsignedInt256(_pricePerAccess, pricePerAccess_);
+    }
+
+    /// @notice Sets the distribution partner and fee details
+    /// for this contract.
+    function setDistributor(
+        address distributorAddress_,
+        uint256 distributionFeeNumerator_,
+        uint256 distributionFeeDenominator_
+    ) public nonReentrant onlyOwner afterInit {
+        Immutable.setAddress(_distributorAddress, distributorAddress_);
+        Immutable.setUnsignedInt256(
+            _distributionFeeNumerator,
+            distributionFeeNumerator_
+        );
+        Immutable.setUnsignedInt256(
+            _distributionFeeDenominator,
+            distributionFeeDenominator_
+        );
+    }
+
+    /// @notice Returns wallet address of an association distributor
+    /// if applicable.
+    function distributorAddress() public view afterInit returns (address) {
+        return _distributorAddress.value;
+    }
+
+    /// @notice Returns the numerator of the distribution fee if
+    /// applicable. The distribution fee is a percentage of the
+    /// the transaction fee paid by the consumer, not not a percentage
+    /// of the price paid to the contract owner.
+    function distributionFeeNumerator()
+        public
+        view
+        afterInit
+        returns (uint256)
+    {
+        return _distributionFeeNumerator.value;
+    }
+
+    /// @notice Returns the denominator of the distribution fee if
+    /// applicable. The distribution fee is a percentage of the
+    /// the transaction fee paid by the consumer, not not a percentage
+    /// of the price paid to the contract owner.
+    function distributionFeeDenominator()
+        public
+        view
+        afterInit
+        returns (uint256)
+    {
+        return _distributionFeeDenominator.value;
     }
 
     /// @notice If called with a value equal to the price per access
     /// of this contract, records a grant timestamp on chain which is
     /// read by decentralized distribution network (DDN) microservices
     /// to decrypt and serve the associated content for the tokenURI.
-    function access(uint256 tokenId, address recipient)
-        external
-        virtual
-        payable;
+    function access(
+        uint256 tokenId,
+        address recipient
+    ) external payable virtual;
 
     /// @notice Returns true if this PFA supports licensing, where
     /// licensing is the ability for a separate contract to forward
@@ -86,25 +135,18 @@ abstract contract PFA is IPFA, LimitedOwnable {
     /// @notice Returns the timestamp in seconds of the award of a
     /// grant recorded on chain for the access of the content
     /// associated with this PFA.
-    function grantTimestamp(address recipient_)
-        public
-        override
-        view
-        afterInit
-        returns (uint256)
-    {
+    function grantTimestamp(
+        address recipient_
+    ) public view override afterInit returns (uint256) {
         return _grantTimestamps[recipient_];
     }
 
     /// @notice Returns the timestamp in seconds of the award of a
     /// grant recorded on chain for the licensing of the content
     /// associated with this PFA.
-    function licenseTimestamp(address recipient_)
-        external
-        view
-        afterInit
-        returns (uint256)
-    {
+    function licenseTimestamp(
+        address recipient_
+    ) external view afterInit returns (uint256) {
         return _licenseTimestamps[recipient_];
     }
 

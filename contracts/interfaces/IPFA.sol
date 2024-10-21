@@ -68,8 +68,23 @@ interface IPFA {
     /// @notice Returns the timestamp in seconds of the award of a
     /// grant recorded on chain for the access of the content
     /// associated with this PFA.
-    function licenseTimestamp(address recipient_)
-        external
-        view
-        returns (uint256);
+    function licenseTimestamp(
+        address recipient_
+    ) external view returns (uint256);
+
+    /// @notice Returns wallet address of an association distributor
+    /// if applicable.
+    function distributorAddress() external view returns (address);
+
+    /// @notice Returns the numerator of the distribution fee if
+    /// applicable. The distribution fee is a percentage of the
+    /// the transaction fee paid by the consumer, not not a percentage
+    /// of the price paid to the contract owner.
+    function distributionFeeNumerator() external view returns (uint256);
+
+    /// @notice Returns the denominator of the distribution fee if
+    /// applicable. The distribution fee is a percentage of the
+    /// the transaction fee paid by the consumer, not not a percentage
+    /// of the price paid to the contract owner.
+    function distributionFeeDenominator() external view returns (uint256);
 }

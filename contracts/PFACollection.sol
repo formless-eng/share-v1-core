@@ -57,10 +57,7 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
     constructor()
         public
         ERC721(NAME, SYMBOL)
-        LimitedOwnable(
-            true, /* WALLET */
-            true /* SPLIT */
-        )
+        LimitedOwnable(true /* WALLET */, true /* SPLIT */)
     {
         _safeMint(msg.sender, UNIT_TOKEN_INDEX);
     }
@@ -138,13 +135,10 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
     /// of this contract, records a grant timestamp on chain which is
     /// read by decentralized distribution network (DDN) microservices
     /// to decrypt and serve the associated content for the tokenURI.
-    function access(uint256 tokenId_, address recipient_)
-        public
-        override
-        payable
-        nonReentrant
-        afterInit
-    {
+    function access(
+        uint256 tokenId_,
+        address recipient_
+    ) public payable override nonReentrant afterInit {
         SHARE protocol = SHARE(shareContractAddress());
         address itemAddress = _addresses.value[_currentAddressIndex];
         PFA item = PFA(itemAddress);
@@ -230,12 +224,9 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
     /// @dev In SHARE, this URI corresponds to a decentralized
     /// distribution network (DDN) microservice endpoint which
     /// conditionally renders token metadata based on contract state.
-    function tokenURI(uint256 tokenId_)
-        public
-        override
-        view
-        returns (string memory)
-    {
+    function tokenURI(
+        uint256 tokenId_
+    ) public view override returns (string memory) {
         require(tokenId_ == UNIT_TOKEN_INDEX, "SHARE004");
         return _tokenURI;
     }
@@ -244,11 +235,18 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
     /// @dev In SHARE, this URI corresponds to a decentralized
     /// distribution network (DDN) microservice endpoint which
     /// conditionally renders token metadata based on contract state.
-    function setTokenURI(string memory tokenURI_)
-        public
-        nonReentrant
-        onlyOwner
-    {
+    function setTokenURI(
+        string memory tokenURI_
+    ) public nonReentrant onlyOwner {
         _tokenURI = tokenURI_;
+    }
+
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view virtual override returns (bool) {
+        return
+            interfaceId == type(IERC165).interfaceId ||
+            interfaceId == type(IERC721).interfaceId ||
+            interfaceId == type(IPFA).interfaceId;
     }
 }

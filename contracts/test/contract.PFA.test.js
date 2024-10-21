@@ -112,6 +112,53 @@ contract("PFAUnit", (accounts) => {
     assert.equal(await assetContract.tokenURI(DEFAULT_TOKEN_ID), "/test/uri");
   });
 
+  specify("Only owner sets distributor", async () => {
+    const assetContract = await PFAUnit.new();
+    try {
+      await assetContract.initialize(
+        "/test/token/uri" /* tokenURI_ */,
+        "1000000000" /* pricePerAccess_ */,
+        300 /* grantTTL_ */,
+        true /* supportsLicensing_ */,
+        0 /* pricePerLicense_ */,
+        shareContract.address /* shareContractAddress_ */
+      );
+      await assetContract.setDistributor(
+        accounts[DEFAULT_ADDRESS_INDEX],
+        1,
+        2,
+        {
+          from: accounts[NON_OWNER_ADDRESS_INDEX],
+        }
+      );
+    } catch (error) {
+      return;
+    }
+    assert(false, "Expected throw not received.");
+  });
+
+  specify("Owner can set distributor", async () => {
+    const shareContract = await SHARE.deployed();
+    const assetContract = await PFAUnit.new();
+    await assetContract.initialize(
+      "/test/token/uri" /* tokenURI_ */,
+      "1000000000" /* pricePerAccess_ */,
+      300 /* grantTTL_ */,
+      true /* supportsLicensing_ */,
+      0 /* pricePerLicense_ */,
+      shareContract.address /* shareContractAddress_ */
+    );
+    await assetContract.setDistributor(accounts[DEFAULT_ADDRESS_INDEX], 1, 2, {
+      from: accounts[DEFAULT_ADDRESS_INDEX],
+    });
+    assert.equal(
+      await assetContract.distributorAddress(),
+      accounts[DEFAULT_ADDRESS_INDEX]
+    );
+    assert.equal(await assetContract.distributionFeeNumerator(), 1);
+    assert.equal(await assetContract.distributionFeeDenominator(), 2);
+  });
+
   specify("Access denial", async () => {
     const shareContract = await SHARE.deployed();
     const assetContract = await PFAUnit.new();
