@@ -762,4 +762,48 @@ contract("License grant", (accounts) => {
       1
     );
   });
+
+  specify("addApprovedBuilds approves multiple build hashes", async () => {
+    const shareContract = await SHARE.new();
+    await shareContract.addApprovedBuilds(
+      [
+        [
+          "0xad59d6d30c9ff1de09eafeb8d56fe229ed9b039438cdb2ed7a6be38ae048595c" /* codeHash = keccak256(PFA code) */,
+          2 /* buildType_ = PFA_UNIT  */,
+        ],
+        [
+          "0xb871475882c793c90bd6fdc2d769d9480fa5f6fb44d85652e18dc4173925aec8" /* codeHash = keccak256(PFA code) */,
+          1 /* buildType_ = SPLIT  */,
+        ],
+        [
+          "0x964d9e7ba0886f4f9a654256a1d8887498e7f1d65b7c57a6ad9bb47acdd73d61" /* codeHash = keccak256(PFA code) */,
+          2 /* buildType_ = PFA_UNIT  */,
+        ],
+      ],
+      "solc" /* compilerBinaryTarget_ */,
+      "0.8.11+commit.d7f03943" /* compilerVersion_ */,
+      accounts[NON_OWNER_ADDRESS_INDEX] /* authorAddress_ */
+    );
+    assert.equal(
+      await shareContract.isApprovedBuildHash(
+        "0xad59d6d30c9ff1de09eafeb8d56fe229ed9b039438cdb2ed7a6be38ae048595c",
+        2
+      ),
+      true
+    );
+    assert.equal(
+      await shareContract.isApprovedBuildHash(
+        "0xb871475882c793c90bd6fdc2d769d9480fa5f6fb44d85652e18dc4173925aec8",
+        1
+      ),
+      true
+    );
+    assert.equal(
+      await shareContract.isApprovedBuildHash(
+        "0x964d9e7ba0886f4f9a654256a1d8887498e7f1d65b7c57a6ad9bb47acdd73d61",
+        2
+      ),
+      true
+    );
+  });
 });
