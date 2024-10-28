@@ -62,6 +62,11 @@ contract SHARE is Ownable, ReentrancyGuard {
         bool exists;
     }
 
+    struct ApprovedBuildHash {
+        bytes32 codeHash;
+        CodeVerification.BuildType buildType;
+    }
+
     constructor() public {
         addApprovedBuild(
             EOA_KECCAK256,
@@ -269,6 +274,37 @@ contract SHARE is Ownable, ReentrancyGuard {
             authorAddress_,
             true
         );
+    }
+
+    /// @notice Adds keccak256 hashes of runtime bytecode for
+    /// a set of approved source code builds for SHARE protocol
+    /// interoperable contracts. If source code verification is turned
+    /// on, the system will revert upon attempt to send ether to
+    /// a contract built from non-approved source code.
+    function addApprovedBuilds(
+        ApprovedBuildHash[] memory buildHashes_,
+        string memory compilerBinaryTarget_,
+        string memory compilerVersion_,
+        address authorAddress_
+    ) public onlyOwner nonReentrant {
+        for (uint256 i = 0; i < buildHashes_.length; i++) {
+            bytes32 codeHash = buildHashes_[i].codeHash;
+            CodeVerification.BuildType buildType = buildHashes_[i].buildType;
+            require(
+                (buildType == CodeVerification.BuildType.WALLET ||
+                    buildType == CodeVerification.BuildType.SPLIT ||
+                    buildType == CodeVerification.BuildType.PFA_UNIT ||
+                    buildType == CodeVerification.BuildType.PFA_COLLECTION),
+                "SHARE017"
+            );
+            _approvedHashes[codeHash] = ApprovedBuild(
+                buildType,
+                compilerBinaryTarget_,
+                compilerVersion_,
+                authorAddress_,
+                true
+            );
+        }
     }
 
     /// @notice Returns true if the keccak256 hash of the runtime
