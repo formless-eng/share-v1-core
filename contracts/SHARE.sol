@@ -276,9 +276,9 @@ contract SHARE is Ownable, ReentrancyGuard {
         );
     }
 
-    /// @notice Adds the keccak256 hash of the runtime bytecode of
-    /// an approved source code build for a SHARE protocol
-    /// interoperable contract. If source code verification is turned
+    /// @notice Adds keccak256 hashes of runtime bytecode for
+    /// a set of approved source code builds for SHARE protocol
+    /// interoperable contracts. If source code verification is turned
     /// on, the system will revert upon attempt to send ether to
     /// a contract built from non-approved source code.
     function addApprovedBuilds(
