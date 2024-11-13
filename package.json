@@ -9,5 +9,9 @@
     "@truffle/hdwallet-provider": "^2.0.0",
     "ethereumjs-util": "^7.1.4",
     "web3": "^1.6.1"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "hardhat": "^2.22.13"
   }
 }
