@@ -13,7 +13,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 /// @title Mock Liquidity Pool.
 /// For testing purposes only.
-/// @author brandon@formless.xyz
+/// @author xiang@formless.xyz
 contract MockUSDC is ERC20 {
     string public constant VERSION = "1.0.0";
     

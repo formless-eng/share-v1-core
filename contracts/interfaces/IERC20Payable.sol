@@ -14,5 +14,5 @@ pragma solidity >=0.8.0 <0.9.0;
 /// @author xiang@formless.xyz
 interface IERC20Payable {
     function setERC20ContractAddress(address contractAddress_) external;
-   function getERC20ContractAddress() external view returns (address);
+    function getERC20ContractAddress() external view returns (address);
 }
