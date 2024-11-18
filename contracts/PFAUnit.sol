@@ -11,15 +11,17 @@
 pragma solidity >=0.8.0 <0.9.0;
 
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import "./PFA.sol";
 import "./libraries/CodeVerification.sol";
 import "./libraries/Immutable.sol";
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "./interfaces/IERC20Payable.sol";
 
 /// @title Standard pay-for-access (PFA) contract. Also implements
 /// ERC-721 standard (G_NFT).
 /// @author brandon@formless.xyz
-contract PFAUnit is PFA, ERC721 /* G_NFT */ {
+contract PFAUnit is IERC20Payable, ERC721, PFA {
     /// @notice Emitted when a payment is sent to the owner of this
     /// PFA.
     event PaymentToOwner(address indexed owner, uint256 value);
@@ -27,11 +29,12 @@ contract PFAUnit is PFA, ERC721 /* G_NFT */ {
     string public constant NAME = "SHARE";
     string public constant SYMBOL = "PFA";
     uint256 private constant UNIT_TOKEN_INDEX = 0;
-
     string internal _tokenURI;
 
+    // ERC-20 contract address e.g. USDC
+    address private _erc20ContractAddress;
+
     constructor()
-        public
         ERC721(NAME, SYMBOL)
         LimitedOwnable(true /* WALLET */, true /* SPLIT */)
     {
@@ -104,12 +107,24 @@ contract PFAUnit is PFA, ERC721 /* G_NFT */ {
         _tokenURI = tokenURI_;
     }
 
+    /// @notice Sets the ERC-20 contract address (e.g., for USDC payments).
+    function setERC20ContractAddress(address contractAddress_) external override onlyOwner {
+        require(contractAddress_ != address(0), "Invalid ERC20 contract address");
+        _erc20ContractAddress = contractAddress_;
+    }
+
+    /// @notice Gets the ERC-20 contract address used for payments.
+    function getERC20ContractAddress() external view returns (address) {
+        return _erc20ContractAddress;
+    }
+
     function supportsInterface(
         bytes4 interfaceId
-    ) public view virtual override returns (bool) {
+    ) public view virtual override(ERC721) returns (bool) {
         return
             interfaceId == type(IERC165).interfaceId ||
             interfaceId == type(IERC721).interfaceId ||
-            interfaceId == type(IPFA).interfaceId;
+            interfaceId == type(IPFA).interfaceId    ||
+            interfaceId == type(IERC20Payable).interfaceId;
     }
 }
