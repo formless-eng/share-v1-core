@@ -5,9 +5,10 @@
   "author": "brandon@formless.xyz",
   "license": "UNLICENSED",
   "dependencies": {
-    "@openzeppelin/contracts": "^4.4.2",
+    "@openzeppelin/contracts": "^4.9.6",
     "@truffle/hdwallet-provider": "^2.0.0",
     "ethereumjs-util": "^7.1.4",
+    "mocha": "^10.8.2",
     "web3": "^1.6.1"
   }
 }
