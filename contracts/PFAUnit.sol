@@ -31,7 +31,7 @@ contract PFAUnit is IERC20Payable, ERC721, PFA {
     uint256 private constant UNIT_TOKEN_INDEX = 0;
     string internal _tokenURI;
 
-    // ERC-20 contract address e.g. USDC
+    // ERC20 contract address e.g. USDC
     address private _erc20ContractAddress;
 
     constructor()
@@ -107,13 +107,13 @@ contract PFAUnit is IERC20Payable, ERC721, PFA {
         _tokenURI = tokenURI_;
     }
 
-    /// @notice Sets the ERC-20 contract address (e.g., for USDC payments).
+    /// @notice Sets the ERC20 contract address (e.g., for USDC payments).
     function setERC20ContractAddress(address contractAddress_) external override onlyOwner {
         require(contractAddress_ != address(0), "Invalid ERC20 contract address");
         _erc20ContractAddress = contractAddress_;
     }
 
-    /// @notice Gets the ERC-20 contract address used for payments.
+    /// @notice Gets the ERC20 contract address used for payments.
     function getERC20ContractAddress() external view returns (address) {
         return _erc20ContractAddress;
     }

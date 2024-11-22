@@ -19,6 +19,28 @@ function calculateSplitIndexUsingPartition(
 }
 
 contract("SL2RD", (accounts) => {
+
+  const mockERC20Address = "0x1234567890abcdef1234567890abcdef12345678"; // Mock ERC20 contract address
+
+  before(async () => {
+    this.shareContract = await SHARE.deployed();
+    this.operatorRegistry = await OperatorRegistry.deployed();
+  });
+
+  beforeEach(async () => {
+    this.splitContract = await SL2RD.new();
+
+    const ownerAddresses = Array(10).fill(accounts[0]);
+    const uniformCollaboratorsIds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+    await this.splitContract.initialize(
+      ownerAddresses /* addresses_ */,
+      uniformCollaboratorsIds /* tokenIds_ */,
+      0 /* communitySplitsBasisPoints_ */,
+      this.shareContract.address /* shareContractAddress_ */,
+      this.operatorRegistry.address /* operatorRegistryAddress_ */
+    );
+  });
+
   specify("Contract initialization", async () => {
     const shareContract = await SHARE.deployed();
     const splitContract = await SL2RD.deployed();
@@ -963,7 +985,6 @@ contract("SL2RD", (accounts) => {
       const recipientAddress = accounts[NON_OWNER_ADDRESS_INDEX];
       const uniformCollaboratorsIds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
       const operatorAddresses = [accounts[5], accounts[6]];
-      const nonOperatorAddress = accounts[7];
       const communitySplitsBasisPoints = 4000;
 
       await operatorRegistry.initialize(operatorAddresses);
@@ -984,4 +1005,67 @@ contract("SL2RD", (accounts) => {
       );
     }
   );
+
+
+  specify("Owner can set ERC20 contract address", async () => {
+    // Set ERC20 contract address
+    await this.splitContract.setERC20ContractAddress(mockERC20Address, {
+      from: accounts[DEFAULT_ADDRESS_INDEX],
+    });
+
+    // Verify the ERC20 contract address
+    const result = await this.splitContract.getERC20ContractAddress();
+    assert.equal(
+      normalizeAddress(result),
+      normalizeAddress(mockERC20Address),
+      "The ERC20 contract address was not set correctly."
+    );
+  });
+
+  specify("Non-owner cannot set ERC20 contract address", async () => {
+    try {
+      // Attempt to set ERC20 contract address by a non-owner
+      await this.splitContract.setERC20ContractAddress(mockERC20Address, {
+        from: accounts[NON_OWNER_ADDRESS_INDEX],
+      });
+      assert.fail("Expected revert, but transaction succeeded.");
+    } catch (error) {
+      assert(
+        error.message.includes("caller is not the owner"),
+        "Expected revert with 'caller is not the owner', but got: " +
+          error.message
+      );
+    }
+  });
+
+  specify("getERC20ContractAddress returns the correct value", async () => {
+    // Set the ERC20 contract address
+    await this.splitContract.setERC20ContractAddress(mockERC20Address, {
+      from: accounts[DEFAULT_ADDRESS_INDEX],
+    });
+
+    // Verify the getter returns the correct address
+    const erc20Address = await this.splitContract.getERC20ContractAddress();
+    assert.equal(
+      erc20Address.toLowerCase(),
+      mockERC20Address.toLowerCase(),
+      "getERC20ContractAddress did not return the correct address."
+    );
+  });
+
+  specify("Reverts when setting ERC20 contract address to zero address", async () => {
+    try {
+      // Attempt to set ERC20 contract address to zero address
+      await this.splitContract.setERC20ContractAddress("0x0000000000000000000000000000000000000000", {
+        from: accounts[DEFAULT_ADDRESS_INDEX],
+      });
+      assert.fail("Expected revert, but transaction succeeded.");
+    } catch (error) {
+      assert(
+        error.message.includes("Invalid ERC20 contract address"),
+        "Expected revert with 'Invalid ERC20 contract address', but got: " +
+          error.message
+      );
+    }
+  });
 });

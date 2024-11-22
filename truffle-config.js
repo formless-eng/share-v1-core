@@ -16,7 +16,7 @@ module.exports = {
       host: "127.0.0.1",
       port: 8545,
       network_id: "*",
-      gas: 800000000,
+      gas: 80000000000000,
     },
     ethereum: {
       provider: () =>
@@ -91,7 +91,8 @@ module.exports = {
       version: SOLIDITY_COMPILER_VERSION,
       settings: {
         optimizer: {
-          enabled: false,
+          enabled: true, // Default: false
+          runs: 1000 // Default: 200
         },
       },
     },
