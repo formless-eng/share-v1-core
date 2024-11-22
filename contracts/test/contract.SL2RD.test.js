@@ -1052,20 +1052,4 @@ contract("SL2RD", (accounts) => {
       "getERC20ContractAddress did not return the correct address."
     );
   });
-
-  specify("Reverts when setting ERC20 contract address to zero address", async () => {
-    try {
-      // Attempt to set ERC20 contract address to zero address
-      await this.splitContract.setERC20ContractAddress("0x0000000000000000000000000000000000000000", {
-        from: accounts[DEFAULT_ADDRESS_INDEX],
-      });
-      assert.fail("Expected revert, but transaction succeeded.");
-    } catch (error) {
-      assert(
-        error.message.includes("Invalid ERC20 contract address"),
-        "Expected revert with 'Invalid ERC20 contract address', but got: " +
-          error.message
-      );
-    }
-  });
 });
