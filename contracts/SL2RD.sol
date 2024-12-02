@@ -498,6 +498,7 @@ contract SL2RD is
     function getERC20ContractAddress() external view returns (address) {
         return _erc20ContractAddress;
     }
+    
     function supportsInterface(
         bytes4 interfaceId
     ) public view virtual override(ERC721) returns (bool) {
