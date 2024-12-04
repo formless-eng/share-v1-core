@@ -91,7 +91,8 @@ module.exports = {
       version: SOLIDITY_COMPILER_VERSION,
       settings: {
         optimizer: {
-          enabled: false,
+          enabled: true, // Default: false
+          runs: 1000 // Default: 200
         },
       },
     },
