@@ -10,7 +10,6 @@
 //
 pragma solidity >=0.8.0 <0.9.0;
 
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import "./libraries/Immutable.sol";
@@ -486,7 +485,7 @@ contract SL2RD is
     /// @notice Sets the ERC20 contract address (e.g., for USDC payments).
     function setERC20ContractAddress(
         address contractAddress_
-    ) external override onlyOwner {
+    ) public override afterInit onlyOwner nonReentrant {
         require(
             contractAddress_ != address(0),
             "Invalid ERC20 contract address"
@@ -498,7 +497,7 @@ contract SL2RD is
     function getERC20ContractAddress() external view returns (address) {
         return _erc20ContractAddress;
     }
-    
+
     function supportsInterface(
         bytes4 interfaceId
     ) public view virtual override(ERC721) returns (bool) {
