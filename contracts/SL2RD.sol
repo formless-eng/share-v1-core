@@ -11,9 +11,11 @@
 pragma solidity >=0.8.0 <0.9.0;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import "./libraries/Immutable.sol";
 import "./LimitedOwnable.sol";
 import "./OperatorRegistry.sol";
+import "./interfaces/IERC20Payable.sol";
 
 /// @title Swift Liquid Rotating Royalty Distributor (SL2RD).
 /// @author john-paul@formless.xyz, brandon@formless.xyz
@@ -26,7 +28,8 @@ import "./OperatorRegistry.sol";
 /// by each recipient approaches zero.
 contract SL2RD is
     LimitedOwnable,
-    ERC721("Swift Liquid Rotating Royalty Distributor", "SL2RD")
+    ERC721("Swift Liquid Rotating Royalty Distributor", "SL2RD"),
+    IERC20Payable
 {
     /// @notice Emitted when a payment is sent to a stakeholder
     /// slot listed within this payment distribution contract.
@@ -59,6 +62,9 @@ contract SL2RD is
 
     OperatorRegistry private _shareOperatorRegistry;
     SHARE private _protocol;
+
+    // ERC20 contract address (e.g., for USDC payments)
+    address private _erc20ContractAddress;
 
     /// @notice Modifier to allow only the owner or a verified operator
     /// to call the function
@@ -474,5 +480,30 @@ contract SL2RD is
         Ownable asset = Ownable(contractAddress_);
         require(asset.owner() == address(this), "SHARE025");
         asset.transferOwnership(msg.sender);
+    }
+
+    /// @notice Sets the ERC20 contract address (e.g., for USDC payments).
+    function setERC20ContractAddress(
+        address contractAddress_
+    ) public override afterInit onlyOwner nonReentrant {
+        require(
+            contractAddress_ != address(0),
+            "SHARE042"
+        );
+        _erc20ContractAddress = contractAddress_;
+    }
+
+    /// @notice Gets the ERC20 contract address used for payments.
+    function getERC20ContractAddress() external view returns (address) {
+        return _erc20ContractAddress;
+    }
+
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view virtual override(ERC721) returns (bool) {
+        return
+            interfaceId == type(IERC165).interfaceId ||
+            interfaceId == type(IERC721).interfaceId ||
+            interfaceId == type(IERC20Payable).interfaceId;
     }
 }
