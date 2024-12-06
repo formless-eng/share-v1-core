@@ -23,21 +23,21 @@ contract("SL2RD", (accounts) => {
   const mockERC20Address = "0x1234567890abcdef1234567890abcdef12345678"; // Mock ERC20 contract address
 
   before(async () => {
-    this.shareContract = await SHARE.deployed();
-    this.operatorRegistry = await OperatorRegistry.deployed();
+    this._singletonShareContract = await SHARE.deployed();
+    this._singletonOperatorRegistry = await OperatorRegistry.deployed();
   });
 
   beforeEach(async () => {
-    this.splitContract = await SL2RD.new();
+    this._singletonSplitContract = await SL2RD.new();
 
     const ownerAddresses = Array(10).fill(accounts[0]);
     const uniformCollaboratorsIds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-    await this.splitContract.initialize(
+    await this._singletonSplitContract.initialize(
       ownerAddresses /* addresses_ */,
       uniformCollaboratorsIds /* tokenIds_ */,
       0 /* communitySplitsBasisPoints_ */,
-      this.shareContract.address /* shareContractAddress_ */,
-      this.operatorRegistry.address /* operatorRegistryAddress_ */
+      this._singletonShareContract.address /* shareContractAddress_ */,
+      this._singletonOperatorRegistry.address /* operatorRegistryAddress_ */
     );
   });
 
@@ -1009,12 +1009,12 @@ contract("SL2RD", (accounts) => {
 
   specify("Owner can set ERC20 contract address", async () => {
     // Set ERC20 contract address
-    await this.splitContract.setERC20ContractAddress(mockERC20Address, {
+    await this._singletonSplitContract.setERC20ContractAddress(mockERC20Address, {
       from: accounts[DEFAULT_ADDRESS_INDEX],
     });
 
     // Verify the ERC20 contract address
-    const result = await this.splitContract.getERC20ContractAddress();
+    const result = await this._singletonSplitContract.getERC20ContractAddress();
     assert.equal(
       normalizeAddress(result),
       normalizeAddress(mockERC20Address),
@@ -1025,7 +1025,7 @@ contract("SL2RD", (accounts) => {
   specify("Non-owner cannot set ERC20 contract address", async () => {
     try {
       // Attempt to set ERC20 contract address by a non-owner
-      await this.splitContract.setERC20ContractAddress(mockERC20Address, {
+      await this._singletonSplitContract.setERC20ContractAddress(mockERC20Address, {
         from: accounts[NON_OWNER_ADDRESS_INDEX],
       });
       assert.fail("Expected revert, but transaction succeeded.");
@@ -1040,12 +1040,12 @@ contract("SL2RD", (accounts) => {
 
   specify("getERC20ContractAddress returns the correct value", async () => {
     // Set the ERC20 contract address
-    await this.splitContract.setERC20ContractAddress(mockERC20Address, {
+    await this._singletonSplitContract.setERC20ContractAddress(mockERC20Address, {
       from: accounts[DEFAULT_ADDRESS_INDEX],
     });
 
     // Verify the getter returns the correct address
-    const erc20Address = await this.splitContract.getERC20ContractAddress();
+    const erc20Address = await this._singletonSplitContract.getERC20ContractAddress();
     assert.equal(
       erc20Address.toLowerCase(),
       mockERC20Address.toLowerCase(),

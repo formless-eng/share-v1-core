@@ -488,7 +488,7 @@ contract SL2RD is
     ) public override afterInit onlyOwner nonReentrant {
         require(
             contractAddress_ != address(0),
-            "Invalid ERC20 contract address"
+            "SHARE001"
         );
         _erc20ContractAddress = contractAddress_;
     }

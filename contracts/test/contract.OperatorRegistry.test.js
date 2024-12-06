@@ -75,20 +75,20 @@ contract("OperatorRegistry", (accounts) => {
       "Number of registry addresses is not accurate to initializting array."
     );
 
-    const fundsPerOperator = (
-      totalFundingAmount / amountOfOperators
-    ).toString();
+    const fundsPerOperator = web3.utils
+      .toBN(totalFundingAmount)
+      .div(web3.utils.toBN(amountOfOperators));
 
     for (let i = 0; i < verifiedShareOperatorEOAs.length; i++) {
-      initialBalance[i] = await web3.eth.getBalance(
-        verifiedShareOperatorEOAs[i]
+      initialBalance[i] = web3.utils.toBN(
+        await web3.eth.getBalance(verifiedShareOperatorEOAs[i])
       );
     }
 
     // Fund all operator addresses
     await operatorRegistry.fundOperatorAddresses(
       totalFundingAmount,
-      fundsPerOperator,
+      fundsPerOperator.toString(),
       {
         from: accounts[0],
         value: totalFundingAmount,
@@ -97,14 +97,11 @@ contract("OperatorRegistry", (accounts) => {
 
     // Check that each operator address has the correct balance
     for (let i = 0; i < verifiedShareOperatorEOAs.length; i++) {
-      const newBalance = await web3.eth.getBalance(
-        verifiedShareOperatorEOAs[i]
+      const newBalance = web3.utils.toBN(
+        await web3.eth.getBalance(verifiedShareOperatorEOAs[i])
       );
 
-      const fundsDelta = web3.utils
-        .toBN(newBalance)
-        .sub(web3.utils.toBN(initialBalance[i]));
-
+      const fundsDelta = newBalance.sub(initialBalance[i]);
       console.log(
         `\nNew balance: ${newBalance}\nInitial balance: ${initialBalance[i]}\nFunds delta: ${fundsDelta}`
       );
