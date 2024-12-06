@@ -488,7 +488,7 @@ contract SL2RD is
     ) public override afterInit onlyOwner nonReentrant {
         require(
             contractAddress_ != address(0),
-            "SHARE001"
+            "SHARE042"
         );
         _erc20ContractAddress = contractAddress_;
     }
