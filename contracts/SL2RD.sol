@@ -12,6 +12,7 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./libraries/Immutable.sol";
 import "./LimitedOwnable.sol";
 import "./OperatorRegistry.sol";
@@ -320,25 +321,6 @@ contract SL2RD is
         return _totalCommunitySlots;
     }
 
-    /// @notice Receives payment funds and distributes them among
-    /// stakeholders specified in this contract using the SL2RD
-    /// method described above.
-    receive() external payable nonReentrant afterInit {
-        address recipient = ownerOf(_tokenIds.value[_currentTokenIdIndex]);
-
-        _currentTokenIdIndex =
-            (_currentTokenIdIndex + 1) %
-            (_tokenIds.value.length);
-        payable(recipient).transfer(msg.value);
-
-        emit Payment(
-            msg.sender,
-            recipient,
-            _tokenIds.value[_currentTokenIdIndex],
-            msg.value
-        );
-    }
-
     /// @notice Allows for an ERC-721 token to be transferred to a new address.
     /// @dev Overrides the ERC721 version to add additional check that ensures
     // the recipient address is a SHARE approved wallet hash.
@@ -486,16 +468,99 @@ contract SL2RD is
     function setERC20ContractAddress(
         address contractAddress_
     ) public override afterInit onlyOwner nonReentrant {
-        require(
-            contractAddress_ != address(0),
-            "SHARE042"
-        );
+        require(contractAddress_ != address(0), "SHARE042");
         _erc20ContractAddress = contractAddress_;
     }
 
     /// @notice Gets the ERC20 contract address used for payments.
     function getERC20ContractAddress() external view returns (address) {
         return _erc20ContractAddress;
+    }
+
+    receive() external payable nonReentrant afterInit{
+        address recipient = ownerOf(_tokenIds.value[_currentTokenIdIndex]);
+
+        _currentTokenIdIndex =
+            (_currentTokenIdIndex + 1) %
+            (_tokenIds.value.length);
+
+        // Retrieve the ERC20 contract address directly
+        address erc20ContractAddress = _erc20ContractAddress;
+
+        if (erc20ContractAddress == address(0)) {
+            // ERC20 contract address is not set, use the original implementation
+            require(msg.value > 0, "No funds available for distribution");
+
+            // Transfer Ether to the recipient
+            payable(recipient).transfer(msg.value);
+
+            emit Payment(
+                msg.sender,
+                recipient,
+                _tokenIds.value[_currentTokenIdIndex],
+                msg.value
+            );
+        } else {
+            // ERC20 contract address is set, use the ERC20 implementation
+
+            // Instantiate the ERC20 contract
+            ERC20 usdcContract = ERC20(erc20ContractAddress);
+
+            // Fetch the balance of the SL2RD contract
+            uint256 amount = usdcContract.balanceOf(address(this));
+            require(amount > 0, "No funds available for distribution");
+
+            if (
+                _protocol.isApprovedBuild(
+                    recipient,
+                    CodeVerification.BuildType.WALLET
+                )
+            ) {
+                // If recipient is a wallet, transfer directly to the wallet
+                callWalletTransferFunction(recipient, amount);
+            } else {
+                // If recipient is not a wallet, check and handle as a contract
+                require(
+                    _protocol.isApprovedBuild(
+                        recipient,
+                        CodeVerification.BuildType.SPLIT
+                    ) ||
+                        _protocol.isApprovedBuild(
+                            recipient,
+                            CodeVerification.BuildType.PFA_UNIT
+                        ) ||
+                        _protocol.isApprovedBuild(
+                            recipient,
+                            CodeVerification.BuildType.PFA_COLLECTION
+                        ),
+                    "SHARE007"
+                );
+
+                // Transfer to the contract itself for further handling
+                callContractTransferFunction(amount);
+            }
+
+            // Emit payment event
+            emit Payment(
+                msg.sender,
+                recipient,
+                _tokenIds.value[_currentTokenIdIndex],
+                amount
+            );
+        }
+    }
+
+    function callWalletTransferFunction(
+        address recipient_,
+        uint256 amount_
+    ) private {
+        ERC20 usdcContract = ERC20(_erc20ContractAddress);
+        usdcContract.transfer(recipient_, amount_);
+    }
+
+    function callContractTransferFunction(uint256 amount_) private {
+        ERC20 usdcContract = ERC20(_erc20ContractAddress);
+        usdcContract.transfer(address(this), amount_);
     }
 
     function supportsInterface(
