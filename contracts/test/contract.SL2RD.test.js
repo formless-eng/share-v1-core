@@ -1,11 +1,11 @@
 const SHARE = artifacts.require("SHARE");
 const SL2RD = artifacts.require("SL2RD");
 const PFAUnit = artifacts.require("PFAUnit");
+const MockERC20 = artifacts.require("MockERC20");
 const OperatorRegistry = artifacts.require("OperatorRegistry");
 const DEFAULT_ADDRESS_INDEX = 0;
 const NON_OWNER_ADDRESS_INDEX = 1;
 const MAX_SL2RD_PARTITION_SIZE = 100;
-
 function normalizeAddress(address) {
   return address.toLowerCase();
 }
@@ -19,7 +19,6 @@ function calculateSplitIndexUsingPartition(
 }
 
 contract("SL2RD", (accounts) => {
-
   const mockERC20Address = "0x1234567890abcdef1234567890abcdef12345678"; // Mock ERC20 contract address
 
   before(async () => {
@@ -39,6 +38,44 @@ contract("SL2RD", (accounts) => {
       this._singletonShareContract.address /* shareContractAddress_ */,
       this._singletonOperatorRegistry.address /* operatorRegistryAddress_ */
     );
+  });
+
+  // assign roles for testing
+  const OWNER = accounts[0];
+  const PAYER = accounts[1];
+  const PAYEE = accounts[2];
+  const USDC_AMOUNT = web3.utils.toWei("10", "ether"); // 10 USDC
+
+  let sl2rdContract, usdcContract, shareContract, operatorRegistry;
+
+  before(async () => {
+    shareContract = await SHARE.new({ from: OWNER });
+    operatorRegistry = await OperatorRegistry.new({ from: OWNER });
+    // Disable code verification for tests
+    await shareContract.setCodeVerificationEnabled(false, { from: OWNER });
+  });
+
+  beforeEach(async () => {
+    // Deploy SL2RD contract
+    sl2rdContract = await SL2RD.new();
+
+    // Initialize SL2RD contract
+    await sl2rdContract.initialize(
+      [OWNER],
+      [0],
+      0,
+      shareContract.address,
+      operatorRegistry.address
+    );
+
+    // Deploy Mock USDC contract
+    usdcContract = await MockERC20.new("Mock USDC", "USDC", 18, { from: OWNER });
+    // Mint USDC to PAYER
+    await usdcContract.mint(PAYER, USDC_AMOUNT, { from: OWNER });
+    // Approve SL2RD contract to spend USDC
+    await usdcContract.approve(sl2rdContract.address, USDC_AMOUNT, { from: PAYER });
+    // Set ERC20 contract address in SL2RD
+    await sl2rdContract.setERC20ContractAddress(usdcContract.address, { from: OWNER });
   });
 
   specify("Contract initialization", async () => {
@@ -1051,5 +1088,41 @@ contract("SL2RD", (accounts) => {
       mockERC20Address.toLowerCase(),
       "getERC20ContractAddress did not return the correct address."
     );
+  });
+
+  specify(
+    "receive method transfers USDC to the correct recipient",
+    async () => {
+
+     // Transfer 10 USDC to SL2RD contract
+    await usdcContract.transfer(sl2rdContract.address, USDC_AMOUNT, { from: PAYER });
+    // Verify SL2RD contract's USDC balance
+    const contractBalance = await usdcContract.balanceOf(sl2rdContract.address);
+    assert.equal(contractBalance.toString(), USDC_AMOUNT, "Incorrect USDC balance in SL2RD");
+    // Get initial PAYEE USDC balance
+    const initialPayeeBalance = await usdcContract.balanceOf(PAYEE);
+    // Transfer ownership of the token to PAYEE
+    await sl2rdContract.transferFrom(OWNER, PAYEE, 0, { from: OWNER });
+
+    // Trigger receive function
+    await web3.eth.sendTransaction({
+      from: PAYER,
+      to: sl2rdContract.address,
+      value: 0,
+    });
+
+    // Verify USDC transfer to PAYEE
+    const finalPayeeBalance = await usdcContract.balanceOf(PAYEE);
+    assert.equal(
+      finalPayeeBalance.toString(),
+      initialPayeeBalance.add(web3.utils.toBN(USDC_AMOUNT)).toString(),
+      "USDC balance of PAYEE not updated correctly"
+    );
+
+    // Verify Payment event
+    const events = await sl2rdContract.getPastEvents("Payment");
+    assert.equal(events.length, 1, "Payment event not emitted");
+    assert.equal(events[0].returnValues.recipient, PAYEE, "Incorrect event recipient");
+    assert.equal(events[0].returnValues.value, USDC_AMOUNT, "Incorrect event value");
   });
 });

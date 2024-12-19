@@ -321,25 +321,6 @@ contract SL2RD is
         return _totalCommunitySlots;
     }
 
-    /// @notice Receives payment funds and distributes them among
-    /// stakeholders specified in this contract using the SL2RD
-    /// method described above.
-    receive() external payable nonReentrant afterInit {
-        address recipient = ownerOf(_tokenIds.value[_currentTokenIdIndex]);
-
-        _currentTokenIdIndex =
-            (_currentTokenIdIndex + 1) %
-            (_tokenIds.value.length);
-        payable(recipient).transfer(msg.value);
-
-        emit Payment(
-            msg.sender,
-            recipient,
-            _tokenIds.value[_currentTokenIdIndex],
-            msg.value
-        );
-    }
-
     /// @notice Allows for an ERC-721 token to be transferred to a new address.
     /// @dev Overrides the ERC721 version to add additional check that ensures
     // the recipient address is a SHARE approved wallet hash.
@@ -496,7 +477,7 @@ contract SL2RD is
         return _erc20ContractAddress;
     }
 
-    function receiveERC20Payments() external nonReentrant afterInit {
+    receive() external payable nonReentrant afterInit{
         address recipient = ownerOf(_tokenIds.value[_currentTokenIdIndex]);
 
         _currentTokenIdIndex =
@@ -505,30 +486,81 @@ contract SL2RD is
 
         // Retrieve the ERC20 contract address directly
         address erc20ContractAddress = _erc20ContractAddress;
-        require(
-            erc20ContractAddress != address(0),
-            "ERC20 contract address not set"
-        );
 
-        // Transfer: instantiate the ERC20 contract
-        ERC20 usdcContract = ERC20(erc20ContractAddress);
+        if (erc20ContractAddress == address(0)) {
+            // ERC20 contract address is not set, use the original implementation
+            require(msg.value > 0, "No funds available for distribution");
 
-        // Fetch the balance of the SL2RD contract
-        uint256 amount = usdcContract.balanceOf(address(this));
-        require(amount > 0, "No funds available for distribution");
+            // Transfer Ether to the recipient
+            payable(recipient).transfer(msg.value);
 
-        // Perform the transfer
-        require(
-            usdcContract.transfer(recipient, amount),
-            "ERC20 transfer failed"
-        );
+            emit Payment(
+                msg.sender,
+                recipient,
+                _tokenIds.value[_currentTokenIdIndex],
+                msg.value
+            );
+        } else {
+            // ERC20 contract address is set, use the ERC20 implementation
 
-        emit Payment(
-            msg.sender,
-            recipient,
-            _tokenIds.value[_currentTokenIdIndex],
-            amount
-        );
+            // Instantiate the ERC20 contract
+            ERC20 usdcContract = ERC20(erc20ContractAddress);
+
+            // Fetch the balance of the SL2RD contract
+            uint256 amount = usdcContract.balanceOf(address(this));
+            require(amount > 0, "No funds available for distribution");
+
+            if (
+                _protocol.isApprovedBuild(
+                    recipient,
+                    CodeVerification.BuildType.WALLET
+                )
+            ) {
+                // If recipient is a wallet, transfer directly to the wallet
+                callWalletTransferFunction(recipient, amount);
+            } else {
+                // If recipient is not a wallet, check and handle as a contract
+                require(
+                    _protocol.isApprovedBuild(
+                        recipient,
+                        CodeVerification.BuildType.SPLIT
+                    ) ||
+                        _protocol.isApprovedBuild(
+                            recipient,
+                            CodeVerification.BuildType.PFA_UNIT
+                        ) ||
+                        _protocol.isApprovedBuild(
+                            recipient,
+                            CodeVerification.BuildType.PFA_COLLECTION
+                        ),
+                    "SHARE007"
+                );
+
+                // Transfer to the contract itself for further handling
+                callContractTransferFunction(amount);
+            }
+
+            // Emit payment event
+            emit Payment(
+                msg.sender,
+                recipient,
+                _tokenIds.value[_currentTokenIdIndex],
+                amount
+            );
+        }
+    }
+
+    function callWalletTransferFunction(
+        address recipient_,
+        uint256 amount_
+    ) private {
+        ERC20 usdcContract = ERC20(_erc20ContractAddress);
+        usdcContract.transfer(recipient_, amount_);
+    }
+
+    function callContractTransferFunction(uint256 amount_) private {
+        ERC20 usdcContract = ERC20(_erc20ContractAddress);
+        usdcContract.transfer(address(this), amount_);
     }
 
     function supportsInterface(
