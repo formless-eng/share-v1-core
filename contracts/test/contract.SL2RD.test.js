@@ -40,44 +40,6 @@ contract("SL2RD", (accounts) => {
     );
   });
 
-  // assign roles for testing
-  const OWNER = accounts[0];
-  const PAYER = accounts[1];
-  const PAYEE = accounts[2];
-  const USDC_AMOUNT = web3.utils.toWei("10", "ether"); // 10 USDC
-
-  let sl2rdContract, usdcContract, shareContract, operatorRegistry;
-
-  before(async () => {
-    shareContract = await SHARE.new({ from: OWNER });
-    operatorRegistry = await OperatorRegistry.new({ from: OWNER });
-    // Disable code verification for tests
-    await shareContract.setCodeVerificationEnabled(false, { from: OWNER });
-  });
-
-  beforeEach(async () => {
-    // Deploy SL2RD contract
-    sl2rdContract = await SL2RD.new();
-
-    // Initialize SL2RD contract
-    await sl2rdContract.initialize(
-      [OWNER],
-      [0],
-      0,
-      shareContract.address,
-      operatorRegistry.address
-    );
-
-    // Deploy Mock USDC contract
-    usdcContract = await MockERC20.new("Mock USDC", "USDC", 18, { from: OWNER });
-    // Mint USDC to PAYER
-    await usdcContract.mint(PAYER, USDC_AMOUNT, { from: OWNER });
-    // Approve SL2RD contract to spend USDC
-    await usdcContract.approve(sl2rdContract.address, USDC_AMOUNT, { from: PAYER });
-    // Set ERC20 contract address in SL2RD
-    await sl2rdContract.setERC20ContractAddress(usdcContract.address, { from: OWNER });
-  });
-
   specify("Contract initialization", async () => {
     const shareContract = await SHARE.deployed();
     const splitContract = await SL2RD.deployed();
@@ -1043,12 +1005,14 @@ contract("SL2RD", (accounts) => {
     }
   );
 
-
   specify("Owner can set ERC20 contract address", async () => {
     // Set ERC20 contract address
-    await this._singletonSplitContract.setERC20ContractAddress(mockERC20Address, {
-      from: accounts[DEFAULT_ADDRESS_INDEX],
-    });
+    await this._singletonSplitContract.setERC20ContractAddress(
+      mockERC20Address,
+      {
+        from: accounts[DEFAULT_ADDRESS_INDEX],
+      }
+    );
 
     // Verify the ERC20 contract address
     const result = await this._singletonSplitContract.getERC20ContractAddress();
@@ -1062,9 +1026,12 @@ contract("SL2RD", (accounts) => {
   specify("Non-owner cannot set ERC20 contract address", async () => {
     try {
       // Attempt to set ERC20 contract address by a non-owner
-      await this._singletonSplitContract.setERC20ContractAddress(mockERC20Address, {
-        from: accounts[NON_OWNER_ADDRESS_INDEX],
-      });
+      await this._singletonSplitContract.setERC20ContractAddress(
+        mockERC20Address,
+        {
+          from: accounts[NON_OWNER_ADDRESS_INDEX],
+        }
+      );
       assert.fail("Expected revert, but transaction succeeded.");
     } catch (error) {
       assert(
@@ -1077,12 +1044,16 @@ contract("SL2RD", (accounts) => {
 
   specify("getERC20ContractAddress returns the correct value", async () => {
     // Set the ERC20 contract address
-    await this._singletonSplitContract.setERC20ContractAddress(mockERC20Address, {
-      from: accounts[DEFAULT_ADDRESS_INDEX],
-    });
+    await this._singletonSplitContract.setERC20ContractAddress(
+      mockERC20Address,
+      {
+        from: accounts[DEFAULT_ADDRESS_INDEX],
+      }
+    );
 
     // Verify the getter returns the correct address
-    const erc20Address = await this._singletonSplitContract.getERC20ContractAddress();
+    const erc20Address =
+      await this._singletonSplitContract.getERC20ContractAddress();
     assert.equal(
       erc20Address.toLowerCase(),
       mockERC20Address.toLowerCase(),
@@ -1093,36 +1064,89 @@ contract("SL2RD", (accounts) => {
   specify(
     "receive method transfers USDC to the correct recipient",
     async () => {
+      const OWNER = accounts[0];
+      const PAYER = accounts[1];
+      const PAYEE = accounts[2];
 
-     // Transfer 10 USDC to SL2RD contract
-    await usdcContract.transfer(sl2rdContract.address, USDC_AMOUNT, { from: PAYER });
-    // Verify SL2RD contract's USDC balance
-    const contractBalance = await usdcContract.balanceOf(sl2rdContract.address);
-    assert.equal(contractBalance.toString(), USDC_AMOUNT, "Incorrect USDC balance in SL2RD");
-    // Get initial PAYEE USDC balance
-    const initialPayeeBalance = await usdcContract.balanceOf(PAYEE);
-    // Transfer ownership of the token to PAYEE
-    await sl2rdContract.transferFrom(OWNER, PAYEE, 0, { from: OWNER });
+      const USDC_AMOUNT = web3.utils.toWei("10", "ether"); // 10 USDC
+      const shareContract = await SHARE.new({ from: OWNER });
+      const operatorRegistry = await OperatorRegistry.new({ from: OWNER });
+      // Disable code verification for tests
+      await shareContract.setCodeVerificationEnabled(false, { from: OWNER });
 
-    // Trigger receive function
-    await web3.eth.sendTransaction({
-      from: PAYER,
-      to: sl2rdContract.address,
-      value: 0,
-    });
+      // Deploy SL2RD contract
+      const sl2rdContract = await SL2RD.new();
 
-    // Verify USDC transfer to PAYEE
-    const finalPayeeBalance = await usdcContract.balanceOf(PAYEE);
-    assert.equal(
-      finalPayeeBalance.toString(),
-      initialPayeeBalance.add(web3.utils.toBN(USDC_AMOUNT)).toString(),
-      "USDC balance of PAYEE not updated correctly"
-    );
+      // Initialize SL2RD contract
+      await sl2rdContract.initialize(
+        [OWNER],
+        [0],
+        0,
+        shareContract.address,
+        operatorRegistry.address
+      );
 
-    // Verify Payment event
-    const events = await sl2rdContract.getPastEvents("Payment");
-    assert.equal(events.length, 1, "Payment event not emitted");
-    assert.equal(events[0].returnValues.recipient, PAYEE, "Incorrect event recipient");
-    assert.equal(events[0].returnValues.value, USDC_AMOUNT, "Incorrect event value");
-  });
+      // Deploy Mock USDC contract
+      const usdcContract = await MockERC20.new("Mock USDC", "USDC", 18, {
+        from: OWNER,
+      });
+      // Mint USDC to PAYER
+      await usdcContract.mint(PAYER, USDC_AMOUNT, { from: OWNER });
+      // Approve SL2RD contract to spend USDC
+      await usdcContract.approve(sl2rdContract.address, USDC_AMOUNT, {
+        from: PAYER,
+      });
+      // Set ERC20 contract address in SL2RD
+      await sl2rdContract.setERC20ContractAddress(usdcContract.address, {
+        from: OWNER,
+      });
+
+      // Transfer 10 USDC to SL2RD contract
+      await usdcContract.transfer(sl2rdContract.address, USDC_AMOUNT, {
+        from: PAYER,
+      });
+      // Verify SL2RD contract's USDC balance
+      const contractBalance = await usdcContract.balanceOf(
+        sl2rdContract.address
+      );
+      assert.equal(
+        contractBalance.toString(),
+        USDC_AMOUNT,
+        "Incorrect USDC balance in SL2RD"
+      );
+      // Get initial PAYEE USDC balance
+      const initialPayeeBalance = await usdcContract.balanceOf(PAYEE);
+      // Transfer ownership of the token to PAYEE
+      await sl2rdContract.transferFrom(OWNER, PAYEE, 0, { from: OWNER });
+
+      // Trigger receive function
+      await web3.eth.sendTransaction({
+        from: PAYER,
+        to: sl2rdContract.address,
+        value: 0,
+      });
+
+      // Verify USDC transfer to PAYEE
+      const finalPayeeBalance = await usdcContract.balanceOf(PAYEE);
+      assert.equal(
+        finalPayeeBalance.toString(),
+        initialPayeeBalance.add(web3.utils.toBN(USDC_AMOUNT)).toString(),
+        "USDC balance of PAYEE not updated correctly"
+      );
+
+      // Verify Payment event
+      const events = await sl2rdContract.getPastEvents("Payment");
+      assert.equal(events.length, 1, "Payment event not emitted");
+      assert.equal(
+        events[0].returnValues.recipient,
+        PAYEE,
+        "Incorrect event recipient"
+      );
+      assert.equal(
+        events[0].returnValues.value,
+        USDC_AMOUNT,
+        "Incorrect event value"
+      );
+    }
+  );
 });
