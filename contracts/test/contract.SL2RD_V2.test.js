@@ -5,6 +5,8 @@ const OperatorRegistry = artifacts.require("OperatorRegistry");
 const MockLiquidityPool = artifacts.require("MockLiquidityPool");
 const CodeVerification = artifacts.require("CodeVerification");
 
+const _PRIMARY_ACCOUNT_INDEX = 0;
+
 function normalizeAddress(address) {
   return address.toLowerCase();
 }
@@ -33,7 +35,7 @@ contract("SL2RD_V2", (accounts) => {
       10e6 /* totalShares */,
       10e3 /* totalPublicShares */,
       1000 /* batchSize */,
-      accounts[0] /* primaryShareholderAddress */,
+      accounts[_PRIMARY_ACCOUNT_INDEX] /* primaryShareholderAddress */,
       shareContract.address,
       operatorRegistry.address,
       false /* testMode */,
@@ -61,7 +63,7 @@ contract("SL2RD_V2", (accounts) => {
       10e6 /* totalShares */,
       10e6 /* totalPublicShares */,
       1000 /* batchSize */,
-      accounts[0] /* primaryShareholderAddress */,
+      accounts[_PRIMARY_ACCOUNT_INDEX] /* primaryShareholderAddress */,
       shareContract.address,
       operatorRegistry.address,
       false /* testMode */,
@@ -85,7 +87,7 @@ contract("SL2RD_V2", (accounts) => {
         10e6 /* totalShares */,
         10e6 /* totalPublicShares */,
         1000 /* batchSize */,
-        accounts[0] /* primaryShareholderAddress */,
+        accounts[_PRIMARY_ACCOUNT_INDEX] /* primaryShareholderAddress */,
         shareContract.address,
         operatorRegistry.address,
         false /* testMode */,
@@ -93,7 +95,7 @@ contract("SL2RD_V2", (accounts) => {
       );
       for (let i = 0; i < 10; i++) {
         await splitContract.transfer(accounts[i], 1000, {
-          from: accounts[0],
+          from: accounts[_PRIMARY_ACCOUNT_INDEX],
         });
       }
       const shareholdersRootNodeId =
@@ -124,7 +126,7 @@ contract("SL2RD_V2", (accounts) => {
         100 /* totalShares */,
         100 /* totalPublicShares */,
         1000 /* batchSize */,
-        accounts[0] /* primaryShareholderAddress */,
+        accounts[_PRIMARY_ACCOUNT_INDEX] /* primaryShareholderAddress */,
         shareContract.address,
         operatorRegistry.address,
         true /* testMode */,
@@ -135,7 +137,7 @@ contract("SL2RD_V2", (accounts) => {
       // owner.
       for (let i = 0; i < 5; i++) {
         await splitContract.transfer(accounts[i], 10, {
-          from: accounts[0],
+          from: accounts[_PRIMARY_ACCOUNT_INDEX],
         });
       }
       assert.isNotNull(await findNode(splitContract, accounts[2]));
@@ -147,7 +149,7 @@ contract("SL2RD_V2", (accounts) => {
       // Transfer all 10 shares from account 2 to account 1,
       // resulting in a removal of account 2 from the list
       await splitContract.transferFrom(accounts[2], accounts[1], 10, {
-        from: accounts[0],
+        from: accounts[_PRIMARY_ACCOUNT_INDEX],
       });
       assert.isNull(await findNode(splitContract, accounts[2]));
       assert.equal(+(await splitContract.balanceOf(accounts[2])).toString(), 0);
@@ -168,7 +170,7 @@ contract("SL2RD_V2", (accounts) => {
         50 /* totalShares */,
         50 /* totalPublicShares */,
         paymentBatchSize /* payment batch size */,
-        accounts[0] /* primaryShareholderAddress */,
+        accounts[_PRIMARY_ACCOUNT_INDEX] /* primaryShareholderAddress */,
         shareContract.address,
         operatorRegistry.address,
         true /* testMode */,
@@ -181,14 +183,14 @@ contract("SL2RD_V2", (accounts) => {
     }
 
     const expectedShareholderPaymentsTable = new Array(NUM_TRANSACTIONS).fill(
-      accounts[0],
+      accounts[_PRIMARY_ACCOUNT_INDEX],
       0,
       NUM_TRANSACTIONS
     );
     const initialSharesPerHolder = 5;
     for (let i = 1; i < NUM_TRANSACTIONS / initialSharesPerHolder; i++) {
       await splitContract.transfer(accounts[i], initialSharesPerHolder, {
-        from: accounts[0],
+        from: accounts[_PRIMARY_ACCOUNT_INDEX],
       });
       expectedShareholderPaymentsTable.fill(
         accounts[i],
@@ -207,7 +209,7 @@ contract("SL2RD_V2", (accounts) => {
       await web3.eth
         .sendTransaction({
           to: splitContract.address,
-          from: accounts[0],
+          from: accounts[_PRIMARY_ACCOUNT_INDEX],
           value: 1,
         })
         .then(function (receipt) {
@@ -245,20 +247,20 @@ contract("SL2RD_V2", (accounts) => {
         100 /* totalShares */,
         50 /* totalPublicShares */,
         1 /* batchSize */,
-        accounts[0] /* primaryShareholderAddress */,
+        accounts[_PRIMARY_ACCOUNT_INDEX] /* primaryShareholderAddress */,
         shareContract.address,
         operatorRegistry.address,
         true /* testMode */,
         true /* codeVerificationEnabled */
       );
       await splitContract.transferPublicShares(accounts[1], 50, {
-        from: accounts[0],
+        from: accounts[_PRIMARY_ACCOUNT_INDEX],
       });
       assert.equal(await splitContract.balanceOf(accounts[1]), 50);
 
       try {
         await splitContract.transferPublicShares(accounts[1], 1, {
-          from: accounts[0],
+          from: accounts[_PRIMARY_ACCOUNT_INDEX],
         });
         assert(false, "transferPublicShares should have failed");
       } catch (error) {
@@ -278,20 +280,20 @@ contract("SL2RD_V2", (accounts) => {
       100 /* totalShares */,
       100 /* totalPublicShares */,
       1 /* batchSize */,
-      accounts[0] /* primaryShareholderAddress */,
+      accounts[_PRIMARY_ACCOUNT_INDEX] /* primaryShareholderAddress */,
       shareContract.address,
       operatorRegistry.address,
       true /* testMode */,
       true /* codeVerificationEnabled */
     );
     await splitContract.transfer(accounts[1], 10, {
-      from: accounts[0],
+      from: accounts[_PRIMARY_ACCOUNT_INDEX],
     });
     await splitContract.transfer(accounts[2], 5, {
-      from: accounts[0],
+      from: accounts[_PRIMARY_ACCOUNT_INDEX],
     });
     await splitContract.transfer(accounts[3], 5, {
-      from: accounts[0],
+      from: accounts[_PRIMARY_ACCOUNT_INDEX],
     });
     const balances = await splitContract.shareholderBalances(0, 4);
     assert.notStrictEqual(
@@ -311,7 +313,7 @@ contract("SL2RD_V2", (accounts) => {
       100 /* totalShares */,
       100 /* totalPublicShares */,
       1 /* payment batch size */,
-      accounts[0] /* primaryShareholderAddress */,
+      accounts[_PRIMARY_ACCOUNT_INDEX] /* primaryShareholderAddress */,
       shareContract.address,
       operatorRegistry.address,
       false /* testMode */,
@@ -329,9 +331,9 @@ contract("SL2RD_V2", (accounts) => {
     await pfa.transferOwnership(splitContract.address);
     assert.equal(splitContract.address, await pfa.owner());
     await splitContract.reclaim(pfa.address, {
-      from: accounts[0],
+      from: accounts[_PRIMARY_ACCOUNT_INDEX],
     });
-    assert.equal(accounts[0], await pfa.owner());
+    assert.equal(accounts[_PRIMARY_ACCOUNT_INDEX], await pfa.owner());
   });
 
   specify(
@@ -348,7 +350,7 @@ contract("SL2RD_V2", (accounts) => {
         100 /* totalShares */,
         100 /* totalPublicShares */,
         1 /* batchSize */,
-        accounts[0] /* primaryShareholderAddress */,
+        accounts[_PRIMARY_ACCOUNT_INDEX] /* primaryShareholderAddress */,
         shareContract.address,
         operatorRegistry.address,
         true /* testMode */,
@@ -356,7 +358,7 @@ contract("SL2RD_V2", (accounts) => {
       );
       try {
         await splitContract.transfer(liquidityPool.address, 10, {
-          from: accounts[0],
+          from: accounts[_PRIMARY_ACCOUNT_INDEX],
         });
         assert(false, "transfer should have failed");
       } catch (error) {
@@ -381,7 +383,7 @@ contract("SL2RD_V2", (accounts) => {
         100 /* totalShares */,
         100 /* totalPublicShares */,
         1 /* batchSize */,
-        accounts[0] /* primaryShareholderAddress */,
+        accounts[_PRIMARY_ACCOUNT_INDEX] /* primaryShareholderAddress */,
         shareContract.address,
         operatorRegistry.address,
         true /* testMode */,
@@ -391,7 +393,7 @@ contract("SL2RD_V2", (accounts) => {
         await verifier.readCodeHash(liquidityPool.address)
       );
       await splitContract.transfer(liquidityPool.address, 10, {
-        from: accounts[0],
+        from: accounts[_PRIMARY_ACCOUNT_INDEX],
       });
       assert.equal(await splitContract.balanceOf(liquidityPool.address), 10);
     }
