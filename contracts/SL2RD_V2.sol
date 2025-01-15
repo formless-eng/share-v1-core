@@ -50,7 +50,7 @@ contract SL2RD_V2 is LimitedOwnable, ERC20 {
     uint256 private _shareholdersCount = 1;
     uint256 private _paymentBatchSize = 1;
     bool public _testMode = false;
-    bool public _codeVerificationEnabled = true;
+    bool public _codeVerificationEnabled = false;
     mapping(bytes32 => bool) internal _approvedLiquidityPoolHashes;
 
     struct ShareholderNode {
@@ -95,6 +95,7 @@ contract SL2RD_V2 is LimitedOwnable, ERC20 {
     /// payments per pointer iteration, which is useful for reducing the
     /// time between payouts while keeping gas cost low for the overall
     /// payments stream.
+    /// @param primaryShareholderAddress_ The address of the primary shareholder.
     /// @param shareContractAddress_ The address of the SHARE protocol contract.
     /// @param operatorRegistryAddress_ The address of the SHARE operator registry.
     /// @param testMode_ Set to true to enable test mode, which allows for
@@ -105,9 +106,11 @@ contract SL2RD_V2 is LimitedOwnable, ERC20 {
         uint256 totalShares_,
         uint256 totalPublicShares_,
         uint256 paymentBatchSize_,
+        address primaryShareholderAddress_,
         address shareContractAddress_,
         address operatorRegistryAddress_,
-        bool testMode_
+        bool testMode_,
+        bool codeVerificationEnabled_
     ) public onlyOwner {
         require(!super.initialized(), "SHARE040");
         _name = name_;
@@ -119,16 +122,17 @@ contract SL2RD_V2 is LimitedOwnable, ERC20 {
         _protocol = SHARE(shareContractAddress_);
         _shareOperatorRegistry = OperatorRegistry(operatorRegistryAddress_);
         _testMode = testMode_;
-        _mint(msg.sender, totalShares_);
+        _codeVerificationEnabled = codeVerificationEnabled_;
+        _mint(primaryShareholderAddress_, totalShares_);
         ShareholderNode memory root = ShareholderNode(
-            msg.sender,
+            primaryShareholderAddress_,
             address(0),
             address(0)
         );
-        _shareholdersRootNodeId = msg.sender;
-        _shareholdersTailNodeId = msg.sender;
-        _shareholdersSelectedNodeId = msg.sender;
-        _shareholderNodes[msg.sender] = root;
+        _shareholdersRootNodeId = primaryShareholderAddress_;
+        _shareholdersTailNodeId = primaryShareholderAddress_;
+        _shareholdersSelectedNodeId = primaryShareholderAddress_;
+        _shareholderNodes[primaryShareholderAddress_] = root;
         setInitialized();
     }
 
