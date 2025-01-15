@@ -35,7 +35,8 @@ contract("SL2RD_V2", (accounts) => {
       1000 /* batchSize */,
       shareContract.address,
       operatorRegistry.address,
-      false /* testMode */
+      false /* testMode */,
+      true /* codeVerificationEnabled */
     );
     assert.equal(await splitContract.name(), "Unicorn Token");
     assert.equal(await splitContract.symbol(), "UNICORN");
@@ -61,7 +62,8 @@ contract("SL2RD_V2", (accounts) => {
       1000 /* batchSize */,
       shareContract.address,
       operatorRegistry.address,
-      false /* testMode */
+      false /* testMode */,
+      true /* codeVerificationEnabled */
     );
     await splitContract.setDecimals(18);
     await splitContract.setCodeVerificationEnabled(false);
@@ -83,7 +85,8 @@ contract("SL2RD_V2", (accounts) => {
         1000 /* batchSize */,
         shareContract.address,
         operatorRegistry.address,
-        false /* testMode */
+        false /* testMode */,
+        true /* codeVerificationEnabled */
       );
       for (let i = 0; i < 10; i++) {
         await splitContract.transfer(accounts[i], 1000, {
@@ -120,7 +123,8 @@ contract("SL2RD_V2", (accounts) => {
         1000 /* batchSize */,
         shareContract.address,
         operatorRegistry.address,
-        true /* testMode */
+        true /* testMode */,
+        true /* codeVerificationEnabled */
       );
       // Transfer 10 shares to each of 5 accounts, resulting
       // in 50 shares remaining in the balance of the contract
@@ -162,7 +166,8 @@ contract("SL2RD_V2", (accounts) => {
         paymentBatchSize /* payment batch size */,
         shareContract.address,
         operatorRegistry.address,
-        true /* testMode */
+        true /* testMode */,
+        true /* codeVerificationEnabled */
       );
     } catch (error) {
       console.log(error);
@@ -237,7 +242,8 @@ contract("SL2RD_V2", (accounts) => {
         1 /* batchSize */,
         shareContract.address,
         operatorRegistry.address,
-        true /* testMode */
+        true /* testMode */,
+        true /* codeVerificationEnabled */
       );
       await splitContract.transferPublicShares(accounts[1], 50, {
         from: accounts[0],
@@ -268,7 +274,8 @@ contract("SL2RD_V2", (accounts) => {
       1 /* batchSize */,
       shareContract.address,
       operatorRegistry.address,
-      true /* testMode */
+      true /* testMode */,
+      true /* codeVerificationEnabled */
     );
     await splitContract.transfer(accounts[1], 10, {
       from: accounts[0],
@@ -299,7 +306,8 @@ contract("SL2RD_V2", (accounts) => {
       1 /* payment batch size */,
       shareContract.address,
       operatorRegistry.address,
-      false /* testMode */
+      false /* testMode */,
+      true /* codeVerificationEnabled */
     );
     const pfa = await PFAUnit.new();
     await pfa.initialize(
@@ -334,7 +342,8 @@ contract("SL2RD_V2", (accounts) => {
         1 /* batchSize */,
         shareContract.address,
         operatorRegistry.address,
-        true /* testMode */
+        true /* testMode */,
+        true /* codeVerificationEnabled */
       );
       try {
         await splitContract.transfer(liquidityPool.address, 10, {
@@ -365,7 +374,8 @@ contract("SL2RD_V2", (accounts) => {
         1 /* batchSize */,
         shareContract.address,
         operatorRegistry.address,
-        true /* testMode */
+        true /* testMode */,
+        true /* codeVerificationEnabled */
       );
       await splitContract.approveLiquidityPoolCodeHash(
         await verifier.readCodeHash(liquidityPool.address)
