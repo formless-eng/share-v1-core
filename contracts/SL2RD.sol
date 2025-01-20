@@ -326,8 +326,6 @@ contract SL2RD is
     /// method described above.
     receive() external payable nonReentrant afterInit {
         uint256 paymentValue = msg.value / _paymentBatchSize;
-        require(paymentValue > 0, "SHARE044");
-
         for (uint256 i = 0; i < _paymentBatchSize; i++) {
             address recipient = ownerOf(_tokenIds.value[_currentTokenIdIndex]);
 
