@@ -1120,10 +1120,7 @@ contract("SL2RD", (accounts) => {
               toBlock: "latest",
             })
             .then((events) => {
-              // Check that we got BATCH_SIZE new events
               assert.equal(events.length, (i + 1) * BATCH_SIZE);
-
-              // Check the last BATCH_SIZE events
               for (let j = 0; j < BATCH_SIZE; j++) {
                 const event = events[events.length - BATCH_SIZE + j];
                 const expectedTokenId =
