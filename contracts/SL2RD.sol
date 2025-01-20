@@ -65,6 +65,7 @@ contract SL2RD is
 
     // ERC20 contract address (e.g., for USDC payments)
     address private _erc20ContractAddress;
+    uint256 private _paymentBatchSize = 1;
 
     /// @notice Modifier to allow only the owner or a verified operator
     /// to call the function
@@ -324,19 +325,24 @@ contract SL2RD is
     /// stakeholders specified in this contract using the SL2RD
     /// method described above.
     receive() external payable nonReentrant afterInit {
-        address recipient = ownerOf(_tokenIds.value[_currentTokenIdIndex]);
+        uint256 paymentValue = msg.value / _paymentBatchSize;
+        require(paymentValue > 0, "SHARE044");
 
-        _currentTokenIdIndex =
-            (_currentTokenIdIndex + 1) %
-            (_tokenIds.value.length);
-        payable(recipient).transfer(msg.value);
+        for (uint256 i = 0; i < _paymentBatchSize; i++) {
+            address recipient = ownerOf(_tokenIds.value[_currentTokenIdIndex]);
 
-        emit Payment(
-            msg.sender,
-            recipient,
-            _tokenIds.value[_currentTokenIdIndex],
-            msg.value
-        );
+            _currentTokenIdIndex =
+                (_currentTokenIdIndex + 1) %
+                (_tokenIds.value.length);
+            payable(recipient).transfer(paymentValue);
+
+            emit Payment(
+                msg.sender,
+                recipient,
+                _tokenIds.value[_currentTokenIdIndex],
+                paymentValue
+            );
+        }
     }
 
     /// @notice Allows for an ERC-721 token to be transferred to a new address.
@@ -486,10 +492,7 @@ contract SL2RD is
     function setERC20ContractAddress(
         address contractAddress_
     ) public override afterInit onlyOwner nonReentrant {
-        require(
-            contractAddress_ != address(0),
-            "SHARE042"
-        );
+        require(contractAddress_ != address(0), "SHARE042");
         _erc20ContractAddress = contractAddress_;
     }
 
@@ -505,5 +508,12 @@ contract SL2RD is
             interfaceId == type(IERC165).interfaceId ||
             interfaceId == type(IERC721).interfaceId ||
             interfaceId == type(IERC20Payable).interfaceId;
+    }
+
+    function setPaymentBatchSize(
+        uint256 batchSize_
+    ) public onlyOwnerOrOperator {
+        require(batchSize_ > 0, "SHARE043");
+        _paymentBatchSize = batchSize_;
     }
 }

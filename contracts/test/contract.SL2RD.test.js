@@ -19,7 +19,6 @@ function calculateSplitIndexUsingPartition(
 }
 
 contract("SL2RD", (accounts) => {
-
   const mockERC20Address = "0x1234567890abcdef1234567890abcdef12345678"; // Mock ERC20 contract address
 
   before(async () => {
@@ -1006,12 +1005,14 @@ contract("SL2RD", (accounts) => {
     }
   );
 
-
   specify("Owner can set ERC20 contract address", async () => {
     // Set ERC20 contract address
-    await this._singletonSplitContract.setERC20ContractAddress(mockERC20Address, {
-      from: accounts[DEFAULT_ADDRESS_INDEX],
-    });
+    await this._singletonSplitContract.setERC20ContractAddress(
+      mockERC20Address,
+      {
+        from: accounts[DEFAULT_ADDRESS_INDEX],
+      }
+    );
 
     // Verify the ERC20 contract address
     const result = await this._singletonSplitContract.getERC20ContractAddress();
@@ -1025,9 +1026,12 @@ contract("SL2RD", (accounts) => {
   specify("Non-owner cannot set ERC20 contract address", async () => {
     try {
       // Attempt to set ERC20 contract address by a non-owner
-      await this._singletonSplitContract.setERC20ContractAddress(mockERC20Address, {
-        from: accounts[NON_OWNER_ADDRESS_INDEX],
-      });
+      await this._singletonSplitContract.setERC20ContractAddress(
+        mockERC20Address,
+        {
+          from: accounts[NON_OWNER_ADDRESS_INDEX],
+        }
+      );
       assert.fail("Expected revert, but transaction succeeded.");
     } catch (error) {
       assert(
@@ -1040,16 +1044,105 @@ contract("SL2RD", (accounts) => {
 
   specify("getERC20ContractAddress returns the correct value", async () => {
     // Set the ERC20 contract address
-    await this._singletonSplitContract.setERC20ContractAddress(mockERC20Address, {
-      from: accounts[DEFAULT_ADDRESS_INDEX],
-    });
+    await this._singletonSplitContract.setERC20ContractAddress(
+      mockERC20Address,
+      {
+        from: accounts[DEFAULT_ADDRESS_INDEX],
+      }
+    );
 
     // Verify the getter returns the correct address
-    const erc20Address = await this._singletonSplitContract.getERC20ContractAddress();
+    const erc20Address =
+      await this._singletonSplitContract.getERC20ContractAddress();
     assert.equal(
       erc20Address.toLowerCase(),
       mockERC20Address.toLowerCase(),
       "getERC20ContractAddress did not return the correct address."
     );
+  });
+
+  specify("Payable with rotating recipient and batch payments", async () => {
+    const NUM_TRANSACTIONS = 50;
+    const BATCH_SIZE = 4;
+    const PAYMENT_VALUE = web3.utils.toWei("1", "ether"); // 1 ETH per transaction
+    const shareContract = await SHARE.deployed();
+    const operatorRegistry = await OperatorRegistry.deployed();
+    const splitContract = await SL2RD.new();
+    const ownerAddresses = Array(10).fill(accounts[0]);
+
+    const uniformCollaboratorsIds = [0, 1, 0, 0, 0, 2, 0, 0, 0, 0];
+    const uniformCollaborators = [
+      accounts[0],
+      accounts[1] /* tokenId 0 */,
+      accounts[2] /* tokenId 1 */,
+      accounts[3] /* tokenId 2 */,
+    ];
+
+    try {
+      await splitContract.initialize(
+        ownerAddresses /* addresses_ */,
+        uniformCollaboratorsIds /* tokenIds_ */,
+        0 /* communitySplitsBasisPoints_ */,
+        shareContract.address /* shareContractAddress_ */,
+        operatorRegistry.address /* operatorRegistryAddress_ */
+      );
+    } catch (error) {
+      console.log(error);
+      console.log(error.message);
+      assert(false, "Initialization failed");
+    }
+    const uniformCollaboratorsMap = new Map([
+      [0, uniformCollaborators[1]],
+      [1, uniformCollaborators[2]],
+      [2, uniformCollaborators[3]],
+    ]);
+
+    await splitContract.safeTransferFrom(accounts[0], accounts[1], 0);
+    await splitContract.transferFrom(accounts[0], accounts[2], 1);
+    await splitContract.safeTransferFrom(accounts[0], accounts[3], 2);
+
+    // Set batch size
+    await splitContract.setPaymentBatchSize(BATCH_SIZE);
+
+    for (let i = 0; i < NUM_TRANSACTIONS; i += 1) {
+      await web3.eth
+        .sendTransaction({
+          to: splitContract.address,
+          from: accounts[DEFAULT_ADDRESS_INDEX],
+          value: PAYMENT_VALUE,
+          gas: 200000,
+        })
+        .then(function (receipt) {
+          console.log(receipt);
+          splitContract
+            .getPastEvents("Payment", {
+              fromBlock: 0,
+              toBlock: "latest",
+            })
+            .then((events) => {
+              // Check that we got BATCH_SIZE new events
+              assert.equal(events.length, (i + 1) * BATCH_SIZE);
+
+              // Check the last BATCH_SIZE events
+              for (let j = 0; j < BATCH_SIZE; j++) {
+                const event = events[events.length - BATCH_SIZE + j];
+                const expectedTokenId =
+                  uniformCollaboratorsIds[
+                    (i * BATCH_SIZE + j) % uniformCollaboratorsIds.length
+                  ];
+                assert.equal(
+                  normalizeAddress(event.returnValues.recipient.toLowerCase()),
+                  normalizeAddress(uniformCollaboratorsMap.get(expectedTokenId))
+                );
+                console.log(event.returnValues.value);
+                assert.equal(
+                  event.returnValues.value,
+                  PAYMENT_VALUE / BATCH_SIZE, // Each recipient gets an equal share
+                  "Incorrect payment value"
+                );
+              }
+            });
+        });
+    }
   });
 });
