@@ -67,7 +67,7 @@ contract PFAUnit is IERC20Payable, ERC721, PFA {
     function accessNative(
         uint256 tokenId_,
         address recipient_
-    ) internal payable nonReentrant afterInit {
+    ) internal nonReentrant afterInit {
         address owner = owner();
         // Since this contract is a LimitedOwnable, the code which
         // may reside at the owner address is restricted to approved
