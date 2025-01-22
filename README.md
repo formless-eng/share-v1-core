@@ -163,6 +163,9 @@ The command above deploys the contracts as specified in `2_SL2RD_migration.js`.
 - `SHARE041` : `The sender of this transaction is not approved for transferring tokens from the specified address and cannot be automatically approved.`
 - `SHARE042` : `The provided ERC20 contract address is invalid. Please provide a non-zero address.`
 - `SHARE043` : `Batch size must be greater than zero.`
+- `SHARE044` : `ERC20 access call did not succeed.`
+- `SHARE045` : `ERC20 allowance is insufficient.`
+- `SHARE046` : `ERC20 approve call did not succeed.`
 
 ## Audits and Formal Verification
 

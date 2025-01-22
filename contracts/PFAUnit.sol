@@ -87,12 +87,18 @@ contract PFAUnit is IERC20Payable, ERC721, PFA {
         uint256 tokenId_,
         address recipient_
     ) internal nonReentrant afterInit {
-        // 1. This function requires that the caller has approved
-        // a deduction within the USDC contract with this
-        // contract address as the spending entity.
+        IERC20 token = IERC20(_erc20ContractAddress);
         SHARE protocol = SHARE(shareContractAddress());
         address payeeAddress = owner();
-        // 2. If this contract is responsible for paying a wallet,
+        // This function requires that the caller has approved
+        // a deduction within the USDC contract with this
+        // contract address as the spending entity.
+        require(
+            token.allowance(msg.sender, address(this)) >= _pricePerAccess.value,
+            "SHARE045"
+        );
+
+        // If this contract is responsible for paying a wallet,
         // this contract transfers the ERC20 token amount directly
         // to the wallet.
         if (
@@ -101,47 +107,56 @@ contract PFAUnit is IERC20Payable, ERC721, PFA {
                 CodeVerification.BuildType.WALLET
             )
         ) {
-            IERC20(_erc20ContractAddress).transfer(
-                payeeAddress,
-                _pricePerAccess.value
+            require(
+                token.transferFrom(
+                    msg.sender,
+                    payeeAddress,
+                    _pricePerAccess.value
+                ),
+                "SHARE044"
             );
-            _grantTimestamps[recipient_] = block.timestamp;
-            emit PaymentToOwner(payeeAddress, _pricePerAccess.value);
-            emit Grant(recipient_, tokenId_);
-            _transactionCount++;
         } else if (
             // A PFA contract may only push revenue
             // to a wallet or a SHARE protocol split contract.
             // Therefore, the only other valid build type is
             // SPLIT.
-            // https://docs.google.com/document/d/1tbpUkDHqrQXVrEkiNVSPKvBtbHdclOMlNl3O5HUwj0M/edit?tab=t.0#bookmark=id.f75vop7llte
             protocol.isApprovedBuild(
                 payeeAddress,
                 CodeVerification.BuildType.SPLIT
             )
         ) {
-            // 3. If this contract is responsible for paying a contract,
+            // If this contract is responsible for paying a contract,
             // this contract transfers the ERC20 token amount to itself,
             // within the USDC contract, then executes approve and
             // call on the downstream contract.
             {
-                // Transfer
-                IERC20(_erc20ContractAddress).transfer(
-                    address(this),
-                    _pricePerAccess.value
+                // Transfer ERC20 tokens.
+                require(
+                    token.transferFrom(
+                        msg.sender,
+                        address(this),
+                        _pricePerAccess.value
+                    ),
+                    "SHARE044"
                 );
-                // Approve
-                IERC20(_erc20ContractAddress).approve(
-                    payeeAddress,
-                    _pricePerAccess.value
+                // Approve downstream contract
+                // transfer of tokens.
+                require(
+                    token.approve(payeeAddress, _pricePerAccess.value),
+                    "SHARE046"
                 );
-                // Call
+                // Call downstream contract payable
+                // function to execute transfer.
                 (bool success, ) = payable(payeeAddress).call{value: 0}("");
                 require(success, "SHARE044");
             }
         } else {
             revert("SHARE021");
         }
+        _grantTimestamps[recipient_] = block.timestamp;
+        emit PaymentToOwner(payeeAddress, _pricePerAccess.value);
+        emit Grant(recipient_, tokenId_);
+        _transactionCount++;
     }
 
     function access(
