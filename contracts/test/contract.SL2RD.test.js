@@ -1,6 +1,7 @@
 const SHARE = artifacts.require("SHARE");
 const SL2RD = artifacts.require("SL2RD");
 const PFAUnit = artifacts.require("PFAUnit");
+const MockERC20 = artifacts.require("MockERC20");
 const OperatorRegistry = artifacts.require("OperatorRegistry");
 const DEFAULT_ADDRESS_INDEX = 0;
 const NON_OWNER_ADDRESS_INDEX = 1;

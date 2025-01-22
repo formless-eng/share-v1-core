@@ -327,7 +327,7 @@ contract SL2RD is
     /// method described above.
     receive() external payable nonReentrant afterInit {
         IERC20 token = IERC20(_erc20ContractAddress);
-        uint256 paymentValue = 0;
+        uint256 paymentValue;
         if (_erc20ContractAddress != address(0)) {
             paymentValue = token.balanceOf(address(this)) / _paymentBatchSize;
         } else {

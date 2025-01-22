@@ -11,9 +11,12 @@
 pragma solidity >=0.8.0 <0.9.0;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import "./LimitedOwnable.sol";
 import "./OperatorRegistry.sol";
 import "./libraries/CodeVerification.sol";
+import "./interfaces/IERC20Payable.sol";
 
 /// @title Swift Liquid Rotating Royalty Distributor V2 (SL2RD_V2).
 /// @author brandon@formless.xyz
@@ -26,7 +29,7 @@ import "./libraries/CodeVerification.sol";
 /// implementation results in the ability to add and remove shareholders
 /// in constant computational cost, while maintaining constant cost
 /// payment distribution.
-contract SL2RD_V2 is LimitedOwnable, ERC20 {
+contract SL2RD_V2 is LimitedOwnable, ERC20, IERC20Payable {
     /// @notice Emitted when a payment is sent to a shareholder
     /// listed within this payment distribution contract.
     event Payment(
@@ -68,6 +71,9 @@ contract SL2RD_V2 is LimitedOwnable, ERC20 {
     address private _shareholdersRootNodeId;
     address private _shareholdersTailNodeId;
     address private _shareholdersSelectedNodeId;
+
+    // ERC20 contract address (e.g., for USDC payments)
+    address private _erc20ContractAddress;
 
     /// @notice Modifier to allow only the owner or a verified operator
     /// to call the function
@@ -349,7 +355,14 @@ contract SL2RD_V2 is LimitedOwnable, ERC20 {
     /// over a sequence of payments. The number of payments per iteration is
     /// determined by the payment batch size parameter.
     receive() external payable nonReentrant afterInit {
-        uint256 paymentValue = msg.value / _paymentBatchSize;
+        IERC20 token = IERC20(_erc20ContractAddress);
+        uint256 paymentValue;
+        if (_erc20ContractAddress != address(0)) {
+            paymentValue = token.balanceOf(address(this)) / _paymentBatchSize;
+        } else {
+            paymentValue = msg.value / _paymentBatchSize;
+        }
+
         for (uint256 i = 0; i < _paymentBatchSize; i++) {
             ShareholderNode memory selectedShareholderNode = _shareholderNodes[
                 _shareholdersSelectedNodeId
@@ -372,16 +385,41 @@ contract SL2RD_V2 is LimitedOwnable, ERC20 {
                     _selectedShareholderPaymentCount = 0;
                 }
             }
-            payable(selectedShareholderNode.shareholderAddress).transfer(
-                paymentValue
-            );
-            emit Payment(
-                msg.sender,
-                selectedShareholderNode.shareholderAddress,
-                _paymentBatchSize,
-                msg.value
-            );
             _selectedShareholderPaymentCount += 1;
+            if (_erc20ContractAddress == address(0)) {
+                payable(selectedShareholderNode.shareholderAddress).transfer(
+                    paymentValue
+                );
+                emit Payment(
+                    msg.sender,
+                    selectedShareholderNode.shareholderAddress,
+                    _paymentBatchSize,
+                    paymentValue
+                );
+            } else {
+                // A transfer to a split has exactly 1 hop:
+                // The transfer from the split to a recipient wallet.
+                // Therefore we know the recipient is a SHARE
+                // approved wallet and not a contract.
+
+                // The entire amount held in the SL2RD contract
+                // is distributed, e.g. the contract never holds a
+                // balance and immediately moves the money to a payee
+                // from the ERC20 token.
+                require(
+                    token.transfer(
+                        selectedShareholderNode.shareholderAddress,
+                        paymentValue
+                    ),
+                    "SHARE044"
+                );
+                emit Payment(
+                    msg.sender,
+                    selectedShareholderNode.shareholderAddress,
+                    _paymentBatchSize,
+                    paymentValue
+                );
+            }
         }
     }
 
@@ -459,5 +497,26 @@ contract SL2RD_V2 is LimitedOwnable, ERC20 {
         Ownable asset = Ownable(contractAddress_);
         require(asset.owner() == address(this), "SHARE025");
         asset.transferOwnership(msg.sender);
+    }
+
+    /// @notice Sets the ERC20 contract address (e.g., for USDC payments).
+    function setERC20ContractAddress(
+        address contractAddress_
+    ) public override afterInit onlyOwner nonReentrant {
+        require(contractAddress_ != address(0), "SHARE042");
+        _erc20ContractAddress = contractAddress_;
+    }
+
+    /// @notice Gets the ERC20 contract address used for payments.
+    function getERC20ContractAddress() external view returns (address) {
+        return _erc20ContractAddress;
+    }
+
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view virtual returns (bool) {
+        return
+            interfaceId == type(IERC165).interfaceId ||
+            interfaceId == type(IERC20Payable).interfaceId;
     }
 }
