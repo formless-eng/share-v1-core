@@ -11,6 +11,7 @@
 pragma solidity >=0.8.0 <0.9.0;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import "./libraries/Immutable.sol";
 import "./LimitedOwnable.sol";
@@ -325,21 +326,46 @@ contract SL2RD is
     /// stakeholders specified in this contract using the SL2RD
     /// method described above.
     receive() external payable nonReentrant afterInit {
-        uint256 paymentValue = msg.value / _paymentBatchSize;
+        IERC20 token = IERC20(_erc20ContractAddress);
+        uint256 paymentValue = 0;
+        if (_erc20ContractAddress != address(0)) {
+            paymentValue = token.balanceOf(address(this)) / _paymentBatchSize;
+        } else {
+            paymentValue = msg.value / _paymentBatchSize;
+        }
+
         for (uint256 i = 0; i < _paymentBatchSize; i++) {
             address recipient = ownerOf(_tokenIds.value[_currentTokenIdIndex]);
-
             _currentTokenIdIndex =
                 (_currentTokenIdIndex + 1) %
                 (_tokenIds.value.length);
-            payable(recipient).transfer(paymentValue);
 
-            emit Payment(
-                msg.sender,
-                recipient,
-                _tokenIds.value[_currentTokenIdIndex],
-                paymentValue
-            );
+            if (_erc20ContractAddress == address(0)) {
+                payable(recipient).transfer(paymentValue);
+                emit Payment(
+                    msg.sender,
+                    recipient,
+                    _tokenIds.value[_currentTokenIdIndex],
+                    paymentValue
+                );
+            } else {
+                // A transfer to a split has exactly 1 hop:
+                // The transfer from the split to a recipient wallet.
+                // Therefore we know the recipient is a SHARE
+                // approved wallet and not a contract.
+
+                // The entire amount held in the SL2RD contract
+                // is distributed, e.g. the contract never holds a
+                // balance and immediately moves the money to a payee
+                // from the ERC20 token.
+                require(token.transfer(recipient, paymentValue), "SHARE044");
+                emit Payment(
+                    msg.sender,
+                    recipient,
+                    _tokenIds.value[_currentTokenIdIndex],
+                    paymentValue
+                );
+            }
         }
     }
 

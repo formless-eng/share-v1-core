@@ -67,7 +67,7 @@ contract PFAUnit is IERC20Payable, ERC721, PFA {
     function accessNative(
         uint256 tokenId_,
         address recipient_
-    ) internal nonReentrant afterInit {
+    ) internal afterInit {
         address owner = owner();
         // Since this contract is a LimitedOwnable, the code which
         // may reside at the owner address is restricted to approved
@@ -86,7 +86,7 @@ contract PFAUnit is IERC20Payable, ERC721, PFA {
     function accessERC20(
         uint256 tokenId_,
         address recipient_
-    ) internal nonReentrant afterInit {
+    ) internal afterInit {
         IERC20 token = IERC20(_erc20ContractAddress);
         SHARE protocol = SHARE(shareContractAddress());
         address payeeAddress = owner();
