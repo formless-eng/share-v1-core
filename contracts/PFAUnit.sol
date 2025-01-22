@@ -89,6 +89,10 @@ contract PFAUnit is IERC20Payable, ERC721, PFA {
     ) internal afterInit {
         IERC20 token = IERC20(_erc20ContractAddress);
         SHARE protocol = SHARE(shareContractAddress());
+        // As a LimitedOwnable, the owner address is
+        // already restricted to approved digital wallets and
+        // split contracts, making subsequent calls to
+        // `call` on the payeeAddress address safe.
         address payeeAddress = owner();
         // This function requires that the caller has approved
         // a deduction within the USDC contract with this
@@ -97,29 +101,15 @@ contract PFAUnit is IERC20Payable, ERC721, PFA {
             token.allowance(msg.sender, address(this)) >= _pricePerAccess.value,
             "SHARE045"
         );
-
-        // If this contract is responsible for paying a wallet,
-        // this contract transfers the ERC20 token amount directly
-        // to the wallet.
+        require(
+            token.transferFrom(msg.sender, payeeAddress, _pricePerAccess.value),
+            "SHARE044"
+        );
+        // A PFA contract may only push revenue
+        // to a wallet or a SHARE protocol split contract.
+        // Therefore, the only other valid build type is
+        // SPLIT.
         if (
-            protocol.isApprovedBuild(
-                payeeAddress,
-                CodeVerification.BuildType.WALLET
-            )
-        ) {
-            require(
-                token.transferFrom(
-                    msg.sender,
-                    payeeAddress,
-                    _pricePerAccess.value
-                ),
-                "SHARE044"
-            );
-        } else if (
-            // A PFA contract may only push revenue
-            // to a wallet or a SHARE protocol split contract.
-            // Therefore, the only other valid build type is
-            // SPLIT.
             protocol.isApprovedBuild(
                 payeeAddress,
                 CodeVerification.BuildType.SPLIT
@@ -130,28 +120,11 @@ contract PFAUnit is IERC20Payable, ERC721, PFA {
             // within the USDC contract, then executes approve and
             // call on the downstream contract.
             {
-                // Transfer ERC20 tokens.
-                require(
-                    token.transferFrom(
-                        msg.sender,
-                        address(this),
-                        _pricePerAccess.value
-                    ),
-                    "SHARE044"
-                );
-                // Approve downstream contract
-                // transfer of tokens.
-                require(
-                    token.approve(payeeAddress, _pricePerAccess.value),
-                    "SHARE046"
-                );
                 // Call downstream contract payable
                 // function to execute transfer.
                 (bool success, ) = payable(payeeAddress).call{value: 0}("");
                 require(success, "SHARE044");
             }
-        } else {
-            revert("SHARE021");
         }
         _grantTimestamps[recipient_] = block.timestamp;
         emit PaymentToOwner(payeeAddress, _pricePerAccess.value);
@@ -167,6 +140,7 @@ contract PFAUnit is IERC20Payable, ERC721, PFA {
             require(msg.value >= _pricePerAccess.value, "SHARE005");
             accessNative(tokenId_, recipient_);
         } else {
+            require(msg.value == 0, "SHARE047");
             accessERC20(tokenId_, recipient_);
         }
     }

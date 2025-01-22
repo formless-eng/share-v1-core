@@ -166,6 +166,7 @@ The command above deploys the contracts as specified in `2_SL2RD_migration.js`.
 - `SHARE044` : `ERC20 access call did not succeed.`
 - `SHARE045` : `ERC20 allowance is insufficient.`
 - `SHARE046` : `ERC20 approve call did not succeed.`
+- `SHARE047` : `msg.value must be 0 when using ERC20 tokens.`
 
 ## Audits and Formal Verification
 
