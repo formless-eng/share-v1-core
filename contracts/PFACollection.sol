@@ -17,12 +17,14 @@ import "./libraries/CodeVerification.sol";
 import "./libraries/Immutable.sol";
 import "./interfaces/IPFACollection.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "./interfaces/IERC20Payable.sol";
 
 /// @title Standard pay-for-access (PFA) collection contract.
 /// @author brandon@formless.xyz
 /// @notice This contract can be used to implement PFA contract
 /// playlisting and licensing.
-contract PFACollection is PFA, IPFACollection, ERC721 {
+contract PFACollection is IERC20Payable, PFA, IPFACollection, ERC721 {
     /// @notice Emitted when a payment is sent to a PFA item within
     /// this collection.
     event Payment(
@@ -135,10 +137,10 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
     /// of this contract, records a grant timestamp on chain which is
     /// read by decentralized distribution network (DDN) microservices
     /// to decrypt and serve the associated content for the tokenURI.
-    function access(
+    function accessNative(
         uint256 tokenId_,
         address recipient_
-    ) public payable override nonReentrant afterInit {
+    ) internal afterInit {
         SHARE protocol = SHARE(shareContractAddress());
         address itemAddress = _addresses.value[_currentAddressIndex];
         PFA item = PFA(itemAddress);
@@ -210,6 +212,105 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
         _transactionCount++;
     }
 
+    function accessERC20(
+        uint256 tokenId_,
+        address recipient_
+    ) internal afterInit {
+        IERC20 token = IERC20(_erc20ContractAddress);
+        SHARE protocol = SHARE(shareContractAddress());
+        address itemAddress = _addresses.value[_currentAddressIndex];
+        PFA item = PFA(itemAddress);
+        address owner = owner(); /* collection owner */
+        address itemOwner = item.owner();
+        // This function requires that the caller has approved
+        // a deduction within the USDC contract with this
+        // contract address as the spending entity.
+        require(
+            token.allowance(msg.sender, address(this)) >= _pricePerAccess.value,
+            "SHARE045"
+        );
+        // Transfer the payment value to this contract so that it
+        // can make a subsequent call to a downstream PFA.
+        require(
+            token.transferFrom(
+                msg.sender,
+                address(this),
+                _pricePerAccess.value
+            ),
+            "SHARE044"
+        );
+
+        _currentAddressIndex =
+            (_currentAddressIndex + 1) %
+            (_addresses.value.length);
+        if (
+            protocol.isApprovedBuild(
+                itemOwner,
+                CodeVerification.BuildType.WALLET
+            ) ||
+            protocol.isApprovedBuild(
+                itemOwner,
+                CodeVerification.BuildType.SPLIT
+            )
+        ) {
+            // Approve the PFA to spend the payment value
+            uint256 payment = item.pricePerAccess();
+            require(token.approve(itemAddress, payment), "SHARE044");
+            // Call the payable function.
+            (bool itemPaymentSuccess, ) = payable(address(item)).call{value: 0}(
+                abi.encodeWithSignature(
+                    "access(uint256,address)",
+                    tokenId_,
+                    recipient_
+                )
+            );
+            if (itemPaymentSuccess) {
+                emit Payment(
+                    msg.sender,
+                    address(item),
+                    _currentAddressIndex,
+                    payment
+                );
+            } else {
+                emit ItemPaymentSkipped(itemOwner, address(item));
+            }
+            // Pay the collection owner
+            require(
+                token.transfer(
+                    owner,
+                    _pricePerAccess.value - item.pricePerAccess()
+                ),
+                "SHARE044"
+            );
+            (bool ownerPaymentSuccess, ) = payable(owner).call{value: 0}("");
+            require(ownerPaymentSuccess, "SHARE021");
+            emit Payment(
+                msg.sender,
+                owner,
+                _currentAddressIndex,
+                _pricePerAccess.value - item.pricePerAccess()
+            );
+            _grantTimestamps[recipient_] = block.timestamp;
+            emit Grant(recipient_, UNIT_TOKEN_INDEX);
+        } else {
+            emit ItemPaymentSkipped(itemOwner, address(item));
+        }
+        _transactionCount++;
+    }
+
+    function access(
+        uint256 tokenId_,
+        address recipient_
+    ) public payable override nonReentrant afterInit {
+        if (_erc20ContractAddress == address(0)) {
+            require(msg.value >= _pricePerAccess.value, "SHARE005");
+            accessNative(tokenId_, recipient_);
+        } else {
+            require(msg.value == 0, "SHARE047");
+            accessERC20(tokenId_, recipient_);
+        }
+    }
+
     /// @notice Returns true if `account_` address is included in the
     /// payout distribution table of the collection.
     /// @dev Table for storing addresses is write-once (immutable
@@ -243,10 +344,11 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
 
     function supportsInterface(
         bytes4 interfaceId
-    ) public view virtual override returns (bool) {
+    ) public view virtual override(ERC721) returns (bool) {
         return
             interfaceId == type(IERC165).interfaceId ||
             interfaceId == type(IERC721).interfaceId ||
-            interfaceId == type(IPFA).interfaceId;
+            interfaceId == type(IPFA).interfaceId ||
+            interfaceId == type(IERC20Payable).interfaceId;
     }
 }
