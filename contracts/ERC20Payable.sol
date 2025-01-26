@@ -26,6 +26,15 @@ abstract contract ERC20Payable is IERC20Payable {
         return _erc20ContractAddress;
     }
 
+    function setERC20ContractAddress(address contractAddress_) internal {
+        require(
+            contractAddress_ != address(0),
+            "Invalid ERC20 contract address"
+        );
+        _erc20ContractAddress = contractAddress_;
+        _erc20Token = IERC20(contractAddress_);
+    }
+
     function isERC20Payable() public view returns (bool) {
         return _erc20ContractAddress != address(0);
     }
@@ -40,7 +49,7 @@ abstract contract ERC20Payable is IERC20Payable {
         require(
             _erc20Token.allowance(tokenOwner_, tokenSpender_) >=
                 totalTokenAmount_,
-            "SHARE045"
+            "SHARE050"
         );
         require(
             _erc20Token.transferFrom(
@@ -52,25 +61,20 @@ abstract contract ERC20Payable is IERC20Payable {
         );
         require(
             _erc20Token.approve(callableContractAddress_, callableTokenAmount_),
-            "SHARE046"
+            "SHARE049"
         );
     }
 
     function _transferERC20FromSender(
-        address tokenOwner_,
         address tokenRecipient_,
         uint256 tokenAmount_
     ) internal {
         require(
-            _erc20Token.allowance(tokenOwner_, address(this)) >= tokenAmount_,
-            "SHARE045"
+            _erc20Token.allowance(msg.sender, address(this)) >= tokenAmount_,
+            "SHARE050"
         );
         require(
-            _erc20Token.transferFrom(
-                tokenOwner_,
-                tokenRecipient_,
-                tokenAmount_
-            ),
+            _erc20Token.transferFrom(msg.sender, tokenRecipient_, tokenAmount_),
             "SHARE048"
         );
     }

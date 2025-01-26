@@ -346,7 +346,7 @@ contract SL2RD is
                 // from the ERC20 token.
                 require(
                     _erc20Token.transfer(recipient, paymentValue),
-                    "SHARE044"
+                    "SHARE048"
                 );
             } else {
                 payable(recipient).transfer(paymentValue);
@@ -523,11 +523,6 @@ contract SL2RD is
     function setERC20ContractAddress(
         address contractAddress_
     ) external onlyOwner {
-        require(
-            contractAddress_ != address(0),
-            "Invalid ERC20 contract address"
-        );
-        _erc20ContractAddress = contractAddress_;
-        _erc20Token = IERC20(contractAddress_);
+        this.setERC20ContractAddress(contractAddress_);
     }
 }

@@ -92,11 +92,7 @@ contract PFAUnit is ERC721, PFA {
         // split contracts, making subsequent calls to
         // `call` on the payeeAddress address safe.
         address payeeAddress = owner();
-        _transferERC20FromSender(
-            msg.sender,
-            payeeAddress,
-            _pricePerAccess.value
-        );
+        _transferERC20FromSender(payeeAddress, _pricePerAccess.value);
         // A PFA contract may only push revenue
         // to a wallet or a SHARE protocol split contract.
         // Therefore, the only other valid build type is
@@ -117,7 +113,7 @@ contract PFAUnit is ERC721, PFA {
                 (bool success, ) = payable(payeeAddress).call{
                     value: ERC20_PAYABLE_CALL_VALUE
                 }("");
-                require(success, "SHARE044");
+                require(success, "SHARE046");
             }
         }
         _grantTimestamps[recipient_] = block.timestamp;
@@ -131,7 +127,7 @@ contract PFAUnit is ERC721, PFA {
         address recipient_
     ) public payable override nonReentrant afterInit {
         if (this.isERC20Payable()) {
-            require(msg.value == ERC20_PAYABLE_CALL_VALUE, "SHARE047");
+            require(msg.value == ERC20_PAYABLE_CALL_VALUE, "SHARE051");
             accessUsingERC20Token(tokenId_, recipient_);
         } else {
             require(msg.value >= _pricePerAccess.value, "SHARE005");

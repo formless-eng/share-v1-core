@@ -221,11 +221,7 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
         PFA item = PFA(itemAddress);
         address owner = owner(); /* collection owner */
         address itemOwner = item.owner();
-        _transferERC20FromSender(
-            msg.sender,
-            address(this),
-            _pricePerAccess.value
-        );
+        _transferERC20FromSender(address(this), _pricePerAccess.value);
         _currentAddressIndex =
             (_currentAddressIndex + 1) %
             (_addresses.value.length);
@@ -268,7 +264,7 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
                     owner,
                     _pricePerAccess.value - item.pricePerAccess()
                 ),
-                "SHARE044"
+                "SHARE048"
             );
             (bool ownerPaymentSuccess, ) = payable(owner).call{
                 value: ERC20_PAYABLE_CALL_VALUE

@@ -163,11 +163,15 @@ The command above deploys the contracts as specified in `2_SL2RD_migration.js`.
 - `SHARE041` : `The sender of this transaction is not approved for transferring tokens from the specified address and cannot be automatically approved.`
 - `SHARE042` : `The provided ERC20 contract address is invalid. Please provide a non-zero address.`
 - `SHARE043` : `Batch size must be greater than zero.`
-- `SHARE044` : `ERC20 payable access call did not succeed.`
-- `SHARE045` : `ERC20 allowance is insufficient.`
-- `SHARE046` : `ERC20 approve call did not succeed.`
-- `SHARE047` : `msg.value must be 0 when using ERC20 tokens.`
-- `SHARE048` : `ERC20 transfer call did not succeed.`
+
+- `SHARE044` : `Failed to approve ERC20 transfer to PFA contract.`
+- `SHARE045` : `Failed to transfer ERC20 to PFA contract owner.`
+- `SHARE046` : `Failed to execute call function on downstream payee address.`
+- `SHARE047` : `Failed to transfer ERC20 to selected shareholder node.`
+- `SHARE048` : `Failed to transfer ERC20 to recipient address.`
+- `SHARE049` : `Failed to approve ERC20 transfer for callable contract.`
+- `SHARE050` : `ERC20 allowance is insufficient to execute transfer.`
+- `SHARE051` : `Value sent to contract must be zero when using ERC20.`
 
 ## Audits and Formal Verification
 

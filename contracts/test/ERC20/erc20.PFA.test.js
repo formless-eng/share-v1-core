@@ -85,7 +85,7 @@ contract("PFAUnit", (accounts) => {
       );
     } catch (error) {
       console.log(error);
-      assert(error.message.includes("SHARE045"));
+      assert(error.message.includes("SHARE050"));
       insufficientValueWeiExceptionThrown = true;
     }
     assert(insufficientValueWeiExceptionThrown);

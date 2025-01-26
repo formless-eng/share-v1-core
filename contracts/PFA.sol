@@ -177,11 +177,7 @@ abstract contract PFA is ERC20Payable, IPFA, LimitedOwnable {
         require(_supportsLicensing.value, "SHARE018");
         if (this.isERC20Payable()) {
             require(msg.value == ERC20_PAYABLE_CALL_VALUE, "SHARE023");
-            _transferERC20FromSender(
-                msg.sender,
-                owner(),
-                _pricePerLicense.value
-            );
+            _transferERC20FromSender(owner(), _pricePerLicense.value);
         } else {
             // https://github.com/formless-eng/share/issues/1471
             require(msg.value == _pricePerLicense.value, "SHARE023");
@@ -204,11 +200,6 @@ abstract contract PFA is ERC20Payable, IPFA, LimitedOwnable {
     function setERC20ContractAddress(
         address contractAddress_
     ) external onlyOwner {
-        require(
-            contractAddress_ != address(0),
-            "Invalid ERC20 contract address"
-        );
-        _erc20ContractAddress = contractAddress_;
-        _erc20Token = IERC20(contractAddress_);
+        this.setERC20ContractAddress(contractAddress_);
     }
 }
