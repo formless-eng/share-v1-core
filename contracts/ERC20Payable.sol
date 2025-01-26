@@ -26,7 +26,7 @@ abstract contract ERC20Payable is IERC20Payable {
         return _erc20ContractAddress;
     }
 
-    function setERC20ContractAddress(address contractAddress_) internal {
+    function _setERC20ContractAddress(address contractAddress_) internal {
         require(
             contractAddress_ != address(0),
             "Invalid ERC20 contract address"

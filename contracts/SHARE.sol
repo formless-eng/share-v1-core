@@ -160,7 +160,7 @@ contract SHARE is ERC20Payable, Ownable, ReentrancyGuard {
         bool useERC20 = assetUsesERC20(contractAddress_);
 
         if (useERC20) {
-            require(msg.value == ERC20_PAYABLE_CALL_VALUE, "SHARE047");
+            require(msg.value == ERC20_PAYABLE_CALL_VALUE, "SHARE051");
             _transferERC20ThenApprove(
                 msg.sender,
                 address(this),
@@ -240,7 +240,7 @@ contract SHARE is ERC20Payable, Ownable, ReentrancyGuard {
         bool useERC20 = assetUsesERC20(licenseeContract_);
         IPFA asset = IPFA(licensorContract_);
         if (useERC20) {
-            require(msg.value == ERC20_PAYABLE_CALL_VALUE, "SHARE047");
+            require(msg.value == ERC20_PAYABLE_CALL_VALUE, "SHARE051");
             _transferERC20ThenApprove(
                 msg.sender,
                 address(this),
@@ -391,6 +391,6 @@ contract SHARE is ERC20Payable, Ownable, ReentrancyGuard {
     function setERC20ContractAddress(
         address contractAddress_
     ) external onlyOwner {
-        this.setERC20ContractAddress(contractAddress_);
+        _setERC20ContractAddress(contractAddress_);
     }
 }

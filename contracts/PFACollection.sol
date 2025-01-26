@@ -289,7 +289,7 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
         address recipient_
     ) public payable override nonReentrant afterInit {
         if (this.isERC20Payable()) {
-            require(msg.value == ERC20_PAYABLE_CALL_VALUE, "SHARE047");
+            require(msg.value == ERC20_PAYABLE_CALL_VALUE, "SHARE051");
             accessUsingERC20Token(tokenId_, recipient_);
         } else {
             require(msg.value >= _pricePerAccess.value, "SHARE005");

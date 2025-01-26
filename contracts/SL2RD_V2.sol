@@ -396,7 +396,7 @@ contract SL2RD_V2 is LimitedOwnable, ERC20, ERC20Payable {
                         selectedShareholderNode.shareholderAddress,
                         paymentValue
                     ),
-                    "SHARE047"
+                    "SHARE051"
                 );
             } else {
                 payable(selectedShareholderNode.shareholderAddress).transfer(
@@ -500,6 +500,6 @@ contract SL2RD_V2 is LimitedOwnable, ERC20, ERC20Payable {
     function setERC20ContractAddress(
         address contractAddress_
     ) external onlyOwner {
-        this.setERC20ContractAddress(contractAddress_);
+        _setERC20ContractAddress(contractAddress_);
     }
 }

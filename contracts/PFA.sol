@@ -200,6 +200,6 @@ abstract contract PFA is ERC20Payable, IPFA, LimitedOwnable {
     function setERC20ContractAddress(
         address contractAddress_
     ) external onlyOwner {
-        this.setERC20ContractAddress(contractAddress_);
+        _setERC20ContractAddress(contractAddress_);
     }
 }
