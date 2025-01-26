@@ -86,7 +86,7 @@ contract("ERC20 payable SL2RD", (accounts) => {
         from: payerAddress,
         to: splitContract.address,
         value: web3.utils.toWei("0", "ether"),
-        gas: 100000,
+        gas: 200000,
       });
 
       // Confirm that the balance of the payee within the SL2RD contract
@@ -173,7 +173,7 @@ contract("ERC20 payable SL2RD", (accounts) => {
           to: splitContract.address,
           from: accounts[DEFAULT_ADDRESS_INDEX],
           value: web3.utils.toWei("0", "ether"),
-          gas: 100000,
+          gas: 200000,
         })
         .then(function (receipt) {
           console.log(receipt);

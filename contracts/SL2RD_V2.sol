@@ -353,14 +353,13 @@ contract SL2RD_V2 is LimitedOwnable, ERC20, ERC20Payable {
     /// determined by the payment batch size parameter.
     receive() external payable nonReentrant afterInit {
         uint256 paymentValue;
-        if (isERC20Payable()) {
+        if (this.isERC20Payable()) {
             paymentValue =
                 _erc20Token.balanceOf(address(this)) /
                 _paymentBatchSize;
         } else {
             paymentValue = msg.value / _paymentBatchSize;
         }
-
         for (uint256 i = 0; i < _paymentBatchSize; i++) {
             ShareholderNode memory selectedShareholderNode = _shareholderNodes[
                 _shareholdersSelectedNodeId
@@ -384,13 +383,11 @@ contract SL2RD_V2 is LimitedOwnable, ERC20, ERC20Payable {
                 }
             }
             _selectedShareholderPaymentCount += 1;
-            if (isERC20Payable()) {
-                // A transfer to a split has exactly 1 hop:
-                // The transfer from the split to a recipient wallet.
-                // Therefore we know the recipient is a SHARE
-                // approved wallet and not a contract.
-                //
-                // The entire amount held in the SL2RD contract
+            if (this.isERC20Payable()) {
+                // SL2RD_V2 transfers are guaranteed to be
+                // approved wallets and not a contract, therefore
+                // there is no need to execute a `call`.
+                // Also, the entire amount held in the SL2RD_V2 contract
                 // is distributed, e.g. the contract never holds a
                 // balance and immediately moves the money to a payee
                 // from the ERC20 token.
@@ -401,23 +398,17 @@ contract SL2RD_V2 is LimitedOwnable, ERC20, ERC20Payable {
                     ),
                     "SHARE044"
                 );
-                emit Payment(
-                    msg.sender,
-                    selectedShareholderNode.shareholderAddress,
-                    _paymentBatchSize,
-                    paymentValue
-                );
             } else {
                 payable(selectedShareholderNode.shareholderAddress).transfer(
                     paymentValue
                 );
-                emit Payment(
-                    msg.sender,
-                    selectedShareholderNode.shareholderAddress,
-                    _paymentBatchSize,
-                    paymentValue
-                );
             }
+            emit Payment(
+                msg.sender,
+                selectedShareholderNode.shareholderAddress,
+                _paymentBatchSize,
+                paymentValue
+            );
         }
     }
 

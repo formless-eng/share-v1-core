@@ -127,6 +127,15 @@ contract SHARE is ERC20Payable, Ownable, ReentrancyGuard {
         return pricePerLicense + protocolFee;
     }
 
+    function assetUsesERC20(
+        address contractAddress_
+    ) public view returns (bool) {
+        return
+            ERC165(contractAddress_).supportsInterface(
+                type(IERC20Payable).interfaceId
+            ) && IERC20Payable(contractAddress_).isERC20Payable();
+    }
+
     /// @notice Instantiates the creator contract and calls the
     /// access method. If successful, this transaction produces a
     /// grant awarded to the sender with a corresponding TTL.
@@ -148,14 +157,9 @@ contract SHARE is ERC20Payable, Ownable, ReentrancyGuard {
 
         IPFA asset = IPFA(contractAddress_);
         uint256 grossPrice = grossPricePerAccess(contractAddress_, tokenId_);
-        bool useERC20 = false;
+        bool useERC20 = assetUsesERC20(contractAddress_);
 
-        if (
-            ERC165(contractAddress_).supportsInterface(
-                type(IERC20Payable).interfaceId
-            ) && IERC20Payable(contractAddress_).isERC20Payable()
-        ) {
-            useERC20 = true;
+        if (useERC20) {
             require(msg.value == ERC20_PAYABLE_CALL_VALUE, "SHARE047");
             _transferERC20ThenApprove(
                 msg.sender,
@@ -233,15 +237,9 @@ contract SHARE is ERC20Payable, Ownable, ReentrancyGuard {
         );
         require(msg.sender == Ownable(licenseeContract_).owner(), "SHARE016");
         uint256 grossPrice = grossPricePerLicense(licensorContract_);
-        bool useERC20 = false;
-
-        if (
-            ERC165(licenseeContract_).supportsInterface(
-                type(IERC20Payable).interfaceId
-            ) && IERC20Payable(licenseeContract_).isERC20Payable()
-        ) {
-            useERC20 = true;
-            IPFA asset = IPFA(licensorContract_);
+        bool useERC20 = assetUsesERC20(licenseeContract_);
+        IPFA asset = IPFA(licensorContract_);
+        if (useERC20) {
             require(msg.value == ERC20_PAYABLE_CALL_VALUE, "SHARE047");
             _transferERC20ThenApprove(
                 msg.sender,
@@ -253,7 +251,6 @@ contract SHARE is ERC20Payable, Ownable, ReentrancyGuard {
             asset.license{value: ERC20_PAYABLE_CALL_VALUE}(licenseeContract_);
         } else {
             require(msg.value >= grossPrice, "SHARE024");
-            IPFA asset = IPFA(licensorContract_);
             asset.license{value: asset.pricePerLicense()}(licenseeContract_);
         }
         _licenseTimestamps[licensorContract_][licenseeContract_] = block

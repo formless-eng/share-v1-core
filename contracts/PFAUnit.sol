@@ -63,7 +63,7 @@ contract PFAUnit is ERC721, PFA {
     /// of this contract, records a grant timestamp on chain which is
     /// read by decentralized distribution network (DDN) microservices
     /// to decrypt and serve the associated content for the tokenURI.
-    function accessNative(
+    function accessUsingNativeToken(
         uint256 tokenId_,
         address recipient_
     ) internal afterInit {
@@ -82,7 +82,7 @@ contract PFAUnit is ERC721, PFA {
         _transactionCount++;
     }
 
-    function accessERC20(
+    function accessUsingERC20Token(
         uint256 tokenId_,
         address recipient_
     ) internal afterInit {
@@ -130,12 +130,12 @@ contract PFAUnit is ERC721, PFA {
         uint256 tokenId_,
         address recipient_
     ) public payable override nonReentrant afterInit {
-        if (isERC20Payable()) {
+        if (this.isERC20Payable()) {
             require(msg.value == ERC20_PAYABLE_CALL_VALUE, "SHARE047");
-            accessERC20(tokenId_, recipient_);
+            accessUsingERC20Token(tokenId_, recipient_);
         } else {
             require(msg.value >= _pricePerAccess.value, "SHARE005");
-            accessNative(tokenId_, recipient_);
+            accessUsingNativeToken(tokenId_, recipient_);
         }
     }
 

@@ -137,7 +137,7 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
     /// of this contract, records a grant timestamp on chain which is
     /// read by decentralized distribution network (DDN) microservices
     /// to decrypt and serve the associated content for the tokenURI.
-    function accessNative(
+    function accessUsingNativeToken(
         uint256 tokenId_,
         address recipient_
     ) internal afterInit {
@@ -212,7 +212,7 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
         _transactionCount++;
     }
 
-    function accessERC20(
+    function accessUsingERC20Token(
         uint256 tokenId_,
         address recipient_
     ) internal afterInit {
@@ -292,12 +292,12 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
         uint256 tokenId_,
         address recipient_
     ) public payable override nonReentrant afterInit {
-        if (isERC20Payable()) {
+        if (this.isERC20Payable()) {
             require(msg.value == ERC20_PAYABLE_CALL_VALUE, "SHARE047");
-            accessERC20(tokenId_, recipient_);
+            accessUsingERC20Token(tokenId_, recipient_);
         } else {
             require(msg.value >= _pricePerAccess.value, "SHARE005");
-            accessNative(tokenId_, recipient_);
+            accessUsingNativeToken(tokenId_, recipient_);
         }
     }
 
@@ -334,7 +334,7 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
 
     function supportsInterface(
         bytes4 interfaceId
-    ) public view virtual override(ERC721) returns (bool) {
+    ) public view virtual override returns (bool) {
         return
             interfaceId == type(IERC165).interfaceId ||
             interfaceId == type(IERC721).interfaceId ||
