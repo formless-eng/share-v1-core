@@ -488,6 +488,10 @@ contract SL2RD_V2 is LimitedOwnable, ERC20, ERC20Payable {
         asset.transferOwnership(msg.sender);
     }
 
+    /// @notice Returns whether the contract implements a given interface
+    /// @dev Overrides ERC721's supportsInterface to include IERC20Payable interface
+    /// @param interfaceId The interface identifier, as specified in ERC-165
+    /// @return bool True if the contract implements the interface, false otherwise.
     function supportsInterface(
         bytes4 interfaceId
     ) public view virtual returns (bool) {

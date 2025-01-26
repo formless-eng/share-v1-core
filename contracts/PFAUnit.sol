@@ -82,46 +82,52 @@ contract PFAUnit is ERC721, PFA {
         _transactionCount++;
     }
 
+    /// @notice Processes an access request using ERC20 tokens as payment
+    /// @dev Handles the payment flow when users pay with ERC20 tokens (e.g., USDC) instead of native tokens
+    /// @param tokenId_ The ID of the token being accessed (always 0 for PFAUnit)
+    /// @param recipient_ The address that will receive the access grant
     function accessUsingERC20Token(
         uint256 tokenId_,
         address recipient_
     ) internal afterInit {
         SHARE protocol = SHARE(shareContractAddress());
-        // As a LimitedOwnable, the owner address is
-        // already restricted to approved digital wallets and
-        // split contracts, making subsequent calls to
-        // `call` on the payeeAddress address safe.
+        // Get the payment recipient address (either a wallet or split contract)
         address payeeAddress = owner();
+
+        // Transfer ERC20 tokens from the sender to the payee.
         _transferERC20FromSender(payeeAddress, _pricePerAccess.value);
-        // A PFA contract may only push revenue
-        // to a wallet or a SHARE protocol split contract.
-        // Therefore, the only other valid build type is
-        // SPLIT.
+
+        // If the payee is a split contract (rather than a simple wallet),
+        // additional processing is required to distribute the payment.
         if (
             protocol.isApprovedBuild(
                 payeeAddress,
                 CodeVerification.BuildType.SPLIT
             )
         ) {
-            // If this contract is responsible for paying a contract,
-            // this contract transfers the ERC20 token amount to itself,
-            // within the USDC contract, then executes approve and
-            // call on the downstream contract.
-            {
-                // Call downstream contract payable
-                // function to execute transfer.
-                (bool success, ) = payable(payeeAddress).call{
-                    value: ERC20_PAYABLE_CALL_VALUE
-                }("");
-                require(success, "SHARE046");
-            }
+            // For split contracts, we need to trigger their
+            // payment distribution logic. This is done by sending a
+            // zero value of tge native token (ERC20_PAYABLE_CALL_VALUE)
+            // which activates the split contract's payable function.
+            (bool success, ) = payable(payeeAddress).call{
+                value: ERC20_PAYABLE_CALL_VALUE
+            }("");
+            require(success, "SHARE046");
         }
+
+        // Record the timestamp of when access was granted
         _grantTimestamps[recipient_] = block.timestamp;
+
+        // Emit events to log the payment and access grant
         emit PaymentToOwner(payeeAddress, _pricePerAccess.value);
         emit Grant(recipient_, tokenId_);
         _transactionCount++;
     }
 
+    /// @notice Processes an access request for the PFA unit
+    /// @dev This function handles both native token and ERC20 token payments
+    /// @param tokenId_ The ID of the token being accessed (always 0 for PFAUnit)
+    /// @param recipient_ The address that will receive the access grant.
     function access(
         uint256 tokenId_,
         address recipient_
@@ -156,6 +162,12 @@ contract PFAUnit is ERC721, PFA {
         _tokenURI = tokenURI_;
     }
 
+    /// @notice Returns whether the contract implements a given interface
+    /// @dev Overrides ERC721's supportsInterface to include IPFA and
+    /// IERC20Payable interfaces.
+    /// @param interfaceId The interface identifier, as specified in ERC-165
+    /// @return bool True if the contract implements the interface,
+    /// false otherwise
     function supportsInterface(
         bytes4 interfaceId
     ) public view virtual override(ERC721) returns (bool) {

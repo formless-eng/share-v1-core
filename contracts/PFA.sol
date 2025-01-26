@@ -179,7 +179,6 @@ abstract contract PFA is ERC20Payable, IPFA, LimitedOwnable {
             require(msg.value == ERC20_PAYABLE_CALL_VALUE, "SHARE023");
             _transferERC20FromSender(owner(), _pricePerLicense.value);
         } else {
-            // https://github.com/formless-eng/share/issues/1471
             require(msg.value == _pricePerLicense.value, "SHARE023");
         }
         SHARE protocol = SHARE(shareContractAddress());
@@ -201,5 +200,10 @@ abstract contract PFA is ERC20Payable, IPFA, LimitedOwnable {
         address contractAddress_
     ) external onlyOwner {
         _setERC20ContractAddress(contractAddress_);
+    }
+
+    /// @notice Withdraws contract balance.
+    function withdraw() public nonReentrant onlyOwner {
+        payable(msg.sender).transfer(address(this).balance);
     }
 }

@@ -179,7 +179,6 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
                     recipient_
                 )
             );
-
             if (itemPaymentSuccess) {
                 emit Payment(
                     msg.sender,
@@ -212,19 +211,40 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
         _transactionCount++;
     }
 
+    /// @notice Processes an access request using ERC20 tokens as payment
+    /// @dev This internal function handles the payment distribution when using ERC20 tokens:
+    /// 1. Transfers the full payment from sender to this contract
+    /// 2. Distributes payment between the current item owner and collection owner
+    /// 3. Updates the collection state (grant timestamp, transaction count)
+    /// @param tokenId_ The token ID being accessed (must be UNIT_TOKEN_INDEX)
+    /// @param recipient_ The address that will receive the access grant
     function accessUsingERC20Token(
         uint256 tokenId_,
         address recipient_
     ) internal afterInit {
+        address owner = owner();
         SHARE protocol = SHARE(shareContractAddress());
+
+        // Determine the immediately payable child item
+        // and its respective owner, subsequently,
+        // increment the child item index to the next item
+        // for future payments. This algorithm performs round-robin
+        // distribution of payments to child items.
         address itemAddress = _addresses.value[_currentAddressIndex];
         PFA item = PFA(itemAddress);
-        address owner = owner(); /* collection owner */
         address itemOwner = item.owner();
-        _transferERC20FromSender(address(this), _pricePerAccess.value);
         _currentAddressIndex =
             (_currentAddressIndex + 1) %
             (_addresses.value.length);
+
+        // Transfer the full payment from sender to this contract,
+        // the contract then distributes the payment
+        // to the licensed child item and the collection owner.
+        _transferERC20FromSender(
+            address(this) /* tokenRecipient_ */,
+            _pricePerAccess.value /* tokenAmount_ */
+        );
+
         if (
             protocol.isApprovedBuild(
                 itemOwner,
@@ -235,8 +255,9 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
                 CodeVerification.BuildType.SPLIT
             )
         ) {
-            // Approve the PFA to spend the payment value
-            // and call the payable function.
+            // Approve the child contract to spend the payment value
+            // and call the payable `access` function on the
+            // child contract.
             uint256 payment = item.pricePerAccess();
             require(_erc20Token.approve(itemAddress, payment), "SHARE044");
             (bool itemPaymentSuccess, ) = payable(address(item)).call{
@@ -249,6 +270,8 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
                 )
             );
             if (itemPaymentSuccess) {
+                // Emit payment event for the child item
+                // to indicate successful payment.
                 emit Payment(
                     msg.sender,
                     address(item),
@@ -258,7 +281,8 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
             } else {
                 emit ItemPaymentSkipped(itemOwner, address(item));
             }
-            // Finally, pay the collection owner
+            // Distribute the remaining payment to the collection owner
+            // and update the grant timestamp.
             require(
                 _erc20Token.transfer(
                     owner,
@@ -270,12 +294,15 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
                 value: ERC20_PAYABLE_CALL_VALUE
             }("");
             require(ownerPaymentSuccess, "SHARE021");
+            // Emit payment event for the collection owner
+            // to indicate successful payment.
             emit Payment(
                 msg.sender,
                 owner,
                 _currentAddressIndex,
                 _pricePerAccess.value - item.pricePerAccess()
             );
+
             _grantTimestamps[recipient_] = block.timestamp;
             emit Grant(recipient_, UNIT_TOKEN_INDEX);
         } else {
@@ -284,6 +311,16 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
         _transactionCount++;
     }
 
+    /// @notice If called with a value equal to the price per access
+    /// of this contract, records a grant timestamp on chain which is
+    /// read by decentralized distribution network (DDN) microservices
+    /// to decrypt and serve the associated content for the tokenURI.
+    /// @param tokenId_ The token ID to access (must be UNIT_TOKEN_INDEX)
+    /// @param recipient_ The address that will receive access to the content
+    /// @dev Handles both ERC20 and native token payments through separate internal functions
+    /// @dev Error codes:
+    ///      SHARE051: Invalid msg.value for ERC20 payment
+    ///      SHARE005: Insufficient payment amount for native token
     function access(
         uint256 tokenId_,
         address recipient_
