@@ -16,7 +16,7 @@ import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import "./libraries/Immutable.sol";
 import "./LimitedOwnable.sol";
 import "./OperatorRegistry.sol";
-import "./interfaces/IERC20Payable.sol";
+import "./ERC20Payable.sol";
 
 /// @title Swift Liquid Rotating Royalty Distributor (SL2RD).
 /// @author john-paul@formless.xyz, brandon@formless.xyz
@@ -30,7 +30,7 @@ import "./interfaces/IERC20Payable.sol";
 contract SL2RD is
     LimitedOwnable,
     ERC721("Swift Liquid Rotating Royalty Distributor", "SL2RD"),
-    IERC20Payable
+    ERC20Payable
 {
     /// @notice Emitted when a payment is sent to a stakeholder
     /// slot listed within this payment distribution contract.
@@ -63,9 +63,6 @@ contract SL2RD is
 
     OperatorRegistry private _shareOperatorRegistry;
     SHARE private _protocol;
-
-    // ERC20 contract address (e.g., for USDC payments)
-    address private _erc20ContractAddress;
     uint256 private _paymentBatchSize = 1;
 
     /// @notice Modifier to allow only the owner or a verified operator
@@ -326,29 +323,20 @@ contract SL2RD is
     /// stakeholders specified in this contract using the SL2RD
     /// method described above.
     receive() external payable nonReentrant afterInit {
-        IERC20 token = IERC20(_erc20ContractAddress);
         uint256 paymentValue;
-        if (_erc20ContractAddress != address(0)) {
-            paymentValue = token.balanceOf(address(this)) / _paymentBatchSize;
+        if (isERC20Payable()) {
+            paymentValue =
+                _erc20Token.balanceOf(address(this)) /
+                _paymentBatchSize;
         } else {
             paymentValue = msg.value / _paymentBatchSize;
         }
-
         for (uint256 i = 0; i < _paymentBatchSize; i++) {
             address recipient = ownerOf(_tokenIds.value[_currentTokenIdIndex]);
             _currentTokenIdIndex =
                 (_currentTokenIdIndex + 1) %
                 (_tokenIds.value.length);
-
-            if (_erc20ContractAddress == address(0)) {
-                payable(recipient).transfer(paymentValue);
-                emit Payment(
-                    msg.sender,
-                    recipient,
-                    _tokenIds.value[_currentTokenIdIndex],
-                    paymentValue
-                );
-            } else {
+            if (isERC20Payable()) {
                 // A transfer to a split has exactly 1 hop:
                 // The transfer from the split to a recipient wallet.
                 // Therefore we know the recipient is a SHARE
@@ -358,7 +346,18 @@ contract SL2RD is
                 // is distributed, e.g. the contract never holds a
                 // balance and immediately moves the money to a payee
                 // from the ERC20 token.
-                require(token.transfer(recipient, paymentValue), "SHARE044");
+                require(
+                    _erc20Token.transfer(recipient, paymentValue),
+                    "SHARE044"
+                );
+                emit Payment(
+                    msg.sender,
+                    recipient,
+                    _tokenIds.value[_currentTokenIdIndex],
+                    paymentValue
+                );
+            } else {
+                payable(recipient).transfer(paymentValue);
                 emit Payment(
                     msg.sender,
                     recipient,
@@ -512,19 +511,6 @@ contract SL2RD is
         asset.transferOwnership(msg.sender);
     }
 
-    /// @notice Sets the ERC20 contract address (e.g., for USDC payments).
-    function setERC20ContractAddress(
-        address contractAddress_
-    ) public override afterInit onlyOwner nonReentrant {
-        require(contractAddress_ != address(0), "SHARE042");
-        _erc20ContractAddress = contractAddress_;
-    }
-
-    /// @notice Gets the ERC20 contract address used for payments.
-    function getERC20ContractAddress() external view returns (address) {
-        return _erc20ContractAddress;
-    }
-
     function supportsInterface(
         bytes4 interfaceId
     ) public view virtual override(ERC721) returns (bool) {
@@ -539,5 +525,17 @@ contract SL2RD is
     ) public onlyOwnerOrOperator {
         require(batchSize_ > 0, "SHARE043");
         _paymentBatchSize = batchSize_;
+    }
+
+    /// @notice Sets the ERC20 contract address (e.g., for USDC payments).
+    function setERC20ContractAddress(
+        address contractAddress_
+    ) external onlyOwner {
+        require(
+            contractAddress_ != address(0),
+            "Invalid ERC20 contract address"
+        );
+        _erc20ContractAddress = contractAddress_;
+        _erc20Token = IERC20(contractAddress_);
     }
 }

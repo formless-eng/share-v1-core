@@ -18,13 +18,13 @@ import "./libraries/Immutable.sol";
 import "./interfaces/IPFACollection.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "./interfaces/IERC20Payable.sol";
+import "./ERC20Payable.sol";
 
 /// @title Standard pay-for-access (PFA) collection contract.
 /// @author brandon@formless.xyz
 /// @notice This contract can be used to implement PFA contract
 /// playlisting and licensing.
-contract PFACollection is IERC20Payable, PFA, IPFACollection, ERC721 {
+contract PFACollection is PFA, IPFACollection, ERC721 {
     /// @notice Emitted when a payment is sent to a PFA item within
     /// this collection.
     event Payment(
@@ -216,30 +216,16 @@ contract PFACollection is IERC20Payable, PFA, IPFACollection, ERC721 {
         uint256 tokenId_,
         address recipient_
     ) internal afterInit {
-        IERC20 token = IERC20(_erc20ContractAddress);
         SHARE protocol = SHARE(shareContractAddress());
         address itemAddress = _addresses.value[_currentAddressIndex];
         PFA item = PFA(itemAddress);
         address owner = owner(); /* collection owner */
         address itemOwner = item.owner();
-        // This function requires that the caller has approved
-        // a deduction within the USDC contract with this
-        // contract address as the spending entity.
-        require(
-            token.allowance(msg.sender, address(this)) >= _pricePerAccess.value,
-            "SHARE045"
+        _transferERC20FromSender(
+            msg.sender,
+            address(this),
+            _pricePerAccess.value
         );
-        // Transfer the payment value to this contract so that it
-        // can make a subsequent call to a downstream PFA.
-        require(
-            token.transferFrom(
-                msg.sender,
-                address(this),
-                _pricePerAccess.value
-            ),
-            "SHARE044"
-        );
-
         _currentAddressIndex =
             (_currentAddressIndex + 1) %
             (_addresses.value.length);
@@ -254,10 +240,12 @@ contract PFACollection is IERC20Payable, PFA, IPFACollection, ERC721 {
             )
         ) {
             // Approve the PFA to spend the payment value
+            // and call the payable function.
             uint256 payment = item.pricePerAccess();
-            require(token.approve(itemAddress, payment), "SHARE044");
-            // Call the payable function.
-            (bool itemPaymentSuccess, ) = payable(address(item)).call{value: 0}(
+            require(_erc20Token.approve(itemAddress, payment), "SHARE044");
+            (bool itemPaymentSuccess, ) = payable(address(item)).call{
+                value: ERC20_PAYABLE_CALL_VALUE
+            }(
                 abi.encodeWithSignature(
                     "access(uint256,address)",
                     tokenId_,
@@ -274,15 +262,17 @@ contract PFACollection is IERC20Payable, PFA, IPFACollection, ERC721 {
             } else {
                 emit ItemPaymentSkipped(itemOwner, address(item));
             }
-            // Pay the collection owner
+            // Finally, pay the collection owner
             require(
-                token.transfer(
+                _erc20Token.transfer(
                     owner,
                     _pricePerAccess.value - item.pricePerAccess()
                 ),
                 "SHARE044"
             );
-            (bool ownerPaymentSuccess, ) = payable(owner).call{value: 0}("");
+            (bool ownerPaymentSuccess, ) = payable(owner).call{
+                value: ERC20_PAYABLE_CALL_VALUE
+            }("");
             require(ownerPaymentSuccess, "SHARE021");
             emit Payment(
                 msg.sender,
@@ -302,12 +292,12 @@ contract PFACollection is IERC20Payable, PFA, IPFACollection, ERC721 {
         uint256 tokenId_,
         address recipient_
     ) public payable override nonReentrant afterInit {
-        if (_erc20ContractAddress == address(0)) {
+        if (isERC20Payable()) {
+            require(msg.value == ERC20_PAYABLE_CALL_VALUE, "SHARE047");
+            accessERC20(tokenId_, recipient_);
+        } else {
             require(msg.value >= _pricePerAccess.value, "SHARE005");
             accessNative(tokenId_, recipient_);
-        } else {
-            require(msg.value == 0, "SHARE047");
-            accessERC20(tokenId_, recipient_);
         }
     }
 

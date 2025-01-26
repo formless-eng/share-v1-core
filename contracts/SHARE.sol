@@ -15,15 +15,16 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "./libraries/CodeVerification.sol";
 import "./interfaces/IPFA.sol";
-import "./interfaces/IERC20Payable.sol";
+import "./ERC20Payable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
 /// @title SHARE protocol contract.
 /// @author brandon@formless.xyz
 /// @notice A protocol which works in conjunction with SHARE
 /// decentralized distribution network (DDN) microservice endpoints
 /// to perform distribtion services on blockchain with creator
 /// controlled terms.
-contract SHARE is IERC20Payable, Ownable, ReentrancyGuard {
+contract SHARE is ERC20Payable, Ownable, ReentrancyGuard {
     /// @notice Emitted when a successful access grant is awarded
     /// to a recipient address for a given PFA contract.
     event Grant(
@@ -50,7 +51,6 @@ contract SHARE is IERC20Payable, Ownable, ReentrancyGuard {
     uint256 public _transactionVolume = 0;
     bool public _codeVerificationEnabled = true;
     uint256 private constant UNIT_TOKEN_INDEX = 0;
-    address internal _erc20ContractAddress;
 
     mapping(bytes32 => ApprovedBuild) internal _approvedHashes;
     mapping(address => mapping(address => uint256)) internal _grantTimestamps;
@@ -145,31 +145,29 @@ contract SHARE is IERC20Payable, Ownable, ReentrancyGuard {
                 ),
             "SHARE039"
         );
+
         IPFA asset = IPFA(contractAddress_);
         uint256 grossPrice = grossPricePerAccess(contractAddress_, tokenId_);
+        bool useERC20 = false;
 
-        if (_erc20ContractAddress == address(0)) {
-            require(msg.value >= grossPrice, "SHARE011");
-            asset.access{value: asset.pricePerAccess()}(tokenId_, msg.sender);
-        } else {
-            require(msg.value == 0, "SHARE047");
-            require(
-                IERC20(_erc20ContractAddress).allowance(
-                    msg.sender,
-                    address(this)
-                ) >= grossPrice,
-                "SHARE025"
-            );
-            IERC20(_erc20ContractAddress).transferFrom(
+        if (
+            ERC165(contractAddress_).supportsInterface(
+                type(IERC20Payable).interfaceId
+            ) && IERC20Payable(contractAddress_).isERC20Payable()
+        ) {
+            useERC20 = true;
+            require(msg.value == ERC20_PAYABLE_CALL_VALUE, "SHARE047");
+            _transferERC20ThenApprove(
                 msg.sender,
                 address(this),
-                grossPrice
-            );
-            IERC20(_erc20ContractAddress).approve(
+                grossPrice,
                 address(asset),
                 asset.pricePerAccess()
             );
-            asset.access{value: 0}(tokenId_, msg.sender);
+            asset.access{value: ERC20_PAYABLE_CALL_VALUE}(tokenId_, msg.sender);
+        } else {
+            require(msg.value >= grossPrice, "SHARE011");
+            asset.access{value: asset.pricePerAccess()}(tokenId_, msg.sender);
         }
 
         // Payout a distributor if associated with the asset.
@@ -185,14 +183,10 @@ contract SHARE is IERC20Payable, Ownable, ReentrancyGuard {
                 uint256 distributionFee = ((grossPrice -
                     asset.pricePerAccess()) * distributionFeeNumerator) /
                     distributionFeeDenominator;
-
-                if (_erc20ContractAddress == address(0)) {
-                    payable(distributor).transfer(distributionFee);
+                if (useERC20) {
+                    _erc20Token.transfer(distributor, distributionFee);
                 } else {
-                    IERC20(_erc20ContractAddress).transfer(
-                        distributor,
-                        distributionFee
-                    );
+                    payable(distributor).transfer(distributionFee);
                 }
                 emit Payment(msg.sender, distributor, distributionFee);
             }
@@ -239,32 +233,29 @@ contract SHARE is IERC20Payable, Ownable, ReentrancyGuard {
         );
         require(msg.sender == Ownable(licenseeContract_).owner(), "SHARE016");
         uint256 grossPrice = grossPricePerLicense(licensorContract_);
+        bool useERC20 = false;
 
-        if (_erc20ContractAddress == address(0)) {
-            require(msg.value >= grossPrice, "SHARE024");
+        if (
+            ERC165(licenseeContract_).supportsInterface(
+                type(IERC20Payable).interfaceId
+            ) && IERC20Payable(licenseeContract_).isERC20Payable()
+        ) {
+            useERC20 = true;
             IPFA asset = IPFA(licensorContract_);
-            asset.license{value: asset.pricePerLicense()}(licenseeContract_);
-        } else {
-            IPFA asset = IPFA(licensorContract_);
-            require(
-                IERC20(_erc20ContractAddress).allowance(
-                    msg.sender,
-                    address(this)
-                ) >= asset.pricePerLicense(),
-                "SHARE025"
-            );
-            IERC20(_erc20ContractAddress).transferFrom(
+            require(msg.value == ERC20_PAYABLE_CALL_VALUE, "SHARE047");
+            _transferERC20ThenApprove(
                 msg.sender,
                 address(this),
-                asset.pricePerLicense()
-            );
-            IERC20(_erc20ContractAddress).approve(
+                grossPrice,
                 address(licenseeContract_),
                 asset.pricePerLicense()
             );
-            asset.license{value: 0}(licenseeContract_);
+            asset.license{value: ERC20_PAYABLE_CALL_VALUE}(licenseeContract_);
+        } else {
+            require(msg.value >= grossPrice, "SHARE024");
+            IPFA asset = IPFA(licensorContract_);
+            asset.license{value: asset.pricePerLicense()}(licenseeContract_);
         }
-
         _licenseTimestamps[licensorContract_][licenseeContract_] = block
             .timestamp;
         emit License(licensorContract_, licenseeContract_);
@@ -399,13 +390,15 @@ contract SHARE is IERC20Payable, Ownable, ReentrancyGuard {
         }
     }
 
+    /// @notice Sets the ERC20 contract address (e.g., for USDC payments).
     function setERC20ContractAddress(
         address contractAddress_
-    ) external override onlyOwner {
+    ) external onlyOwner {
+        require(
+            contractAddress_ != address(0),
+            "Invalid ERC20 contract address"
+        );
         _erc20ContractAddress = contractAddress_;
-    }
-
-    function getERC20ContractAddress() external view returns (address) {
-        return _erc20ContractAddress;
+        _erc20Token = IERC20(contractAddress_);
     }
 }

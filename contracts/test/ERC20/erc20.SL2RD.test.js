@@ -19,7 +19,7 @@ function normalizeAddress(address) {
   return address.toLowerCase();
 }
 
-contract("SL2RD", (accounts) => {
+contract("ERC20 payable SL2RD", (accounts) => {
   specify("Payable with ERC20 token and single stakeholder", async () => {
     const shareContract = await SHARE.deployed();
     const operatorRegistry = await OperatorRegistry.deployed();

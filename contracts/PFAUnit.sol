@@ -17,12 +17,11 @@ import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import "./PFA.sol";
 import "./libraries/CodeVerification.sol";
 import "./libraries/Immutable.sol";
-import "./interfaces/IERC20Payable.sol";
 
 /// @title Standard pay-for-access (PFA) contract. Also implements
 /// ERC-721 standard (G_NFT).
 /// @author brandon@formless.xyz
-contract PFAUnit is IERC20Payable, ERC721, PFA {
+contract PFAUnit is ERC721, PFA {
     /// @notice Emitted when a payment is sent to the owner of this
     /// PFA.
     event PaymentToOwner(address indexed owner, uint256 value);
@@ -87,23 +86,16 @@ contract PFAUnit is IERC20Payable, ERC721, PFA {
         uint256 tokenId_,
         address recipient_
     ) internal afterInit {
-        IERC20 token = IERC20(_erc20ContractAddress);
         SHARE protocol = SHARE(shareContractAddress());
         // As a LimitedOwnable, the owner address is
         // already restricted to approved digital wallets and
         // split contracts, making subsequent calls to
         // `call` on the payeeAddress address safe.
         address payeeAddress = owner();
-        // This function requires that the caller has approved
-        // a deduction within the USDC contract with this
-        // contract address as the spending entity.
-        require(
-            token.allowance(msg.sender, address(this)) >= _pricePerAccess.value,
-            "SHARE045"
-        );
-        require(
-            token.transferFrom(msg.sender, payeeAddress, _pricePerAccess.value),
-            "SHARE044"
+        _transferERC20FromSender(
+            msg.sender,
+            payeeAddress,
+            _pricePerAccess.value
         );
         // A PFA contract may only push revenue
         // to a wallet or a SHARE protocol split contract.
@@ -122,7 +114,9 @@ contract PFAUnit is IERC20Payable, ERC721, PFA {
             {
                 // Call downstream contract payable
                 // function to execute transfer.
-                (bool success, ) = payable(payeeAddress).call{value: 0}("");
+                (bool success, ) = payable(payeeAddress).call{
+                    value: ERC20_PAYABLE_CALL_VALUE
+                }("");
                 require(success, "SHARE044");
             }
         }
@@ -136,12 +130,12 @@ contract PFAUnit is IERC20Payable, ERC721, PFA {
         uint256 tokenId_,
         address recipient_
     ) public payable override nonReentrant afterInit {
-        if (_erc20ContractAddress == address(0)) {
+        if (isERC20Payable()) {
+            require(msg.value == ERC20_PAYABLE_CALL_VALUE, "SHARE047");
+            accessERC20(tokenId_, recipient_);
+        } else {
             require(msg.value >= _pricePerAccess.value, "SHARE005");
             accessNative(tokenId_, recipient_);
-        } else {
-            require(msg.value == 0, "SHARE047");
-            accessERC20(tokenId_, recipient_);
         }
     }
 

@@ -14,14 +14,14 @@ import "./libraries/Immutable.sol";
 import "./LimitedOwnable.sol";
 import "./interfaces/IPFA.sol";
 import "./interfaces/IPFACollection.sol";
-import "./interfaces/IERC20Payable.sol";
+import "./ERC20Payable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /// @title Standard pay-for-access (PFA) abstract base.
 /// @author brandon@formless.xyz
 /// @notice This base contract is a base implementation of the IPFA
 /// interface.
-abstract contract PFA is IERC20Payable, IPFA, LimitedOwnable {
+abstract contract PFA is ERC20Payable, IPFA, LimitedOwnable {
     /// @notice Emitted when a successful access grant is awarded
     /// to a recipient address.
     event Grant(address indexed recipient, uint256 indexed tokenId);
@@ -41,7 +41,6 @@ abstract contract PFA is IERC20Payable, IPFA, LimitedOwnable {
 
     mapping(address => uint256) internal _grantTimestamps;
     mapping(address => uint256) internal _licenseTimestamps;
-    address internal _erc20ContractAddress;
 
     /// @notice Returns non-zero value if this asset requires
     /// payment for access. Zero otherwise.
@@ -176,21 +175,16 @@ abstract contract PFA is IERC20Payable, IPFA, LimitedOwnable {
     /// distribution address table.
     function license(address recipient_) public payable nonReentrant afterInit {
         require(_supportsLicensing.value, "SHARE018");
-        if (_erc20ContractAddress == address(0)) {
-            require(msg.value == _pricePerLicense.value, "SHARE023");
-        } else {
-            require(
-                IERC20(_erc20ContractAddress).allowance(
-                    msg.sender,
-                    address(this)
-                ) >= _pricePerLicense.value,
-                "SHARE025"
-            );
-            IERC20(_erc20ContractAddress).transferFrom(
+        if (this.isERC20Payable()) {
+            require(msg.value == ERC20_PAYABLE_CALL_VALUE, "SHARE023");
+            _transferERC20FromSender(
                 msg.sender,
                 owner(),
                 _pricePerLicense.value
             );
+        } else {
+            // https://github.com/formless-eng/share/issues/1471
+            require(msg.value == _pricePerLicense.value, "SHARE023");
         }
         SHARE protocol = SHARE(shareContractAddress());
         require(
@@ -209,16 +203,12 @@ abstract contract PFA is IERC20Payable, IPFA, LimitedOwnable {
     /// @notice Sets the ERC20 contract address (e.g., for USDC payments).
     function setERC20ContractAddress(
         address contractAddress_
-    ) external override onlyOwner {
+    ) external onlyOwner {
         require(
             contractAddress_ != address(0),
             "Invalid ERC20 contract address"
         );
         _erc20ContractAddress = contractAddress_;
-    }
-
-    /// @notice Gets the ERC20 contract address used for payments.
-    function getERC20ContractAddress() external view returns (address) {
-        return _erc20ContractAddress;
+        _erc20Token = IERC20(contractAddress_);
     }
 }
