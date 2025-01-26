@@ -1,23 +1,13 @@
+const {
+  calculateSplitIndexUsingPartition,
+  normalizeAddress,
+  DEFAULT_ADDRESS_INDEX,
+} = require("../helper");
+
 const SHARE = artifacts.require("SHARE");
 const SL2RD = artifacts.require("SL2RD");
-const PFAUnit = artifacts.require("PFAUnit");
 const MockERC20 = artifacts.require("MockERC20");
 const OperatorRegistry = artifacts.require("OperatorRegistry");
-const DEFAULT_ADDRESS_INDEX = 0;
-const NON_OWNER_ADDRESS_INDEX = 1;
-const MAX_SL2RD_PARTITION_SIZE = 100;
-
-function calculateSplitIndexUsingPartition(
-  partitionIndex,
-  partitionSize = MAX_SL2RD_PARTITION_SIZE,
-  offset = 0
-) {
-  return partitionIndex * partitionSize + offset;
-}
-
-function normalizeAddress(address) {
-  return address.toLowerCase();
-}
 
 contract("ERC20 payable SL2RD", (accounts) => {
   specify("Payable with ERC20 token and single stakeholder", async () => {

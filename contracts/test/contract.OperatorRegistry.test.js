@@ -1,6 +1,5 @@
 const OperatorRegistry = artifacts.require("OperatorRegistry");
-const DEFAULT_ADDRESS_INDEX = 0;
-const NON_OWNER_ADDRESS_INDEX = 1;
+const { DEFAULT_ADDRESS_INDEX } = require("./helper");
 
 contract("OperatorRegistry", (accounts) => {
   const verifiedShareOperatorEOAs = [

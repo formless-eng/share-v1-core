@@ -1,13 +1,11 @@
 const assert = require("assert");
+const { DEFAULT_ADDRESS_INDEX, DEFAULT_TOKEN_ID } = require("../helper");
 const PFAUnit = artifacts.require("PFAUnit");
 const SL2RD = artifacts.require("SL2RD");
 const MockERC20 = artifacts.require("MockERC20");
 const SHARE = artifacts.require("SHARE");
 const OperatorRegistry = artifacts.require("OperatorRegistry");
 const CodeVerification = artifacts.require("CodeVerification");
-const DEFAULT_ADDRESS_INDEX = 0;
-const NON_OWNER_ADDRESS_INDEX = 1;
-const DEFAULT_TOKEN_ID = 0;
 
 contract("PFAUnit", (accounts) => {
   let pfaUnit;

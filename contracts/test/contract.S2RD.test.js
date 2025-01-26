@@ -1,12 +1,11 @@
+const {
+  DEFAULT_ADDRESS_INDEX,
+  NON_OWNER_ADDRESS_INDEX,
+  normalizeAddress,
+} = require("./helper");
 const SHARE = artifacts.require("SHARE");
 const S2RD = artifacts.require("S2RD");
 const PFAUnit = artifacts.require("PFAUnit");
-const DEFAULT_ADDRESS_INDEX = 0;
-const NON_OWNER_ADDRESS_INDEX = 1;
-
-function normalizeAddress(address) {
-  return address.toLowerCase();
-}
 
 contract("S2RD", (accounts) => {
   specify("Contract initialization", async () => {
@@ -28,10 +27,7 @@ contract("S2RD", (accounts) => {
       uniformCollaborators /* addresses_ */,
       shareContract.address /* shareContractAddress_ */
     );
-    assert.equal(
-      accounts[DEFAULT_ADDRESS_INDEX],
-      await assetContract.owner()
-    );
+    assert.equal(accounts[DEFAULT_ADDRESS_INDEX], await assetContract.owner());
 
     assert.equal(await assetContract.addressIndex(), 0);
   });
@@ -41,9 +37,7 @@ contract("S2RD", (accounts) => {
     const split = await S2RD.new();
     let uniformCollaborators = [];
     for (let i = 0; i < 191; i += 1) {
-      uniformCollaborators.push(
-        accounts[Math.floor(Math.random() * 3)]
-      );
+      uniformCollaborators.push(accounts[Math.floor(Math.random() * 3)]);
     }
     try {
       await split.initialize(
@@ -57,29 +51,24 @@ contract("S2RD", (accounts) => {
     }
   });
 
-  specify(
-    "Contract initialization with splits greater than max",
-    async () => {
-      const shareContract = await SHARE.deployed();
-      const split = await S2RD.new();
-      const uniformCollaborators = [];
-      for (let i = 0; i < 500; i += 1) {
-        uniformCollaborators.push(
-          accounts[Math.floor(Math.random() * 3)]
-        );
-      }
-      try {
-        await split.initialize(
-          uniformCollaborators /* addresses_ */,
-          shareContract.address /* shareContractAddress_ */
-        );
-        assert(false, "Expected initialization exception not thrown");
-      } catch (error) {
-        console.log(error.message);
-        assert(error.message.includes("SHARE006"));
-      }
+  specify("Contract initialization with splits greater than max", async () => {
+    const shareContract = await SHARE.deployed();
+    const split = await S2RD.new();
+    const uniformCollaborators = [];
+    for (let i = 0; i < 500; i += 1) {
+      uniformCollaborators.push(accounts[Math.floor(Math.random() * 3)]);
     }
-  );
+    try {
+      await split.initialize(
+        uniformCollaborators /* addresses_ */,
+        shareContract.address /* shareContractAddress_ */
+      );
+      assert(false, "Expected initialization exception not thrown");
+    } catch (error) {
+      console.log(error.message);
+      assert(error.message.includes("SHARE006"));
+    }
+  });
 
   specify("Payable with rotating recipient", async () => {
     const NUM_TRANSACTIONS = 50;
@@ -119,9 +108,7 @@ contract("S2RD", (accounts) => {
                   mostRecentEvent.returnValues.recipient.toLowerCase()
                 ),
                 normalizeAddress(
-                  uniformCollaborators[
-                    i % uniformCollaborators.length
-                  ]
+                  uniformCollaborators[i % uniformCollaborators.length]
                 )
               );
               assert.equal(mostRecentEvent.returnValues.value, 1);
@@ -135,11 +122,7 @@ contract("S2RD", (accounts) => {
     await shareContract.setCodeVerificationEnabled(false);
     const split = await S2RD.new();
     const pfa = await PFAUnit.new();
-    const uniformCollaborators = [
-      accounts[0],
-      accounts[1],
-      accounts[2],
-    ];
+    const uniformCollaborators = [accounts[0], accounts[1], accounts[2]];
     await pfa.initialize(
       "/test/token/uri" /* tokenURI_ */,
       "1000000000" /* pricePerAccess_ */,
@@ -165,11 +148,7 @@ contract("S2RD", (accounts) => {
     await shareContract.setCodeVerificationEnabled(false);
     const split = await S2RD.new();
     const pfa = await PFAUnit.new();
-    const uniformCollaborators = [
-      accounts[0],
-      accounts[1],
-      accounts[2],
-    ];
+    const uniformCollaborators = [accounts[0], accounts[1], accounts[2]];
     await pfa.initialize(
       "/test/token/uri" /* tokenURI_ */,
       "1000000000" /* pricePerAccess_ */,

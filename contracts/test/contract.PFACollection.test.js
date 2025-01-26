@@ -1,37 +1,17 @@
+const {
+  UNIT_TOKEN_INDEX,
+  DEFAULT_ADDRESS_INDEX,
+  NON_OWNER_ADDRESS_INDEX,
+  popEventFIFO,
+  popEventLIFO,
+} = require("./helper");
+
 const SHARE = artifacts.require("SHARE");
 const PFAUnit = artifacts.require("PFAUnit");
 const S2RD = artifacts.require("S2RD");
 const CodeVerification = artifacts.require("CodeVerification");
 const PFACollection = artifacts.require("PFACollection");
 const MockPFARevertsOnAccess = artifacts.require("MockPFARevertsOnAccess");
-
-const DEFAULT_ADDRESS_INDEX = 0;
-const UNIT_TOKEN_INDEX = 0;
-const NON_OWNER_ADDRESS_INDEX = 1;
-const GRANT_TTL_PRECISION_SEC = 5;
-const LICENSE_TTL_PRECISION_SEC = 5;
-
-/**
- * Pops an event in LIFO order from a list of events. Does not modify
- * the list.
- * @param {list} events A list of blockchain events.
- * @param {integer} indexIntoPast How far backward to go when popping
- * the event off of the LIFO stack.
- */
-function popEventLIFO(events, indexIntoPast = 0) {
-  return events[events.length - indexIntoPast - 1];
-}
-
-/**
- *  * Pops an event in FIFO order from a list of events. Does not modify
- * the list.
- * @param {list} events A list of blockchain events.
- * @param {integer} index How far forward to go when popping
- * the event off of the FIFO stack.
- */
-function popEventFIFO(events, index = 0) {
-  return events[index];
-}
 
 contract("PFACollection", (accounts) => {
   specify("License 1 PFA with 1 transaction", async () => {

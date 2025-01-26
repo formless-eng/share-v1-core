@@ -1,15 +1,13 @@
 const SHARE = artifacts.require("SHARE");
 const PFAUnit = artifacts.require("PFAUnit");
-const S2RD = artifacts.require("S2RD");
 const CodeVerification = artifacts.require("CodeVerification");
-const PFACollection = artifacts.require("PFACollection");
 const MockERC20 = artifacts.require("MockERC20");
 
-const DEFAULT_ADDRESS_INDEX = 0;
-const UNIT_TOKEN_INDEX = 0;
-const NON_OWNER_ADDRESS_INDEX = 1;
-const GRANT_TTL_PRECISION_SEC = 10;
-const LICENSE_TTL_PRECISION_SEC = 10;
+const {
+  UNIT_TOKEN_INDEX,
+  DEFAULT_ADDRESS_INDEX,
+  NON_OWNER_ADDRESS_INDEX,
+} = require("../helper");
 
 contract("SHARE payable with ERC20", (accounts) => {
   let mockERC20;

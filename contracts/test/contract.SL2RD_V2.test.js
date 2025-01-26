@@ -1,28 +1,14 @@
+const {
+  _PRIMARY_ACCOUNT_INDEX,
+  normalizeAddress,
+  findNode,
+} = require("./helper");
 const SHARE = artifacts.require("SHARE");
 const SL2RD_V2 = artifacts.require("SL2RD_V2");
 const PFAUnit = artifacts.require("PFAUnit");
 const OperatorRegistry = artifacts.require("OperatorRegistry");
 const MockLiquidityPool = artifacts.require("MockLiquidityPool");
 const CodeVerification = artifacts.require("CodeVerification");
-
-const _PRIMARY_ACCOUNT_INDEX = 0;
-
-function normalizeAddress(address) {
-  return address.toLowerCase();
-}
-
-async function findNode(splitContract, address) {
-  let node = await splitContract.getShareholder(
-    await splitContract.shareholdersRootNodeId()
-  );
-  while (node.next != "0x0000000000000000000000000000000000000000") {
-    node = await splitContract.getShareholder(node.next);
-    if (node.shareholderAddress === address) {
-      return node;
-    }
-  }
-  return null;
-}
 
 contract("SL2RD_V2", (accounts) => {
   specify("Contract initialization", async () => {
