@@ -92,9 +92,12 @@ abstract contract LimitedOwnable is Ownable, ReentrancyGuard {
     /// and only if `newOwner` satisfies the limited ownership
     /// requirements established in the constructor, otherwise,
     /// reverts the transaction.
-    function transferOwnership(
-        address newOwner
-    ) public override onlyOwner afterInit {
+    function transferOwnership(address newOwner)
+        public
+        override
+        onlyOwner
+        afterInit
+    {
         SHARE protocol = SHARE(shareContractAddress());
         bool ownerHasValidBuildType = false;
         for (uint256 i = 0; i < _validBuildTypes.length; i++) {
