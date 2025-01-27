@@ -1,58 +1,80 @@
-const {
-  usdcToWei,
-  popEventFIFO,
-  DEFAULT_ADDRESS_INDEX,
-  UNIT_TOKEN_INDEX,
-} = require("../helper");
+const { usdcToWei, popEventFIFO, UNIT_TOKEN_INDEX } = require("../helper");
 const SHARE = artifacts.require("SHARE");
 const PFAUnit = artifacts.require("PFAUnit");
 const PFACollection = artifacts.require("PFACollection");
 const MockERC20 = artifacts.require("MockERC20");
+const SL2RD = artifacts.require("SL2RD");
+const CodeVerification = artifacts.require("CodeVerification");
 
-contract("PFACollection", (accounts) => {
-  let mockERC20;
+contract("PFACollection with ERC20 payments", (accounts) => {
+  let _assetContract;
+  let _mockERC20;
+  let _shareContract;
+  let _splitContract;
+  let _verifier;
+  const _defaultOwner = accounts[0];
 
-  before(async () => {
-    mockERC20 = await MockERC20.new();
-  });
-
-  specify("License 1 PFA with 1 transaction using ERC20", async () => {
-    const collection = await PFACollection.new();
-    const shareContract = await SHARE.deployed();
-    await shareContract.setCodeVerificationEnabled(false);
-    const pfa1 = await PFAUnit.new();
-    await pfa1.initialize(
-      "/test/asset/uri" /* tokenURI_ */,
+  beforeEach(async () => {
+    _mockERC20 = await MockERC20.new();
+    _assetContract = await PFAUnit.new();
+    _shareContract = await SHARE.new();
+    _splitContract = await SL2RD.new();
+    _verifier = await CodeVerification.deployed();
+    await _assetContract.initialize(
+      "/test/token/uri" /* tokenURI_ */,
       usdcToWei(0.5) /* pricePerAccess_ */,
       300 /* grantTTL_ */,
       true /* supportsLicensing_ */,
-      usdcToWei(0.5) /* pricePerLicense_ */,
-      shareContract.address /* shareContractAddress_ */
+      usdcToWei(0.2) /* pricePerLicense_ */,
+      _shareContract.address /* shareContractAddress_ */
     );
+    await _shareContract.addApprovedBuild(
+      await _verifier.readCodeHash(
+        _assetContract.address
+      ) /* codeHash = keccak256(SL2RD code) */,
+      2 /* buildType_ = PFA_UNIT  */,
+      "solc" /* compilerBinaryTarget_ */,
+      "0.8.11+commit.d7f03943" /* compilerVersion_ */,
+      _defaultOwner /* authorAddress_ */
+    );
+    await _shareContract.addApprovedBuild(
+      await _verifier.readCodeHash(
+        _splitContract.address
+      ) /* codeHash = keccak256(SL2RD code) */,
+      1 /* buildType_ = SPLIT  */,
+      "solc" /* compilerBinaryTarget_ */,
+      "0.8.11+commit.d7f03943" /* compilerVersion_ */,
+      _defaultOwner /* authorAddress_ */
+    );
+  });
+
+  specify("License 1 PFA with 1 transaction using ERC20", async () => {
+    await _shareContract.setCodeVerificationEnabled(false);
+    const collection = await PFACollection.new();
     await collection.initialize(
-      [pfa1.address] /* addresses_ */,
+      [_assetContract.address] /* addresses_ */,
       "/test/collection/uri" /* tokenURI_ */,
       usdcToWei(1) /* pricePerAccess_ */,
       300 /* grantTTL_ */,
       false /* supportsLicensing_ */,
       0 /* pricePerLicense_ */,
-      shareContract.address /* shareContractAddress_ */
+      _shareContract.address /* shareContractAddress_ */
     );
 
-    await pfa1.setERC20ContractAddress(mockERC20.address);
-    await collection.setERC20ContractAddress(mockERC20.address);
-    await mockERC20.approve(pfa1.address, usdcToWei(0.5), {
-      from: accounts[DEFAULT_ADDRESS_INDEX],
+    await _assetContract.setERC20ContractAddress(_mockERC20.address);
+    await collection.setERC20ContractAddress(_mockERC20.address);
+    await _mockERC20.approve(_assetContract.address, usdcToWei(0.5), {
+      from: _defaultOwner,
     });
-    await pfa1.license(collection.address);
-    await mockERC20.approve(collection.address, usdcToWei(1), {
-      from: accounts[DEFAULT_ADDRESS_INDEX],
+    await _assetContract.license(collection.address);
+    await _mockERC20.approve(collection.address, usdcToWei(1), {
+      from: _defaultOwner,
     });
-    await collection.access(UNIT_TOKEN_INDEX, accounts[DEFAULT_ADDRESS_INDEX], {
-      from: accounts[DEFAULT_ADDRESS_INDEX],
+    await collection.access(UNIT_TOKEN_INDEX, _defaultOwner, {
+      from: _defaultOwner,
       value: 0,
     });
-    const pfaPaymentEvents = await pfa1.getPastEvents("PaymentToOwner", {
+    const assetEvents = await _assetContract.getPastEvents("PaymentToOwner", {
       fromBlock: 0,
       toBlock: "latest",
     });
@@ -63,17 +85,14 @@ contract("PFACollection", (accounts) => {
     // The revenue (1 USD) will be split as follows:
     // 0.50 to the PFA
     // 0.50 (remaining balance) to the collection owner
-    assert.equal(
-      popEventFIFO(pfaPaymentEvents).returnValues.value,
-      usdcToWei(0.5)
-    );
+    assert.equal(popEventFIFO(assetEvents).returnValues.value, usdcToWei(0.5));
     assert.equal(
       popEventFIFO(collectionEvents).returnValues.value,
       usdcToWei(0.5)
     );
     assert.equal(
       popEventFIFO(collectionEvents).returnValues.recipient,
-      pfa1.address
+      _assetContract.address
     );
     assert.equal(
       popEventFIFO(collectionEvents, 1).returnValues.value,
@@ -81,7 +100,7 @@ contract("PFACollection", (accounts) => {
     );
     assert.equal(
       popEventFIFO(collectionEvents, 1).returnValues.recipient,
-      accounts[DEFAULT_ADDRESS_INDEX]
+      _defaultOwner
     );
     // The DDN will look for:
     // (1) a grant on the collection
@@ -92,7 +111,7 @@ contract("PFACollection", (accounts) => {
           fromBlock: 0,
           toBlock: "latest",
           filter: {
-            recipient: accounts[DEFAULT_ADDRESS_INDEX],
+            recipient: _defaultOwner,
             tokenId: UNIT_TOKEN_INDEX,
           },
         })
@@ -101,7 +120,7 @@ contract("PFACollection", (accounts) => {
     );
     assert.equal(
       (
-        await pfa1.getPastEvents("License", {
+        await _assetContract.getPastEvents("License", {
           fromBlock: 0,
           toBlock: "latest",
           filter: {

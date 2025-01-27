@@ -176,7 +176,7 @@ abstract contract PFA is ERC20Payable, IPFA, LimitedOwnable {
     function license(address recipient_) public payable nonReentrant afterInit {
         require(_supportsLicensing.value, "SHARE018");
         if (this.isERC20Payable()) {
-            require(msg.value == ERC20_PAYABLE_CALL_VALUE, "SHARE023");
+            require(msg.value == ERC20_PAYABLE_CALL_VALUE, "SHARE051");
             _transferERC20FromSender(owner(), _pricePerLicense.value);
         } else {
             require(msg.value == _pricePerLicense.value, "SHARE023");

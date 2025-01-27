@@ -91,7 +91,7 @@ contract PFAUnit is ERC721, PFA {
         address recipient_
     ) internal afterInit {
         SHARE protocol = SHARE(shareContractAddress());
-        // Get the payment recipient address (either a wallet or split contract)
+        // Get the payment recipient address (either a wallet or split contract).
         address payeeAddress = owner();
 
         // Transfer ERC20 tokens from the sender to the payee.
@@ -106,9 +106,9 @@ contract PFAUnit is ERC721, PFA {
             )
         ) {
             // For split contracts, we need to trigger their
-            // payment distribution logic. This is done by sending a
-            // zero value of tge native token (ERC20_PAYABLE_CALL_VALUE)
-            // which activates the split contract's payable function.
+            // payment distribution logic, done by sending
+            // a value of zero and calling the contract's
+            // payable function.
             (bool success, ) = payable(payeeAddress).call{
                 value: ERC20_PAYABLE_CALL_VALUE
             }("");

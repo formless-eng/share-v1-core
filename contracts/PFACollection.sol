@@ -237,14 +237,6 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
             (_currentAddressIndex + 1) %
             (_addresses.value.length);
 
-        // Transfer the full payment from sender to this contract,
-        // the contract then distributes the payment
-        // to the licensed child item and the collection owner.
-        _transferERC20FromSender(
-            address(this) /* tokenRecipient_ */,
-            _pricePerAccess.value /* tokenAmount_ */
-        );
-
         if (
             protocol.isApprovedBuild(
                 itemOwner,
@@ -255,11 +247,18 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
                 CodeVerification.BuildType.SPLIT
             )
         ) {
-            // Approve the child contract to spend the payment value
-            // and call the payable `access` function on the
+            // Transfer the full payment from sender to this contract,
+            // then approve the child contract to spend the payment
+            // value and call the payable `access` function on the
             // child contract.
-            uint256 payment = item.pricePerAccess();
-            require(_erc20Token.approve(itemAddress, payment), "SHARE044");
+            uint256 itemPayment = item.pricePerAccess();
+            _transferERC20ThenApprove(
+                msg.sender /* tokenOwner_ */,
+                address(this) /* tokenSpender_ */,
+                _pricePerAccess.value /* totalTokenAmount_ */,
+                itemAddress /* callableContractAddress_ */,
+                itemPayment /* callableTokenAmount_ */
+            );
             (bool itemPaymentSuccess, ) = payable(address(item)).call{
                 value: ERC20_PAYABLE_CALL_VALUE
             }(
@@ -276,7 +275,7 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
                     msg.sender,
                     address(item),
                     _currentAddressIndex,
-                    payment
+                    itemPayment
                 );
             } else {
                 emit ItemPaymentSkipped(itemOwner, address(item));
@@ -286,7 +285,7 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
             require(
                 _erc20Token.transfer(
                     owner,
-                    _pricePerAccess.value - item.pricePerAccess()
+                    _pricePerAccess.value - itemPayment
                 ),
                 "SHARE048"
             );
@@ -317,10 +316,8 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
     /// to decrypt and serve the associated content for the tokenURI.
     /// @param tokenId_ The token ID to access (must be UNIT_TOKEN_INDEX)
     /// @param recipient_ The address that will receive access to the content
-    /// @dev Handles both ERC20 and native token payments through separate internal functions
-    /// @dev Error codes:
-    ///      SHARE051: Invalid msg.value for ERC20 payment
-    ///      SHARE005: Insufficient payment amount for native token
+    /// @dev Handles both ERC20 and native token payments through
+    /// separate internal functions.
     function access(
         uint256 tokenId_,
         address recipient_

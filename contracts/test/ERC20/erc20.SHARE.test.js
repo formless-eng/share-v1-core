@@ -8,84 +8,91 @@ const OperatorRegistry = artifacts.require("OperatorRegistry");
 const {
   UNIT_TOKEN_INDEX,
   DEFAULT_ADDRESS_INDEX,
-  NON_OWNER_ADDRESS_INDEX,
   usdcToWei,
-  normalizeAddress,
 } = require("../helper");
 
 contract("SHARE payable with ERC20", (accounts) => {
-  let mockERC20;
-  const owner = accounts[DEFAULT_ADDRESS_INDEX];
+  let _assetContract;
+  let _mockERC20;
+  let _shareContract;
+  let _operatorRegistry;
+  let _splitContract;
+  let _verifier;
+  const _defaultOwner = accounts[0];
+  const _nonOwner = accounts[1];
 
-  before(async () => {
-    mockERC20 = await MockERC20.new();
+  beforeEach(async () => {
+    _mockERC20 = await MockERC20.new();
+    _assetContract = await PFAUnit.new();
+    _shareContract = await SHARE.deployed();
+    _operatorRegistry = await OperatorRegistry.deployed();
+    _splitContract = await SL2RD.new();
+    _verifier = await CodeVerification.deployed();
+    await _assetContract.initialize(
+      "/test/token/uri" /* tokenURI_ */,
+      usdcToWei(1) /* pricePerAccess_ */,
+      300 /* grantTTL_ */,
+      false /* supportsLicensing_ */,
+      0 /* pricePerLicense_ */,
+      _shareContract.address /* shareContractAddress_ */
+    );
+    await _shareContract.addApprovedBuild(
+      await _verifier.readCodeHash(
+        _assetContract.address
+      ) /* codeHash = keccak256(SL2RD code) */,
+      2 /* buildType_ = PFA_UNIT  */,
+      "solc" /* compilerBinaryTarget_ */,
+      "0.8.11+commit.d7f03943" /* compilerVersion_ */,
+      _defaultOwner /* authorAddress_ */
+    );
+    await _shareContract.addApprovedBuild(
+      await _verifier.readCodeHash(
+        _splitContract.address
+      ) /* codeHash = keccak256(SL2RD code) */,
+      1 /* buildType_ = SPLIT  */,
+      "solc" /* compilerBinaryTarget_ */,
+      "0.8.11+commit.d7f03943" /* compilerVersion_ */,
+      _defaultOwner /* authorAddress_ */
+    );
+    await _shareContract.setERC20ContractAddress(_mockERC20.address, {
+      from: _defaultOwner,
+    });
   });
 
   specify("Access denial with ERC20", async () => {
-    const shareContract = await SHARE.new();
-    const assetContract = await PFAUnit.new();
-    const insufficientValueWei = "1000";
-    const exceedsValueWei = "2000000000";
     let insufficientValueWeiExceptionThrown = false;
     let exceedsValueWeiExceptionThrown = false;
-    await shareContract.setERC20ContractAddress(mockERC20.address, {
-      from: owner,
-    });
-
     try {
-      await shareContract.access(assetContract.address, UNIT_TOKEN_INDEX, {
-        from: accounts[DEFAULT_ADDRESS_INDEX],
-        value: insufficientValueWei,
+      await _shareContract.access(_assetContract.address, UNIT_TOKEN_INDEX, {
+        from: _defaultOwner,
+        value: usdcToWei(0.5),
       });
     } catch (error) {
       insufficientValueWeiExceptionThrown = true;
     }
-
     try {
-      await shareContract.access(assetContract.address, UNIT_TOKEN_INDEX, {
-        from: accounts[DEFAULT_ADDRESS_INDEX],
-        value: exceedsValueWei,
+      await _shareContract.access(_assetContract.address, UNIT_TOKEN_INDEX, {
+        from: _defaultOwner,
+        value: usdcToWei(10),
       });
     } catch (error) {
       exceedsValueWeiExceptionThrown = true;
     }
-
     assert.isTrue(
       insufficientValueWeiExceptionThrown && exceedsValueWeiExceptionThrown
     );
   });
 
   specify("Access grant with ERC20", async () => {
-    const shareContract = await SHARE.new();
-    const assetContract = await PFAUnit.new();
-    const verifier = await CodeVerification.deployed();
-    await shareContract.setERC20ContractAddress(mockERC20.address, {
-      from: owner,
-    });
-    await shareContract.addApprovedBuild(
-      await verifier.readCodeHash(assetContract.address),
-      /* codeHash = keccak256(PFA code) */ 2 /* buildType_ = PFA_UNIT  */,
-      "solc" /* compilerBinaryTarget_ */,
-      "0.8.11+commit.d7f03943" /* compilerVersion_ */,
-      accounts[NON_OWNER_ADDRESS_INDEX] /* authorAddress_ */
-    );
-    await assetContract.initialize(
-      "/test/token/uri",
-      "1000000000",
-      300,
-      false,
-      0,
-      owner
-    );
-    await shareContract.access(assetContract.address, UNIT_TOKEN_INDEX, {
-      from: accounts[NON_OWNER_ADDRESS_INDEX],
-      value: "1050000000",
+    await _shareContract.access(_assetContract.address, UNIT_TOKEN_INDEX, {
+      from: _nonOwner,
+      value: usdcToWei(1),
     });
     assert.equal(
       (
-        await assetContract.getPastEvents("Grant", {
+        await _assetContract.getPastEvents("Grant", {
           filter: {
-            recipient: accounts[NON_OWNER_ADDRESS_INDEX],
+            recipient: _nonOwner,
             tokenId: UNIT_TOKEN_INDEX,
           },
         })
@@ -97,44 +104,23 @@ contract("SHARE payable with ERC20", (accounts) => {
   specify(
     "Access grant with 50% distribution fee enabled on PFA using ERC20",
     async () => {
-      const shareContract = await SHARE.new();
-      const assetContract = await PFAUnit.new();
-      const verifier = await CodeVerification.deployed();
-      await shareContract.setERC20ContractAddress(mockERC20.address, {
-        from: owner,
-      });
-      await shareContract.addApprovedBuild(
-        await verifier.readCodeHash(assetContract.address),
-        /* codeHash = keccak256(PFA code) */ 2 /* buildType_ = PFA_UNIT  */,
-        "solc" /* compilerBinaryTarget_ */,
-        "0.8.11+commit.d7f03943" /* compilerVersion_ */,
-        accounts[NON_OWNER_ADDRESS_INDEX] /* authorAddress_ */
-      );
-      await assetContract.initialize(
-        "/test/token/uri" /* tokenURI_ */,
-        "1000000000" /* pricePerAccess_ */,
-        300 /* grantTTL_ */,
-        true /* supportsLicensing_ */,
-        0 /* pricePerLicense_ */,
-        shareContract.address /* shareContractAddress_ */
-      );
-      await assetContract.setDistributor(
+      await _assetContract.setDistributor(
         accounts[3],
         1 /* distributionFeeNumerator_ */,
         2 /* distributionFeeDenominator_ */,
         {
-          from: accounts[DEFAULT_ADDRESS_INDEX],
+          from: _defaultOwner,
         }
       );
-      await shareContract.access(assetContract.address, UNIT_TOKEN_INDEX, {
-        from: accounts[NON_OWNER_ADDRESS_INDEX],
-        value: "1050000000",
+      await _shareContract.access(_assetContract.address, UNIT_TOKEN_INDEX, {
+        from: _nonOwner,
+        value: usdcToWei(1),
       });
       assert.equal(
         (
-          await assetContract.getPastEvents("Grant", {
+          await _assetContract.getPastEvents("Grant", {
             filter: {
-              recipient: accounts[NON_OWNER_ADDRESS_INDEX],
+              recipient: _nonOwner,
               tokenId: UNIT_TOKEN_INDEX,
             },
           })
@@ -143,11 +129,11 @@ contract("SHARE payable with ERC20", (accounts) => {
       );
       assert.equal(
         (
-          await shareContract.getPastEvents("Payment", {
+          await _shareContract.getPastEvents("Payment", {
             filter: {
-              from: accounts[NON_OWNER_ADDRESS_INDEX],
-              recipient: accounts[3],
-              value: "25000000",
+              from: _nonOwner,
+              recipient: _defaultOwner,
+              value: usdcToWei(0.5),
             },
           })
         ).length,
@@ -161,19 +147,15 @@ contract("SHARE payable with ERC20", (accounts) => {
     async () => {
       // Configure number of transactions and batch size
       // for this test.
-      const NUM_TRANSACTIONS = 10;
-      const BATCH_SIZE = 100;
-      const PAYMENT_VALUE = 0.1;
+      const transactionCount = 10;
+      const batchSize = 100;
+      const paymentValue = 1;
 
       // Deploy contracts under test:
       // SHARE protocol, PFA asset contract,
       // SL2RD split contract, and references to existing
       // operator registry and verifier contracts.
-      const shareContract = await SHARE.deployed();
-      const assetContract = await PFAUnit.new();
       const splitContract = await SL2RD.new();
-      const operatorRegistry = await OperatorRegistry.deployed();
-      const verifier = await CodeVerification.deployed();
 
       // Configure multiple stakeholders for SL2RD split
       // contract.
@@ -182,104 +164,86 @@ contract("SHARE payable with ERC20", (accounts) => {
       const payeeAddresses = [payeeAddress1, payeeAddress2];
 
       // Approve new builds.
-      await shareContract.addApprovedBuild(
-        await verifier.readCodeHash(assetContract.address),
-        /* codeHash = keccak256(PFA code) */ 2 /* buildType_ = PFA_UNIT  */,
-        "solc" /* compilerBinaryTarget_ */,
-        "0.8.11+commit.d7f03943" /* compilerVersion_ */,
-        accounts[DEFAULT_ADDRESS_INDEX] /* authorAddress_ */
-      );
-
-      await shareContract.addApprovedBuild(
-        await verifier.readCodeHash(splitContract.address),
+      await _shareContract.addApprovedBuild(
+        await _verifier.readCodeHash(splitContract.address),
         /* codeHash = keccak256(SL2RD code) */ 1 /* buildType_ = SPLIT  */,
         "solc" /* compilerBinaryTarget_ */,
         "0.8.11+commit.d7f03943" /* compilerVersion_ */,
-        accounts[DEFAULT_ADDRESS_INDEX] /* authorAddress_ */
+        _defaultOwner /* authorAddress_ */
       );
 
-      // Initialize PFA asset contract.
-      await assetContract.initialize(
-        "/test/token/uri",
-        usdcToWei(PAYMENT_VALUE),
-        300,
-        false,
-        0,
-        shareContract.address
-      );
-
-      await assetContract.setDistributor(
+      await _assetContract.setDistributor(
         accounts[3],
         1 /* distributionFeeNumerator_ */,
         2 /* distributionFeeDenominator_ */,
         {
-          from: accounts[DEFAULT_ADDRESS_INDEX],
+          from: _defaultOwner,
         }
       );
 
       // Initialize SL2RD split contract.
-      await splitContract.initialize(
+      await _splitContract.initialize(
         payeeAddresses /* addresses_ */,
         [0, 1] /* tokenIds_ */,
         0 /* communitySplitsBasisPoints_ */,
-        shareContract.address /* shareContractAddress_ */,
-        operatorRegistry.address /* operatorRegistryAddress_ */
+        _shareContract.address /* shareContractAddress_ */,
+        _operatorRegistry.address /* operatorRegistryAddress_ */
       );
 
-      await splitContract.setPaymentBatchSize(BATCH_SIZE);
+      await _splitContract.setPaymentBatchSize(batchSize);
 
       // Set ERC20 contract address for SHARE and PFA asset contracts.
-      await shareContract.setERC20ContractAddress(mockERC20.address, {
-        from: owner,
+      await _shareContract.setERC20ContractAddress(_mockERC20.address, {
+        from: _defaultOwner,
       });
-      await assetContract.setERC20ContractAddress(mockERC20.address, {
-        from: owner,
+      await _assetContract.setERC20ContractAddress(_mockERC20.address, {
+        from: _defaultOwner,
       });
-      await splitContract.setERC20ContractAddress(mockERC20.address, {
-        from: owner,
+      await _splitContract.setERC20ContractAddress(_mockERC20.address, {
+        from: _defaultOwner,
       });
 
       // NOTE: Critical that ERC20 contract address is set
       // before transferring ownership to the split contract.
-      await assetContract.transferOwnership(splitContract.address);
+      await _assetContract.transferOwnership(_splitContract.address);
 
       // Execute bulk ERC20 payments to PFA asset contract.
-      for (let i = 0; i < NUM_TRANSACTIONS; i += 1) {
-        await mockERC20.approve(
-          shareContract.address,
-          usdcToWei(Math.ceil(1.05 * PAYMENT_VALUE)),
+      for (let i = 0; i < transactionCount; i += 1) {
+        await _mockERC20.approve(
+          _shareContract.address,
+          usdcToWei(Math.ceil(1.05 * paymentValue)),
           {
-            from: owner,
+            from: _defaultOwner,
           }
         );
-        await shareContract.access(assetContract.address, UNIT_TOKEN_INDEX, {
-          from: accounts[DEFAULT_ADDRESS_INDEX],
+        await _shareContract.access(_assetContract.address, UNIT_TOKEN_INDEX, {
+          from: _defaultOwner,
           value: 0,
         });
         assert.equal(
           (
-            await assetContract.getPastEvents("Grant", {
+            await _assetContract.getPastEvents("Grant", {
               filter: {
-                recipient: accounts[DEFAULT_ADDRESS_INDEX],
+                recipient: _defaultOwner,
                 tokenId: UNIT_TOKEN_INDEX,
               },
             })
           ).length,
           1
         );
-        splitContract
+        _splitContract
           .getPastEvents("Payment", {
             fromBlock: 0,
             toBlock: "latest",
           })
           .then((events) => {
-            assert.equal(events.length, (i + 1) * BATCH_SIZE);
-            for (let j = 0; j < BATCH_SIZE; j++) {
-              const event = events[events.length - BATCH_SIZE + j];
+            assert.equal(events.length, (i + 1) * batchSize);
+            for (let j = 0; j < batchSize; j++) {
+              const event = events[events.length - batchSize + j];
               console.log(event.returnValues.value);
               assert.equal(
                 event.returnValues.value,
-                usdcToWei(PAYMENT_VALUE) / BATCH_SIZE, // Each recipient gets an equal share
+                usdcToWei(paymentValue) / batchSize, // Each recipient gets an equal share
                 "Incorrect payment value"
               );
             }

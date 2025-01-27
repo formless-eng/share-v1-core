@@ -172,6 +172,7 @@ The command above deploys the contracts as specified in `2_SL2RD_migration.js`.
 - `SHARE049` : `Failed to approve ERC20 transfer for callable contract.`
 - `SHARE050` : `ERC20 allowance is insufficient to execute transfer.`
 - `SHARE051` : `Value sent to contract must be zero when using ERC20.`
+- `SHARE052` : `Failed to transfer ERC20 to distributor address.`
 
 ## Audits and Formal Verification
 
