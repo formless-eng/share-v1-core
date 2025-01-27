@@ -9,7 +9,6 @@ const {
 const SHARE = artifacts.require("SHARE");
 const SL2RD = artifacts.require("SL2RD");
 const PFAUnit = artifacts.require("PFAUnit");
-const MockERC20 = artifacts.require("MockERC20");
 const OperatorRegistry = artifacts.require("OperatorRegistry");
 
 contract("SL2RD", (accounts) => {
