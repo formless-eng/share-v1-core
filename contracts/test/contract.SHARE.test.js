@@ -1,14 +1,16 @@
+const {
+  DEFAULT_ADDRESS_INDEX,
+  NON_OWNER_ADDRESS_INDEX,
+  UNIT_TOKEN_INDEX,
+  GRANT_TTL_PRECISION_SEC,
+  LICENSE_TTL_PRECISION_SEC,
+} = require("./helper");
+
 const SHARE = artifacts.require("SHARE");
 const PFAUnit = artifacts.require("PFAUnit");
 const S2RD = artifacts.require("S2RD");
 const CodeVerification = artifacts.require("CodeVerification");
 const PFACollection = artifacts.require("PFACollection");
-
-const DEFAULT_ADDRESS_INDEX = 0;
-const UNIT_TOKEN_INDEX = 0;
-const NON_OWNER_ADDRESS_INDEX = 1;
-const GRANT_TTL_PRECISION_SEC = 10;
-const LICENSE_TTL_PRECISION_SEC = 10;
 
 contract("SHARE", (accounts) => {
   specify("Contract initialization", async () => {

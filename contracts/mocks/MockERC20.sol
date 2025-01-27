@@ -14,12 +14,12 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 /// @title Mock Liquidity Pool.
 /// For testing purposes only.
 /// @author xiang@formless.xyz
-contract MockUSDC is ERC20 {
+contract MockERC20 is ERC20 {
     string public constant VERSION = "1.0.0";
-    
-    constructor() ERC20("Mock USDC", "USDC") {
+
+    constructor() ERC20("Mock ERC20", "ERC20") {
         // Mint an initial supply of tokens for testing
         // Mint 1 million USDC tokens to deployer's address
-        _mint(msg.sender, 1000000 * 10 ** decimals()); 
+        _mint(msg.sender, 1000000 * 10 ** decimals());
     }
 }

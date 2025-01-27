@@ -11,9 +11,12 @@
 pragma solidity >=0.8.0 <0.9.0;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import "./LimitedOwnable.sol";
 import "./OperatorRegistry.sol";
 import "./libraries/CodeVerification.sol";
+import "./ERC20Payable.sol";
 
 /// @title Swift Liquid Rotating Royalty Distributor V2 (SL2RD_V2).
 /// @author brandon@formless.xyz
@@ -26,7 +29,7 @@ import "./libraries/CodeVerification.sol";
 /// implementation results in the ability to add and remove shareholders
 /// in constant computational cost, while maintaining constant cost
 /// payment distribution.
-contract SL2RD_V2 is LimitedOwnable, ERC20 {
+contract SL2RD_V2 is LimitedOwnable, ERC20, ERC20Payable {
     /// @notice Emitted when a payment is sent to a shareholder
     /// listed within this payment distribution contract.
     event Payment(
@@ -349,7 +352,14 @@ contract SL2RD_V2 is LimitedOwnable, ERC20 {
     /// over a sequence of payments. The number of payments per iteration is
     /// determined by the payment batch size parameter.
     receive() external payable nonReentrant afterInit {
-        uint256 paymentValue = msg.value / _paymentBatchSize;
+        uint256 paymentValue;
+        if (this.isERC20Payable()) {
+            paymentValue =
+                _erc20Token.balanceOf(address(this)) /
+                _paymentBatchSize;
+        } else {
+            paymentValue = msg.value / _paymentBatchSize;
+        }
         for (uint256 i = 0; i < _paymentBatchSize; i++) {
             ShareholderNode memory selectedShareholderNode = _shareholderNodes[
                 _shareholdersSelectedNodeId
@@ -372,16 +382,33 @@ contract SL2RD_V2 is LimitedOwnable, ERC20 {
                     _selectedShareholderPaymentCount = 0;
                 }
             }
-            payable(selectedShareholderNode.shareholderAddress).transfer(
-                paymentValue
-            );
+            _selectedShareholderPaymentCount += 1;
+            if (this.isERC20Payable()) {
+                // SL2RD_V2 transfers are guaranteed to be
+                // approved wallets and not a contract, therefore
+                // there is no need to execute a `call`.
+                // Also, the entire amount held in the SL2RD_V2 contract
+                // is distributed, e.g. the contract never holds a
+                // balance and immediately moves the money to a payee
+                // from the ERC20 token.
+                require(
+                    _erc20Token.transfer(
+                        selectedShareholderNode.shareholderAddress,
+                        paymentValue
+                    ),
+                    "SHARE051"
+                );
+            } else {
+                payable(selectedShareholderNode.shareholderAddress).transfer(
+                    paymentValue
+                );
+            }
             emit Payment(
                 msg.sender,
                 selectedShareholderNode.shareholderAddress,
                 _paymentBatchSize,
-                msg.value
+                paymentValue
             );
-            _selectedShareholderPaymentCount += 1;
         }
     }
 
@@ -459,5 +486,24 @@ contract SL2RD_V2 is LimitedOwnable, ERC20 {
         Ownable asset = Ownable(contractAddress_);
         require(asset.owner() == address(this), "SHARE025");
         asset.transferOwnership(msg.sender);
+    }
+
+    /// @notice Returns whether the contract implements a given interface
+    /// @dev Overrides ERC721's supportsInterface to include IERC20Payable interface
+    /// @param interfaceId The interface identifier, as specified in ERC-165
+    /// @return bool True if the contract implements the interface, false otherwise.
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view virtual returns (bool) {
+        return
+            interfaceId == type(IERC165).interfaceId ||
+            interfaceId == type(IERC20Payable).interfaceId;
+    }
+
+    /// @notice Sets the ERC20 contract address (e.g., for USDC payments).
+    function setERC20ContractAddress(
+        address contractAddress_
+    ) external onlyOwner {
+        _setERC20ContractAddress(contractAddress_);
     }
 }

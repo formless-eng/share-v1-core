@@ -14,12 +14,14 @@ import "./libraries/Immutable.sol";
 import "./LimitedOwnable.sol";
 import "./interfaces/IPFA.sol";
 import "./interfaces/IPFACollection.sol";
+import "./ERC20Payable.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /// @title Standard pay-for-access (PFA) abstract base.
 /// @author brandon@formless.xyz
 /// @notice This base contract is a base implementation of the IPFA
 /// interface.
-abstract contract PFA is IPFA, LimitedOwnable {
+abstract contract PFA is ERC20Payable, IPFA, LimitedOwnable {
     /// @notice Emitted when a successful access grant is awarded
     /// to a recipient address.
     event Grant(address indexed recipient, uint256 indexed tokenId);
@@ -173,7 +175,12 @@ abstract contract PFA is IPFA, LimitedOwnable {
     /// distribution address table.
     function license(address recipient_) public payable nonReentrant afterInit {
         require(_supportsLicensing.value, "SHARE018");
-        require(msg.value == _pricePerLicense.value, "SHARE023");
+        if (this.isERC20Payable()) {
+            require(msg.value == ERC20_PAYABLE_CALL_VALUE, "SHARE051");
+            _transferERC20FromSender(owner(), _pricePerLicense.value);
+        } else {
+            require(msg.value == _pricePerLicense.value, "SHARE023");
+        }
         SHARE protocol = SHARE(shareContractAddress());
         require(
             protocol.isApprovedBuild(
@@ -186,5 +193,17 @@ abstract contract PFA is IPFA, LimitedOwnable {
         _licenseTimestamps[recipient_] = block.timestamp;
         emit License(recipient_);
         _transactionCount++;
+    }
+
+    /// @notice Sets the ERC20 contract address (e.g., for USDC payments).
+    function setERC20ContractAddress(
+        address contractAddress_
+    ) external onlyOwner {
+        _setERC20ContractAddress(contractAddress_);
+    }
+
+    /// @notice Withdraws contract balance.
+    function withdraw() public nonReentrant onlyOwner {
+        payable(msg.sender).transfer(address(this).balance);
     }
 }

@@ -11,11 +11,12 @@
 pragma solidity >=0.8.0 <0.9.0;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import "./libraries/Immutable.sol";
 import "./LimitedOwnable.sol";
 import "./OperatorRegistry.sol";
-import "./interfaces/IERC20Payable.sol";
+import "./ERC20Payable.sol";
 
 /// @title Swift Liquid Rotating Royalty Distributor (SL2RD).
 /// @author john-paul@formless.xyz, brandon@formless.xyz
@@ -29,7 +30,7 @@ import "./interfaces/IERC20Payable.sol";
 contract SL2RD is
     LimitedOwnable,
     ERC721("Swift Liquid Rotating Royalty Distributor", "SL2RD"),
-    IERC20Payable
+    ERC20Payable
 {
     /// @notice Emitted when a payment is sent to a stakeholder
     /// slot listed within this payment distribution contract.
@@ -62,9 +63,6 @@ contract SL2RD is
 
     OperatorRegistry private _shareOperatorRegistry;
     SHARE private _protocol;
-
-    // ERC20 contract address (e.g., for USDC payments)
-    address private _erc20ContractAddress;
     uint256 private _paymentBatchSize = 1;
 
     /// @notice Modifier to allow only the owner or a verified operator
@@ -325,15 +323,34 @@ contract SL2RD is
     /// stakeholders specified in this contract using the SL2RD
     /// method described above.
     receive() external payable nonReentrant afterInit {
-        uint256 paymentValue = msg.value / _paymentBatchSize;
+        uint256 paymentValue;
+        if (this.isERC20Payable()) {
+            paymentValue =
+                _erc20Token.balanceOf(address(this)) /
+                _paymentBatchSize;
+        } else {
+            paymentValue = msg.value / _paymentBatchSize;
+        }
         for (uint256 i = 0; i < _paymentBatchSize; i++) {
             address recipient = ownerOf(_tokenIds.value[_currentTokenIdIndex]);
-
             _currentTokenIdIndex =
                 (_currentTokenIdIndex + 1) %
                 (_tokenIds.value.length);
-            payable(recipient).transfer(paymentValue);
-
+            if (this.isERC20Payable()) {
+                // SL2RD transfers are guaranteed to be
+                // approved wallets and not a contract, therefore
+                // there is no need to execute a `call`.
+                // Also, the entire amount held in the SL2RD contract
+                // is distributed, e.g. the contract never holds a
+                // balance and immediately moves the money to a payee
+                // from the ERC20 token.
+                require(
+                    _erc20Token.transfer(recipient, paymentValue),
+                    "SHARE048"
+                );
+            } else {
+                payable(recipient).transfer(paymentValue);
+            }
             emit Payment(
                 msg.sender,
                 recipient,
@@ -486,18 +503,10 @@ contract SL2RD is
         asset.transferOwnership(msg.sender);
     }
 
-    /// @notice Sets the ERC20 contract address (e.g., for USDC payments).
-    function setERC20ContractAddress(
-        address contractAddress_
-    ) public override afterInit onlyOwner nonReentrant {
-        require(contractAddress_ != address(0), "SHARE042");
-        _erc20ContractAddress = contractAddress_;
-    }
-
-    /// @notice Gets the ERC20 contract address used for payments.
-    function getERC20ContractAddress() external view returns (address) {
-        return _erc20ContractAddress;
-    }
+    /// @notice Returns whether the contract implements a given interface
+    /// @dev Overrides ERC721's supportsInterface to include IERC20Payable interface
+    /// @param interfaceId The interface identifier, as specified in ERC-165
+    /// @return bool True if the contract implements the interface, false otherwise
 
     function supportsInterface(
         bytes4 interfaceId
@@ -508,10 +517,18 @@ contract SL2RD is
             interfaceId == type(IERC20Payable).interfaceId;
     }
 
+    /// @notice Sets the batch size for payment distribution.
     function setPaymentBatchSize(
         uint256 batchSize_
     ) public onlyOwnerOrOperator {
         require(batchSize_ > 0, "SHARE043");
         _paymentBatchSize = batchSize_;
+    }
+
+    /// @notice Sets the ERC20 contract address (e.g., for USDC payments).
+    function setERC20ContractAddress(
+        address contractAddress_
+    ) external onlyOwner {
+        _setERC20ContractAddress(contractAddress_);
     }
 }

@@ -1,9 +1,11 @@
 const SHARE = artifacts.require("SHARE");
 const PFAUnit = artifacts.require("PFAUnit");
-const DEFAULT_ADDRESS_INDEX = 0;
-const NON_OWNER_ADDRESS_INDEX = 1;
-const DEFAULT_TOKEN_ID = 0;
-const GRANT_TTL_PRECISION_SEC = 5;
+const {
+  DEFAULT_ADDRESS_INDEX,
+  NON_OWNER_ADDRESS_INDEX,
+  DEFAULT_TOKEN_ID,
+  GRANT_TTL_PRECISION_SEC,
+} = require("./helper");
 
 contract("PFAUnit", (accounts) => {
   specify("Contract initialization", async () => {

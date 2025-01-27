@@ -17,6 +17,8 @@ import "./libraries/CodeVerification.sol";
 import "./libraries/Immutable.sol";
 import "./interfaces/IPFACollection.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "./ERC20Payable.sol";
 
 /// @title Standard pay-for-access (PFA) collection contract.
 /// @author brandon@formless.xyz
@@ -135,10 +137,10 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
     /// of this contract, records a grant timestamp on chain which is
     /// read by decentralized distribution network (DDN) microservices
     /// to decrypt and serve the associated content for the tokenURI.
-    function access(
+    function accessUsingNativeToken(
         uint256 tokenId_,
         address recipient_
-    ) public payable override nonReentrant afterInit {
+    ) internal afterInit {
         SHARE protocol = SHARE(shareContractAddress());
         address itemAddress = _addresses.value[_currentAddressIndex];
         PFA item = PFA(itemAddress);
@@ -177,7 +179,6 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
                     recipient_
                 )
             );
-
             if (itemPaymentSuccess) {
                 emit Payment(
                     msg.sender,
@@ -208,6 +209,126 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
             emit ItemPaymentSkipped(itemOwner, address(item));
         }
         _transactionCount++;
+    }
+
+    /// @notice Processes an access request using ERC20 tokens as payment
+    /// @dev This internal function handles the payment distribution when using ERC20 tokens:
+    /// 1. Transfers the full payment from sender to this contract
+    /// 2. Distributes payment between the current item owner and collection owner
+    /// 3. Updates the collection state (grant timestamp, transaction count)
+    /// @param tokenId_ The token ID being accessed (must be UNIT_TOKEN_INDEX)
+    /// @param recipient_ The address that will receive the access grant
+    function accessUsingERC20Token(
+        uint256 tokenId_,
+        address recipient_
+    ) internal afterInit {
+        address owner = owner();
+        SHARE protocol = SHARE(shareContractAddress());
+
+        // Determine the immediately payable child item
+        // and its respective owner, subsequently,
+        // increment the child item index to the next item
+        // for future payments. This algorithm performs round-robin
+        // distribution of payments to child items.
+        address itemAddress = _addresses.value[_currentAddressIndex];
+        PFA item = PFA(itemAddress);
+        address itemOwner = item.owner();
+        _currentAddressIndex =
+            (_currentAddressIndex + 1) %
+            (_addresses.value.length);
+
+        if (
+            protocol.isApprovedBuild(
+                itemOwner,
+                CodeVerification.BuildType.WALLET
+            ) ||
+            protocol.isApprovedBuild(
+                itemOwner,
+                CodeVerification.BuildType.SPLIT
+            )
+        ) {
+            // Transfer the full payment from sender to this contract,
+            // then approve the child contract to spend the payment
+            // value and call the payable `access` function on the
+            // child contract.
+            uint256 itemPayment = item.pricePerAccess();
+            _transferERC20ThenApprove(
+                msg.sender /* tokenOwner_ */,
+                address(this) /* tokenSpender_ */,
+                _pricePerAccess.value /* totalTokenAmount_ */,
+                itemAddress /* callableContractAddress_ */,
+                itemPayment /* callableTokenAmount_ */
+            );
+            (bool itemPaymentSuccess, ) = payable(address(item)).call{
+                value: ERC20_PAYABLE_CALL_VALUE
+            }(
+                abi.encodeWithSignature(
+                    "access(uint256,address)",
+                    tokenId_,
+                    recipient_
+                )
+            );
+            if (itemPaymentSuccess) {
+                // Emit payment event for the child item
+                // to indicate successful payment.
+                emit Payment(
+                    msg.sender,
+                    address(item),
+                    _currentAddressIndex,
+                    itemPayment
+                );
+            } else {
+                emit ItemPaymentSkipped(itemOwner, address(item));
+            }
+            // Distribute the remaining payment to the collection owner
+            // and update the grant timestamp.
+            require(
+                _erc20Token.transfer(
+                    owner,
+                    _pricePerAccess.value - itemPayment
+                ),
+                "SHARE048"
+            );
+            (bool ownerPaymentSuccess, ) = payable(owner).call{
+                value: ERC20_PAYABLE_CALL_VALUE
+            }("");
+            require(ownerPaymentSuccess, "SHARE021");
+            // Emit payment event for the collection owner
+            // to indicate successful payment.
+            emit Payment(
+                msg.sender,
+                owner,
+                _currentAddressIndex,
+                _pricePerAccess.value - item.pricePerAccess()
+            );
+
+            _grantTimestamps[recipient_] = block.timestamp;
+            emit Grant(recipient_, UNIT_TOKEN_INDEX);
+        } else {
+            emit ItemPaymentSkipped(itemOwner, address(item));
+        }
+        _transactionCount++;
+    }
+
+    /// @notice If called with a value equal to the price per access
+    /// of this contract, records a grant timestamp on chain which is
+    /// read by decentralized distribution network (DDN) microservices
+    /// to decrypt and serve the associated content for the tokenURI.
+    /// @param tokenId_ The token ID to access (must be UNIT_TOKEN_INDEX)
+    /// @param recipient_ The address that will receive access to the content
+    /// @dev Handles both ERC20 and native token payments through
+    /// separate internal functions.
+    function access(
+        uint256 tokenId_,
+        address recipient_
+    ) public payable override nonReentrant afterInit {
+        if (this.isERC20Payable()) {
+            require(msg.value == ERC20_PAYABLE_CALL_VALUE, "SHARE051");
+            accessUsingERC20Token(tokenId_, recipient_);
+        } else {
+            require(msg.value >= _pricePerAccess.value, "SHARE005");
+            accessUsingNativeToken(tokenId_, recipient_);
+        }
     }
 
     /// @notice Returns true if `account_` address is included in the
@@ -247,6 +368,7 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
         return
             interfaceId == type(IERC165).interfaceId ||
             interfaceId == type(IERC721).interfaceId ||
-            interfaceId == type(IPFA).interfaceId;
+            interfaceId == type(IPFA).interfaceId ||
+            interfaceId == type(IERC20Payable).interfaceId;
     }
 }
