@@ -15,7 +15,6 @@ contract("SHARE payable with ERC20", (accounts) => {
   let _splitContract;
   let _verifier;
   const _defaultOwner = accounts[0];
-  const _nonOwner = accounts[1];
 
   beforeEach(async () => {
     _mockERC20 = await MockERC20.new();
