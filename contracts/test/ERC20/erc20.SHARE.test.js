@@ -5,11 +5,7 @@ const MockERC20 = artifacts.require("MockERC20");
 const SL2RD = artifacts.require("SL2RD");
 const OperatorRegistry = artifacts.require("OperatorRegistry");
 
-const {
-  UNIT_TOKEN_INDEX,
-  DEFAULT_ADDRESS_INDEX,
-  usdcToWei,
-} = require("../helper");
+const { UNIT_TOKEN_INDEX, usdcToWei } = require("../helper");
 
 contract("SHARE payable with ERC20", (accounts) => {
   let _assetContract;
@@ -54,12 +50,15 @@ contract("SHARE payable with ERC20", (accounts) => {
       "0.8.11+commit.d7f03943" /* compilerVersion_ */,
       _defaultOwner /* authorAddress_ */
     );
+    await _assetContract.setERC20ContractAddress(_mockERC20.address, {
+      from: _defaultOwner,
+    });
     await _shareContract.setERC20ContractAddress(_mockERC20.address, {
       from: _defaultOwner,
     });
   });
 
-  specify("Access denial with ERC20", async () => {
+  specify("Access denial with ERC20 payment", async () => {
     let insufficientValueWeiExceptionThrown = false;
     let exceedsValueWeiExceptionThrown = false;
     try {
@@ -83,16 +82,25 @@ contract("SHARE payable with ERC20", (accounts) => {
     );
   });
 
-  specify("Access grant with ERC20", async () => {
+  specify("Access grant with ERC20 payment", async () => {
+    await _mockERC20.approve(
+      _shareContract.address,
+      await _shareContract.grossPricePerAccess(
+        _assetContract.address,
+        UNIT_TOKEN_INDEX
+      ),
+      {
+        from: _defaultOwner,
+      }
+    );
     await _shareContract.access(_assetContract.address, UNIT_TOKEN_INDEX, {
-      from: _nonOwner,
-      value: usdcToWei(1),
+      from: _defaultOwner,
     });
     assert.equal(
       (
         await _assetContract.getPastEvents("Grant", {
           filter: {
-            recipient: _nonOwner,
+            recipient: _defaultOwner,
             tokenId: UNIT_TOKEN_INDEX,
           },
         })
@@ -112,15 +120,24 @@ contract("SHARE payable with ERC20", (accounts) => {
           from: _defaultOwner,
         }
       );
+      await _mockERC20.approve(
+        _shareContract.address,
+        await _shareContract.grossPricePerAccess(
+          _assetContract.address,
+          UNIT_TOKEN_INDEX
+        ),
+        {
+          from: _defaultOwner,
+        }
+      );
       await _shareContract.access(_assetContract.address, UNIT_TOKEN_INDEX, {
-        from: _nonOwner,
-        value: usdcToWei(1),
+        from: _defaultOwner,
       });
       assert.equal(
         (
           await _assetContract.getPastEvents("Grant", {
             filter: {
-              recipient: _nonOwner,
+              recipient: _defaultOwner,
               tokenId: UNIT_TOKEN_INDEX,
             },
           })
@@ -131,9 +148,9 @@ contract("SHARE payable with ERC20", (accounts) => {
         (
           await _shareContract.getPastEvents("Payment", {
             filter: {
-              from: _nonOwner,
-              recipient: _defaultOwner,
-              value: usdcToWei(0.5),
+              from: _defaultOwner,
+              recipient: accounts[3],
+              value: usdcToWei(0.025),
             },
           })
         ).length,
@@ -191,7 +208,6 @@ contract("SHARE payable with ERC20", (accounts) => {
       );
 
       await _splitContract.setPaymentBatchSize(batchSize);
-
       // Set ERC20 contract address for SHARE and PFA asset contracts.
       await _shareContract.setERC20ContractAddress(_mockERC20.address, {
         from: _defaultOwner,
@@ -240,7 +256,6 @@ contract("SHARE payable with ERC20", (accounts) => {
             assert.equal(events.length, (i + 1) * batchSize);
             for (let j = 0; j < batchSize; j++) {
               const event = events[events.length - batchSize + j];
-              console.log(event.returnValues.value);
               assert.equal(
                 event.returnValues.value,
                 usdcToWei(paymentValue) / batchSize, // Each recipient gets an equal share
