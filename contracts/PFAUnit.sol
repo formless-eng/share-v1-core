@@ -94,8 +94,12 @@ contract PFAUnit is ERC721, PFA {
         // Get the payment recipient address (either a wallet or split contract).
         address payeeAddress = owner();
 
-        // Transfer ERC20 tokens from the sender to the payee.
-        _transferERC20FromSender(payeeAddress, _pricePerAccess.value);
+        // Transfer ERC20 tokens from the sender to the PFA,
+        // then transfer the tokens from the PFA to the payee.
+        // Note that the one additional hop here is for
+        // accounting and provenance purposes.
+        _transferERC20FromSender(address(this), _pricePerAccess.value);
+        _erc20Token.transfer(payeeAddress, _pricePerAccess.value);
 
         // If the payee is a split contract (rather than a simple wallet),
         // additional processing is required to distribute the payment.
