@@ -127,6 +127,43 @@ contract SHARE is ERC20Payable, Ownable, ReentrancyGuard {
         return pricePerLicense + protocolFee;
     }
 
+    /// @notice Transfers a distributor fee to the distributor
+    /// @param contractAddress_ The address of the PFA contract
+    /// @param grossPrice_ The gross price of the access or license
+    /// @param netPrice_ The net price of the access or license
+    /// @param useERC20_ Whether to use ERC20 token payments
+    function _transferDistributorFee(
+        address contractAddress_,
+        uint256 grossPrice_,
+        uint256 netPrice_,
+        bool useERC20_
+    ) internal {
+        IPFA asset = IPFA(contractAddress_);
+        // Payout a distributor if associated with the asset.
+        if (
+            ERC165(contractAddress_).supportsInterface(type(IPFA).interfaceId)
+        ) {
+            address distributor = asset.distributorAddress();
+            if (distributor != address(0)) {
+                uint256 distributionFeeNumerator = asset
+                    .distributionFeeNumerator();
+                uint256 distributionFeeDenominator = asset
+                    .distributionFeeDenominator();
+                uint256 distributionFee = ((grossPrice_ - netPrice_) *
+                    distributionFeeNumerator) / distributionFeeDenominator;
+                if (useERC20_) {
+                    require(
+                        _erc20Token.transfer(distributor, distributionFee),
+                        "SHARE052"
+                    );
+                } else {
+                    payable(distributor).transfer(distributionFee);
+                }
+                emit Payment(msg.sender, distributor, distributionFee);
+            }
+        }
+    }
+
     /// @notice Checks if a given PFA contract accepts ERC20 token payments
     /// @dev Uses ERC165 interface detection to check if contract implements IERC20Payable
     /// and then verifies if ERC20 payments are enabled.
@@ -162,6 +199,7 @@ contract SHARE is ERC20Payable, Ownable, ReentrancyGuard {
 
         IPFA asset = IPFA(contractAddress_);
         uint256 grossPrice = grossPricePerAccess(contractAddress_, tokenId_);
+        uint256 netPrice = asset.pricePerAccess();
         bool useERC20 = assetUsesERC20(contractAddress_) &&
             this.isERC20Payable();
 
@@ -172,38 +210,20 @@ contract SHARE is ERC20Payable, Ownable, ReentrancyGuard {
                 address(this) /* tokenSpender_ */,
                 grossPrice /* totalTokenAmount_ */,
                 address(asset) /* callableContractAddress_ */,
-                asset.pricePerAccess() /* callableTokenAmount_ */
+                netPrice /* callableTokenAmount_ */
             );
             asset.access{value: ERC20_PAYABLE_CALL_VALUE}(tokenId_, msg.sender);
         } else {
             require(msg.value >= grossPrice, "SHARE011");
-            asset.access{value: asset.pricePerAccess()}(tokenId_, msg.sender);
+            asset.access{value: netPrice}(tokenId_, msg.sender);
         }
 
-        // Payout a distributor if associated with the asset.
-        if (
-            ERC165(contractAddress_).supportsInterface(type(IPFA).interfaceId)
-        ) {
-            address distributor = asset.distributorAddress();
-            if (distributor != address(0)) {
-                uint256 distributionFeeNumerator = asset
-                    .distributionFeeNumerator();
-                uint256 distributionFeeDenominator = asset
-                    .distributionFeeDenominator();
-                uint256 distributionFee = ((grossPrice -
-                    asset.pricePerAccess()) * distributionFeeNumerator) /
-                    distributionFeeDenominator;
-                if (useERC20) {
-                    require(
-                        _erc20Token.transfer(distributor, distributionFee),
-                        "SHARE052"
-                    );
-                } else {
-                    payable(distributor).transfer(distributionFee);
-                }
-                emit Payment(msg.sender, distributor, distributionFee);
-            }
-        }
+        _transferDistributorFee(
+            contractAddress_ /* contractAddress_ */,
+            grossPrice /* grossPrice_ */,
+            netPrice /* netPrice_ */,
+            useERC20 /* useERC20_ */
+        );
 
         _grantTimestamps[contractAddress_][msg.sender] = block.timestamp;
         emit Grant(msg.sender, contractAddress_, tokenId_);
@@ -247,6 +267,7 @@ contract SHARE is ERC20Payable, Ownable, ReentrancyGuard {
         require(msg.sender == Ownable(licenseeContract_).owner(), "SHARE016");
         IPFA asset = IPFA(licensorContract_);
         uint256 grossPrice = grossPricePerLicense(licensorContract_);
+        uint256 netPrice = asset.pricePerLicense();
         bool useERC20 = assetUsesERC20(licenseeContract_) &&
             this.isERC20Payable();
 
@@ -257,13 +278,21 @@ contract SHARE is ERC20Payable, Ownable, ReentrancyGuard {
                 address(this) /* tokenSpender_ */,
                 grossPrice /* totalTokenAmount_ */,
                 address(licenseeContract_) /* callableContractAddress_ */,
-                asset.pricePerLicense() /* callableTokenAmount_ */
+                netPrice /* callableTokenAmount_ */
             );
             asset.license{value: ERC20_PAYABLE_CALL_VALUE}(licenseeContract_);
         } else {
             require(msg.value >= grossPrice, "SHARE024");
-            asset.license{value: asset.pricePerLicense()}(licenseeContract_);
+            asset.license{value: netPrice}(licenseeContract_);
         }
+
+        _transferDistributorFee(
+            licensorContract_ /* contractAddress_ */,
+            grossPrice /* grossPrice_ */,
+            netPrice /* netPrice_ */,
+            useERC20 /* useERC20_ */
+        );
+
         _licenseTimestamps[licensorContract_][licenseeContract_] = block
             .timestamp;
         emit License(licensorContract_, licenseeContract_);

@@ -177,7 +177,12 @@ abstract contract PFA is ERC20Payable, IPFA, LimitedOwnable {
         require(_supportsLicensing.value, "SHARE018");
         if (this.isERC20Payable()) {
             require(msg.value == ERC20_PAYABLE_CALL_VALUE, "SHARE051");
-            _transferERC20FromSender(owner(), _pricePerLicense.value);
+            _transferERC20FromSender(address(this), _pricePerLicense.value);
+            // Transfer ERC20 tokens from the sender to the PFA,
+            // then transfer the tokens from the PFA to the payee.
+            // Note that the one additional hop here is for
+            // accounting and provenance purposes.
+            _erc20Token.transfer(owner(), _pricePerLicense.value);
         } else {
             require(msg.value == _pricePerLicense.value, "SHARE023");
         }
