@@ -888,7 +888,7 @@ contract("SL2RD", (accounts) => {
         operatorRegistry.address /* operatorRegistryAddress_ */
       );
 
-      await splitContract.transferMultipleFromOwner(recipientAddress, [0, 1], {
+      await splitContract.transferTokenIds(recipientAddress, [0, 1], {
         from: ownerAddresses[0],
       });
 

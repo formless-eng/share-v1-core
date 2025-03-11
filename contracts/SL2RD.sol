@@ -467,8 +467,8 @@ contract SL2RD is
         _nextAvailableCommunitySlot++;
     }
 
-    /// @notice Function to transfer multiple slots to a specifed address.
-    function transferMultipleFromOwner(
+    /// @notice Function to transfer multiple token IDs to a specifed address.
+    function transferTokenIds(
         address to_,
         uint256[] memory tokenIds_
     ) public onlyOwnerOrOperator {
