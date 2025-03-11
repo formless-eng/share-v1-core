@@ -1135,4 +1135,23 @@ contract("SL2RD", (accounts) => {
         });
     }
   });
+
+  specify("tokenIdForSlot returns the correct value", async () => {
+    const shareContract = await SHARE.deployed();
+    const splitContract = await SL2RD.new();
+    const operatorRegistry = await OperatorRegistry.deployed();
+    const ownerAddresses = Array(10).fill(accounts[0]);
+    const uniformCollaboratorsIds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+    await splitContract.initialize(
+      ownerAddresses /* addresses_ */,
+      uniformCollaboratorsIds /* tokenIds_ */,
+      0 /* communitySplitsBasisPoints_ */,
+      shareContract.address /* shareContractAddress_ */,
+      operatorRegistry.address /* operatorRegistryAddress_ */
+    );
+
+    for (let i = 0; i < 10; i++) {
+      assert.equal(await splitContract.tokenIdForSlot(i), i);
+    }
+  });
 });
