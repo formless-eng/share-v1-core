@@ -287,6 +287,11 @@ contract SL2RD is
         return owners;
     }
 
+    /// @notice Returns the tokenId for a given slot index.
+    function tokenIdForSlot(uint256 slotIndex_) public view returns (uint256) {
+        return _tokenIds.value[slotIndex_];
+    }
+
     /// @notice Returns the index of the tokenId in the table which
     /// is the next tokenId to receive payment on the reception of
     /// payment by this contract.
