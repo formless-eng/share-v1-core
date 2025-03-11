@@ -468,7 +468,7 @@ contract SL2RD is
     }
 
     /// @notice Function to transfer multiple slots to a specifed address.
-    function transferMultiple(
+    function transferMultipleFromOwner(
         address to_,
         uint256[] memory tokenIds_
     ) public onlyOwnerOrOperator {
