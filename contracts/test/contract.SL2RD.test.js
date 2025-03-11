@@ -869,6 +869,35 @@ contract("SL2RD", (accounts) => {
     }
   );
 
+  specify(
+    "Transfer multiple explicit token IDs from owner to a specified address",
+    async () => {
+      const shareContract = await SHARE.deployed();
+      const splitContract = await SL2RD.new();
+      const operatorRegistry = await OperatorRegistry.deployed();
+      const ownerAddresses = Array(5).fill(accounts[0]);
+      const recipientAddress = accounts[NON_OWNER_ADDRESS_INDEX];
+      const tokenIds = [0, 1, 2, 3, 4];
+      const communitySplitsBasisPoints = 0;
+
+      await splitContract.initialize(
+        ownerAddresses /* addresses_ */,
+        tokenIds /* tokenIds_ */,
+        communitySplitsBasisPoints /* communitySplitsBasisPoints_ */,
+        shareContract.address /* shareContractAddress_ */,
+        operatorRegistry.address /* operatorRegistryAddress_ */
+      );
+
+      await splitContract.transferMultipleFromOwner(recipientAddress, [0, 1], {
+        from: ownerAddresses[0],
+      });
+
+      for (let i = 0; i < 2; i++) {
+        assert.equal(recipientAddress, await splitContract.ownerOf(i));
+      }
+    }
+  );
+
   specify("Transfer slot past community allocation failure", async () => {
     const shareContract = await SHARE.deployed();
     const splitContract = await SL2RD.new();

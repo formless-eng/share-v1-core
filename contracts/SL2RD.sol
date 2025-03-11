@@ -467,6 +467,18 @@ contract SL2RD is
         _nextAvailableCommunitySlot++;
     }
 
+    /// @notice Function to transfer multiple slots to a specifed address.
+    function transferMultiple(
+        address to_,
+        uint256[] memory tokenIds_
+    ) public onlyOwnerOrOperator {
+        for (uint256 i = 0; i < tokenIds_.length; i++) {
+            uint256 tokenId = tokenIds_[i];
+            super._approve(msg.sender, tokenId);
+            super.transferFrom(ownerOf(tokenId), to_, tokenId);
+        }
+    }
+
     /// @notice Function to transfer multiple available slots to a specifed address.
     function transferMultipleAvailable(
         address to_,
