@@ -289,6 +289,7 @@ contract SL2RD is
 
     /// @notice Returns the tokenId for a given slot index.
     function tokenIdForSlot(uint256 slotIndex_) public view returns (uint256) {
+        require(slotIndex_ < _totalSlots.value, "SHARE053");
         return _tokenIds.value[slotIndex_];
     }
 
