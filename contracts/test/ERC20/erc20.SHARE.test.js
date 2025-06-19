@@ -92,9 +92,14 @@ contract("SHARE payable with ERC20", (accounts) => {
         from: _defaultOwner,
       }
     );
-    await _shareContract.access(_assetContract.address, UNIT_TOKEN_INDEX, {
-      from: _defaultOwner,
-    });
+    await _shareContract.access(
+      _assetContract.address,
+      UNIT_TOKEN_INDEX,
+      _defaultOwner,
+      {
+        from: _defaultOwner,
+      }
+    );
     assert.equal(
       (
         await _assetContract.getPastEvents("Grant", {
@@ -129,9 +134,14 @@ contract("SHARE payable with ERC20", (accounts) => {
           from: _defaultOwner,
         }
       );
-      await _shareContract.access(_assetContract.address, UNIT_TOKEN_INDEX, {
-        from: _defaultOwner,
-      });
+      await _shareContract.access(
+        _assetContract.address,
+        UNIT_TOKEN_INDEX,
+        _defaultOwner,
+        {
+          from: _defaultOwner,
+        }
+      );
       assert.equal(
         (
           await _assetContract.getPastEvents("Grant", {
@@ -231,10 +241,15 @@ contract("SHARE payable with ERC20", (accounts) => {
             from: _defaultOwner,
           }
         );
-        await _shareContract.access(_assetContract.address, UNIT_TOKEN_INDEX, {
-          from: _defaultOwner,
-          value: 0,
-        });
+        await _shareContract.access(
+          _assetContract.address,
+          UNIT_TOKEN_INDEX,
+          _defaultOwner,
+          {
+            from: _defaultOwner,
+            value: 0,
+          }
+        );
         assert.equal(
           (
             await _assetContract.getPastEvents("Grant", {

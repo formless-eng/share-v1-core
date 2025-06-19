@@ -183,7 +183,8 @@ contract SHARE is ERC20Payable, Ownable, ReentrancyGuard {
     /// grant awarded to the sender with a corresponding TTL.
     function access(
         address contractAddress_,
-        uint256 tokenId_
+        uint256 tokenId_,
+        address recipient_
     ) public payable nonReentrant {
         require(
             isApprovedBuild(
@@ -212,10 +213,10 @@ contract SHARE is ERC20Payable, Ownable, ReentrancyGuard {
                 address(asset) /* callableContractAddress_ */,
                 netPrice /* callableTokenAmount_ */
             );
-            asset.access{value: ERC20_PAYABLE_CALL_VALUE}(tokenId_, msg.sender);
+            asset.access{value: ERC20_PAYABLE_CALL_VALUE}(tokenId_, recipient_);
         } else {
             require(msg.value >= grossPrice, "SHARE011");
-            asset.access{value: netPrice}(tokenId_, msg.sender);
+            asset.access{value: netPrice}(tokenId_, recipient_);
         }
 
         _transferDistributorFee(
@@ -225,8 +226,8 @@ contract SHARE is ERC20Payable, Ownable, ReentrancyGuard {
             useERC20 /* useERC20_ */
         );
 
-        _grantTimestamps[contractAddress_][msg.sender] = block.timestamp;
-        emit Grant(msg.sender, contractAddress_, tokenId_);
+        _grantTimestamps[contractAddress_][recipient_] = block.timestamp;
+        emit Grant(recipient_, contractAddress_, tokenId_);
         _transactionCount++;
         _transactionVolume += msg.value;
     }
