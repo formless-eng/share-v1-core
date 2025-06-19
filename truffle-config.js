@@ -7,6 +7,7 @@ const RPC_ENDPOINT_POLYGON_MUMBAI = process.env.RPC_ENDPOINT_POLYGON_MUMBAI;
 const RPC_ENDPOINT_POLYGON_MAINNET = process.env.RPC_ENDPOINT_POLYGON_MAINNET;
 const RPC_ENDPOINT_ETHEREUM_MAINNET = process.env.RPC_ENDPOINT_ETHEREUM_MAINNET;
 const RPC_ENDPOINT_BASE_MAINNET = process.env.RPC_ENDPOINT_BASE_MAINNET;
+const RPC_ENDPOINT_BASE_SEPOLIA = process.env.RPC_ENDPOINT_BASE_SEPOLIA;
 const GAS_VALUE = process.env.GAS_VALUE ? process.env.GAS_VALUE : 5500000;
 
 const SOLIDITY_COMPILER_VERSION = "0.8.11";
@@ -91,6 +92,18 @@ module.exports = {
       network_id: 8453,
       gas: GAS_VALUE,
       gasPrice: 34000000,
+      confirmations: 2,
+      timeoutBlocks: 2000,
+      networkCheckTimeout: 1000000,
+      skipDryRun: true,
+    },
+
+    base_sepolia: {
+      provider: () =>
+        new HDWalletProvider(mnemonicPhrase, RPC_ENDPOINT_BASE_SEPOLIA),
+      network_id: 84532,
+      gas: GAS_VALUE,
+      gasPrice: 1500000,
       confirmations: 2,
       timeoutBlocks: 2000,
       networkCheckTimeout: 1000000,
