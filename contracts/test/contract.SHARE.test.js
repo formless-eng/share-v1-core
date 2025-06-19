@@ -110,19 +110,29 @@ contract("SHARE", (accounts) => {
     let exceedsValueWeiExceptionThrown = false;
 
     try {
-      await shareContract.access(assetContract.address, UNIT_TOKEN_INDEX, {
-        from: accounts[DEFAULT_ADDRESS_INDEX],
-        value: insufficientValueWei,
-      });
+      await shareContract.access(
+        assetContract.address,
+        UNIT_TOKEN_INDEX,
+        accounts[DEFAULT_ADDRESS_INDEX],
+        {
+          from: accounts[DEFAULT_ADDRESS_INDEX],
+          value: insufficientValueWei,
+        }
+      );
     } catch (error) {
       insufficientValueWeiExceptionThrown = true;
     }
 
     try {
-      await shareContract.access(assetContract.address, UNIT_TOKEN_INDEX, {
-        from: accounts[DEFAULT_ADDRESS_INDEX],
-        value: exceedsValueWei,
-      });
+      await shareContract.access(
+        assetContract.address,
+        UNIT_TOKEN_INDEX,
+        accounts[DEFAULT_ADDRESS_INDEX],
+        {
+          from: accounts[DEFAULT_ADDRESS_INDEX],
+          value: exceedsValueWei,
+        }
+      );
     } catch (error) {
       exceedsValueWeiExceptionThrown = true;
     }
@@ -143,10 +153,15 @@ contract("SHARE", (accounts) => {
       "0.8.11+commit.d7f03943" /* compilerVersion_ */,
       accounts[NON_OWNER_ADDRESS_INDEX] /* authorAddress_ */
     );
-    await shareContract.access(assetContract.address, UNIT_TOKEN_INDEX, {
-      from: accounts[NON_OWNER_ADDRESS_INDEX],
-      value: "1050000000",
-    });
+    await shareContract.access(
+      assetContract.address,
+      UNIT_TOKEN_INDEX,
+      accounts[NON_OWNER_ADDRESS_INDEX],
+      {
+        from: accounts[NON_OWNER_ADDRESS_INDEX],
+        value: "1050000000",
+      }
+    );
     assert.equal(
       (
         await assetContract.getPastEvents("Grant", {
@@ -171,10 +186,15 @@ contract("SHARE", (accounts) => {
       "0.8.11+commit.d7f03943" /* compilerVersion_ */,
       accounts[NON_OWNER_ADDRESS_INDEX] /* authorAddress_ */
     );
-    await shareContract.access(assetContract.address, UNIT_TOKEN_INDEX, {
-      from: accounts[NON_OWNER_ADDRESS_INDEX],
-      value: "1050000000",
-    });
+    await shareContract.access(
+      assetContract.address,
+      UNIT_TOKEN_INDEX,
+      accounts[NON_OWNER_ADDRESS_INDEX],
+      {
+        from: accounts[NON_OWNER_ADDRESS_INDEX],
+        value: "1050000000",
+      }
+    );
     const grantTimestamp = await shareContract.grantTimestamp(
       assetContract.address,
       accounts[NON_OWNER_ADDRESS_INDEX]
@@ -228,10 +248,15 @@ contract("SHARE", (accounts) => {
 
     for (let i = 0; i < uniformCollaborators.length; i++) {
       const recipientAddress = uniformCollaborators[i];
-      await shareContract.access(assetContract.address, UNIT_TOKEN_INDEX, {
-        from: accounts[NON_OWNER_ADDRESS_INDEX],
-        value: "1050000000",
-      });
+      await shareContract.access(
+        assetContract.address,
+        UNIT_TOKEN_INDEX,
+        accounts[NON_OWNER_ADDRESS_INDEX],
+        {
+          from: accounts[NON_OWNER_ADDRESS_INDEX],
+          value: "1050000000",
+        }
+      );
 
       const events = await splitContract.getPastEvents("Payment", {
         filter: { recipient: recipientAddress },
@@ -253,10 +278,15 @@ contract("SHARE", (accounts) => {
   specify("Access grant TTL", async () => {
     const shareContract = await SHARE.deployed();
     const assetContract = await PFAUnit.deployed();
-    await shareContract.access(assetContract.address, UNIT_TOKEN_INDEX, {
-      from: accounts[NON_OWNER_ADDRESS_INDEX],
-      value: "1050000000",
-    });
+    await shareContract.access(
+      assetContract.address,
+      UNIT_TOKEN_INDEX,
+      accounts[NON_OWNER_ADDRESS_INDEX],
+      {
+        from: accounts[NON_OWNER_ADDRESS_INDEX],
+        value: "1050000000",
+      }
+    );
 
     const grantTimestamp = await assetContract.grantTimestamp(
       accounts[NON_OWNER_ADDRESS_INDEX],
@@ -669,10 +699,15 @@ contract("License grant", (accounts) => {
       accounts[NON_OWNER_ADDRESS_INDEX] /* authorAddress_ */
     );
     for (let i = 0; i < 50; i++) {
-      await shareContract.access(assetContract.address, UNIT_TOKEN_INDEX, {
-        from: accounts[NON_OWNER_ADDRESS_INDEX],
-        value: "1050000000",
-      });
+      await shareContract.access(
+        assetContract.address,
+        UNIT_TOKEN_INDEX,
+        accounts[NON_OWNER_ADDRESS_INDEX],
+        {
+          from: accounts[NON_OWNER_ADDRESS_INDEX],
+          value: "1050000000",
+        }
+      );
       const txCount = await shareContract._transactionCount.call();
       console.log(`tx count: ${txCount}`);
       assert.equal(txCount, i + 1);
@@ -699,10 +734,15 @@ contract("License grant", (accounts) => {
       accounts[NON_OWNER_ADDRESS_INDEX] /* authorAddress_ */
     );
     for (let i = 0; i < 50; i++) {
-      await shareContract.access(assetContract.address, UNIT_TOKEN_INDEX, {
-        from: accounts[NON_OWNER_ADDRESS_INDEX],
-        value: "1050000000",
-      });
+      await shareContract.access(
+        assetContract.address,
+        UNIT_TOKEN_INDEX,
+        accounts[NON_OWNER_ADDRESS_INDEX],
+        {
+          from: accounts[NON_OWNER_ADDRESS_INDEX],
+          value: "1050000000",
+        }
+      );
       const txVolume = await shareContract._transactionVolume.call();
       console.log(`tx volume: ${txVolume}`);
       assert.equal(txVolume, (i + 1) * 1050000000);
@@ -736,10 +776,15 @@ contract("License grant", (accounts) => {
         from: accounts[DEFAULT_ADDRESS_INDEX],
       }
     );
-    await shareContract.access(assetContract.address, UNIT_TOKEN_INDEX, {
-      from: accounts[NON_OWNER_ADDRESS_INDEX],
-      value: "1050000000",
-    });
+    await shareContract.access(
+      assetContract.address,
+      UNIT_TOKEN_INDEX,
+      accounts[NON_OWNER_ADDRESS_INDEX],
+      {
+        from: accounts[NON_OWNER_ADDRESS_INDEX],
+        value: "1050000000",
+      }
+    );
     assert.equal(
       (
         await assetContract.getPastEvents("Grant", {
