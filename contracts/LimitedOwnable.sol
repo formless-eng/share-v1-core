@@ -84,7 +84,7 @@ abstract contract LimitedOwnable is Ownable, ReentrancyGuard {
     }
 
     /// @notice Returns the address of the SHARE protocol contract.
-    function shareContractAddress() internal view afterInit returns (address) {
+    function shareContractAddress() public view afterInit returns (address) {
         return _shareContractAddress.value;
     }
 

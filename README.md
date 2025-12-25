@@ -63,7 +63,7 @@ truffle test -g "License denial non-approved collection build"
 To interact with deployed contracts you can use the truffle console:
 
 ```shell
-MNEMONIC_PHRASE=$MNEMONIC RPC_ENDPIONT_OPTIMISM=$RPC_ENDPOINT_OPTIMISM RPC_ENDPOINT_POLYGON_MAINNET=$RPC_ENDPOINT_POLYGON_MAINNET truffle console --network=optimism
+MNEMONIC_PHRASE=$MNEMONIC RPC_ENDPIONT_BASE_MAINNET=$RPC_ENDPOINT_BASE_MAINNET truffle console --network=base
 ```
 
 From the console you can then call "migrate" which will execute the code in `migrations/1_initial_migration.js` and deploy the respective contracts to the selected blockchain. From the console you can instantiate a reference to the contract using:
