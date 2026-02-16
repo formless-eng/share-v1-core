@@ -556,26 +556,26 @@ contract SL2RD is
         _setERC20ContractAddress(contractAddress_);
     }
 
-    /// @notice Returns the NFT name.
+    /// @notice Returns the token name.
     /// @dev Overrides ERC721 to return mutable name.
     function name() public view virtual override returns (string memory) {
         return _name;
     }
 
-    /// @notice Returns the NFT symbol.
+    /// @notice Returns the token symbol.
     /// @dev Overrides ERC721 to return mutable symbol.
     function symbol() public view virtual override returns (string memory) {
         return _symbol;
     }
 
-    /// @notice Sets the NFT name.
-    /// @param name_ The new name for the NFT collection.
+    /// @notice Sets the token name.
+    /// @param name_ The new name for the token collection.
     function setName(string memory name_) external onlyOwner {
         _name = name_;
     }
 
-    /// @notice Sets the NFT symbol.
-    /// @param symbol_ The new symbol for the NFT collection.
+    /// @notice Sets the token symbol.
+    /// @param symbol_ The new symbol for the token collection.
     function setSymbol(string memory symbol_) external onlyOwner {
         _symbol = symbol_;
     }
