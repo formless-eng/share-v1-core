@@ -384,4 +384,217 @@ contract("SL2RD_V2", (accounts) => {
       assert.equal(await splitContract.balanceOf(liquidityPool.address), 10);
     }
   );
+
+  specify("Owner can set token name", async () => {
+    const shareContract = await SHARE.deployed();
+    const operatorRegistry = await OperatorRegistry.deployed();
+    const splitContract = await SL2RD_V2.new();
+    const newName = "Updated Token Name";
+
+    await splitContract.initialize(
+      "Original Token",
+      "ORIG",
+      100 /* totalShares */,
+      10 /* totalPublicShares */,
+      1 /* batchSize */,
+      accounts[_PRIMARY_ACCOUNT_INDEX] /* primaryShareholderAddress */,
+      shareContract.address,
+      operatorRegistry.address,
+      false /* testMode */,
+      true /* codeVerificationEnabled */
+    );
+
+    // Check initial name
+    assert.equal(await splitContract.name(), "Original Token");
+
+    // Set new name
+    await splitContract.setName(newName, {
+      from: accounts[_PRIMARY_ACCOUNT_INDEX],
+    });
+
+    // Verify name was updated
+    assert.equal(await splitContract.name(), newName, "Token name was not set correctly.");
+  });
+
+  specify("Non-owner cannot set token name", async () => {
+    const shareContract = await SHARE.deployed();
+    const operatorRegistry = await OperatorRegistry.deployed();
+    const splitContract = await SL2RD_V2.new();
+    const newName = "Unauthorized Name";
+
+    await splitContract.initialize(
+      "Original Token",
+      "ORIG",
+      100 /* totalShares */,
+      10 /* totalPublicShares */,
+      1 /* batchSize */,
+      accounts[_PRIMARY_ACCOUNT_INDEX] /* primaryShareholderAddress */,
+      shareContract.address,
+      operatorRegistry.address,
+      false /* testMode */,
+      true /* codeVerificationEnabled */
+    );
+
+    try {
+      await splitContract.setName(newName, {
+        from: accounts[1],
+      });
+      assert.fail("Expected revert, but transaction succeeded.");
+    } catch (error) {
+      assert(
+        error.message.includes("caller is not the owner"),
+        "Expected revert with 'caller is not the owner', but got: " + error.message
+      );
+    }
+  });
+
+  specify("Owner can set token symbol", async () => {
+    const shareContract = await SHARE.deployed();
+    const operatorRegistry = await OperatorRegistry.deployed();
+    const splitContract = await SL2RD_V2.new();
+    const newSymbol = "NEWSYM";
+
+    await splitContract.initialize(
+      "Original Token",
+      "ORIG",
+      100 /* totalShares */,
+      10 /* totalPublicShares */,
+      1 /* batchSize */,
+      accounts[_PRIMARY_ACCOUNT_INDEX] /* primaryShareholderAddress */,
+      shareContract.address,
+      operatorRegistry.address,
+      false /* testMode */,
+      true /* codeVerificationEnabled */
+    );
+
+    // Check initial symbol
+    assert.equal(await splitContract.symbol(), "ORIG");
+
+    // Set new symbol
+    await splitContract.setSymbol(newSymbol, {
+      from: accounts[_PRIMARY_ACCOUNT_INDEX],
+    });
+
+    // Verify symbol was updated
+    assert.equal(await splitContract.symbol(), newSymbol, "Token symbol was not set correctly.");
+  });
+
+  specify("Non-owner cannot set token symbol", async () => {
+    const shareContract = await SHARE.deployed();
+    const operatorRegistry = await OperatorRegistry.deployed();
+    const splitContract = await SL2RD_V2.new();
+    const newSymbol = "HACK";
+
+    await splitContract.initialize(
+      "Original Token",
+      "ORIG",
+      100 /* totalShares */,
+      10 /* totalPublicShares */,
+      1 /* batchSize */,
+      accounts[_PRIMARY_ACCOUNT_INDEX] /* primaryShareholderAddress */,
+      shareContract.address,
+      operatorRegistry.address,
+      false /* testMode */,
+      true /* codeVerificationEnabled */
+    );
+
+    try {
+      await splitContract.setSymbol(newSymbol, {
+        from: accounts[1],
+      });
+      assert.fail("Expected revert, but transaction succeeded.");
+    } catch (error) {
+      assert(
+        error.message.includes("caller is not the owner"),
+        "Expected revert with 'caller is not the owner', but got: " + error.message
+      );
+    }
+  });
+
+  specify("Owner can set contract URI and retrieve it", async () => {
+    const shareContract = await SHARE.deployed();
+    const operatorRegistry = await OperatorRegistry.deployed();
+    const splitContract = await SL2RD_V2.new();
+    const contractURI = "https://api.example.com/contract-metadata";
+
+    await splitContract.initialize(
+      "Original Token",
+      "ORIG",
+      100 /* totalShares */,
+      10 /* totalPublicShares */,
+      1 /* batchSize */,
+      accounts[_PRIMARY_ACCOUNT_INDEX] /* primaryShareholderAddress */,
+      shareContract.address,
+      operatorRegistry.address,
+      false /* testMode */,
+      true /* codeVerificationEnabled */
+    );
+
+    // Set contract URI
+    await splitContract.setContractURI(contractURI, {
+      from: accounts[_PRIMARY_ACCOUNT_INDEX],
+    });
+
+    // Verify contract URI was set
+    assert.equal(
+      await splitContract.contractURI(),
+      contractURI,
+      "Contract URI was not set correctly."
+    );
+  });
+
+  specify("contractURI returns empty string when not set", async () => {
+    const shareContract = await SHARE.deployed();
+    const operatorRegistry = await OperatorRegistry.deployed();
+    const splitContract = await SL2RD_V2.new();
+
+    await splitContract.initialize(
+      "Original Token",
+      "ORIG",
+      100 /* totalShares */,
+      10 /* totalPublicShares */,
+      1 /* batchSize */,
+      accounts[_PRIMARY_ACCOUNT_INDEX] /* primaryShareholderAddress */,
+      shareContract.address,
+      operatorRegistry.address,
+      false /* testMode */,
+      true /* codeVerificationEnabled */
+    );
+
+    // Get contract URI without setting it
+    const contractURI = await splitContract.contractURI();
+    assert.equal(contractURI, "", "Contract URI should be empty when not set.");
+  });
+
+  specify("Non-owner cannot set contract URI", async () => {
+    const shareContract = await SHARE.deployed();
+    const operatorRegistry = await OperatorRegistry.deployed();
+    const splitContract = await SL2RD_V2.new();
+    const contractURI = "https://malicious.com/";
+
+    await splitContract.initialize(
+      "Original Token",
+      "ORIG",
+      100 /* totalShares */,
+      10 /* totalPublicShares */,
+      1 /* batchSize */,
+      accounts[_PRIMARY_ACCOUNT_INDEX] /* primaryShareholderAddress */,
+      shareContract.address,
+      operatorRegistry.address,
+      false /* testMode */,
+      true /* codeVerificationEnabled */
+    );
+
+    try {
+      await splitContract.setContractURI(contractURI, {
+        from: accounts[1],
+      });
+      assert.fail("Expected revert, but transaction succeeded.");
+    } catch (error) {
+      assert(
+        error.message.includes("caller is not the owner"),
+        "Expected revert with 'caller is not the owner', but got: " + error.message
+      );
+    }
+  });
 });

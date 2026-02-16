@@ -1183,4 +1183,141 @@ contract("SL2RD", (accounts) => {
       assert.equal(await splitContract.tokenIdForSlot(i), i);
     }
   });
+
+  specify("Owner can set NFT name", async () => {
+    const newName = "New SL2RD Collection Name";
+
+    // Check default name
+    const defaultName = await this._singletonSplitContract.name();
+    assert.equal(defaultName, "Swift Liquid Rotating Royalty Distributor");
+
+    // Set new name
+    await this._singletonSplitContract.setName(newName, {
+      from: accounts[DEFAULT_ADDRESS_INDEX],
+    });
+
+    // Verify the name was updated
+    const updatedName = await this._singletonSplitContract.name();
+    assert.equal(updatedName, newName, "The NFT name was not set correctly.");
+  });
+
+  specify("Non-owner cannot set NFT name", async () => {
+    const newName = "Unauthorized Name";
+
+    try {
+      await this._singletonSplitContract.setName(newName, {
+        from: accounts[NON_OWNER_ADDRESS_INDEX],
+      });
+      assert.fail("Expected revert, but transaction succeeded.");
+    } catch (error) {
+      assert(
+        error.message.includes("caller is not the owner"),
+        "Expected revert with 'caller is not the owner', but got: " +
+          error.message
+      );
+    }
+  });
+
+  specify("Owner can set NFT symbol", async () => {
+    const newSymbol = "NEWSL2RD";
+
+    // Check default symbol
+    const defaultSymbol = await this._singletonSplitContract.symbol();
+    assert.equal(defaultSymbol, "SL2RD");
+
+    // Set new symbol
+    await this._singletonSplitContract.setSymbol(newSymbol, {
+      from: accounts[DEFAULT_ADDRESS_INDEX],
+    });
+
+    // Verify the symbol was updated
+    const updatedSymbol = await this._singletonSplitContract.symbol();
+    assert.equal(updatedSymbol, newSymbol, "The NFT symbol was not set correctly.");
+  });
+
+  specify("Non-owner cannot set NFT symbol", async () => {
+    const newSymbol = "HACK";
+
+    try {
+      await this._singletonSplitContract.setSymbol(newSymbol, {
+        from: accounts[NON_OWNER_ADDRESS_INDEX],
+      });
+      assert.fail("Expected revert, but transaction succeeded.");
+    } catch (error) {
+      assert(
+        error.message.includes("caller is not the owner"),
+        "Expected revert with 'caller is not the owner', but got: " +
+          error.message
+      );
+    }
+  });
+
+  specify("Owner can set base token URI and retrieve tokenURI", async () => {
+    const baseURI = "https://api.example.com/metadata/";
+    const tokenId = 0;
+
+    // Set base token URI
+    await this._singletonSplitContract.setBaseTokenURI(baseURI, {
+      from: accounts[DEFAULT_ADDRESS_INDEX],
+    });
+
+    // Verify tokenURI returns correct value
+    const tokenURI = await this._singletonSplitContract.tokenURI(tokenId);
+    assert.equal(
+      tokenURI,
+      baseURI + tokenId,
+      "The tokenURI was not constructed correctly."
+    );
+  });
+
+  specify("tokenURI returns empty string when base URI not set", async () => {
+    const shareContract = await SHARE.deployed();
+    const splitContract = await SL2RD.new();
+    const operatorRegistry = await OperatorRegistry.deployed();
+    const ownerAddresses = Array(10).fill(accounts[0]);
+    const uniformCollaboratorsIds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+    await splitContract.initialize(
+      ownerAddresses /* addresses_ */,
+      uniformCollaboratorsIds /* tokenIds_ */,
+      0 /* communitySplitsBasisPoints_ */,
+      shareContract.address /* shareContractAddress_ */,
+      operatorRegistry.address /* operatorRegistryAddress_ */
+    );
+
+    // Get tokenURI without setting base URI
+    const tokenURI = await splitContract.tokenURI(0);
+    assert.equal(tokenURI, "", "The tokenURI should be empty when base URI is not set.");
+  });
+
+  specify("Non-owner cannot set base token URI", async () => {
+    const baseURI = "https://malicious.com/";
+
+    try {
+      await this._singletonSplitContract.setBaseTokenURI(baseURI, {
+        from: accounts[NON_OWNER_ADDRESS_INDEX],
+      });
+      assert.fail("Expected revert, but transaction succeeded.");
+    } catch (error) {
+      assert(
+        error.message.includes("caller is not the owner"),
+        "Expected revert with 'caller is not the owner', but got: " +
+          error.message
+      );
+    }
+  });
+
+  specify("tokenURI reverts for non-existent token", async () => {
+    const nonExistentTokenId = 9999;
+
+    try {
+      await this._singletonSplitContract.tokenURI(nonExistentTokenId);
+      assert.fail("Expected revert for non-existent token.");
+    } catch (error) {
+      assert(
+        error.message.includes("SHARE054"),
+        "Expected revert with 'SHARE054', but got: " + error.message
+      );
+    }
+  });
 });
