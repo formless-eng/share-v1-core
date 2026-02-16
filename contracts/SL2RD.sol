@@ -79,10 +79,7 @@ contract SL2RD is
         _;
     }
 
-    constructor() public LimitedOwnable(true /* WALLET */, false /* SPLIT */) {
-        _name = "Swift Liquid Rotating Royalty Distributor";
-        _symbol = "SL2RD";
-    }
+    constructor() public LimitedOwnable(true /* WALLET */, false /* SPLIT */) {}
 
     /// @notice Initializes this contract.
     /// @dev Recipient tokenId table is constructed off-chain and is
