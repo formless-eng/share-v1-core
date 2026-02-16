@@ -29,7 +29,7 @@ contract("SL2RD", (accounts) => {
       uniformCollaboratorsIds /* tokenIds_ */,
       0 /* communitySplitsBasisPoints_ */,
       this._singletonShareContract.address /* shareContractAddress_ */,
-      this._singletonOperatorRegistry.address /* operatorRegistryAddress_ */
+      this._singletonOperatorRegistry.address /* operatorRegistryAddress_ */,
     );
   });
 
@@ -44,7 +44,7 @@ contract("SL2RD", (accounts) => {
       uniformCollaboratorsIds /* tokenIds_ */,
       0 /* communitySplitsBasisPoints_ */,
       shareContract.address /* shareContractAddress_ */,
-      operatorRegistry.address /* operatorRegistryAddress_ */
+      operatorRegistry.address /* operatorRegistryAddress_ */,
     );
     assert.equal(accounts[DEFAULT_ADDRESS_INDEX], await splitContract.owner());
     assert.equal(await splitContract.tokenIdIndex(), 0);
@@ -59,17 +59,17 @@ contract("SL2RD", (accounts) => {
     await splitContract.multipartInitializationBegin(
       0 /* communitySplitsBasisPoints_ */,
       shareContract.address /* shareContractAddress_ */,
-      operatorRegistry.address /* operatorRegistryAddress_ */
+      operatorRegistry.address /* operatorRegistryAddress_ */,
     );
     await splitContract.multipartAddPartition(
       0 /* partitionIndex_ */,
       ownerAddresses.slice(0, 5) /* addresses_ */,
-      uniformCollaboratorsIds.slice(0, 5) /* tokenIds_ */
+      uniformCollaboratorsIds.slice(0, 5) /* tokenIds_ */,
     );
     await splitContract.multipartAddPartition(
       1 /* partitionIndex_ */,
       ownerAddresses.slice(5, 10) /* addresses_ */,
-      uniformCollaboratorsIds.slice(5, 10) /* tokenIds_ */
+      uniformCollaboratorsIds.slice(5, 10) /* tokenIds_ */,
     );
     await splitContract.multipartInitializationEnd();
     assert.equal(accounts[DEFAULT_ADDRESS_INDEX], await splitContract.owner());
@@ -94,7 +94,7 @@ contract("SL2RD", (accounts) => {
         uniformCollaboratorsIds /* tokenIds_ */,
         0 /* communitySplitsBasisPoints_ */,
         shareContract.address /* shareContractAddress_ */,
-        operatorRegistry.address /* operatorRegistryAddress_ */
+        operatorRegistry.address /* operatorRegistryAddress_ */,
       );
     } catch (error) {
       console.log(error);
@@ -119,7 +119,7 @@ contract("SL2RD", (accounts) => {
       await splitContract.multipartInitializationBegin(
         0 /* communitySplitsBasisPoints_ */,
         shareContract.address /* shareContractAddress_ */,
-        operatorRegistry.address /* operatorRegistryAddress_ */
+        operatorRegistry.address /* operatorRegistryAddress_ */,
       );
       for (let partitionIndex = 0; partitionIndex < 10; partitionIndex += 1) {
         await splitContract.multipartAddPartition(
@@ -128,26 +128,26 @@ contract("SL2RD", (accounts) => {
             calculateSplitIndexUsingPartition(
               partitionIndex,
               MAX_SL2RD_PARTITION_SIZE,
-              0
+              0,
             ),
             calculateSplitIndexUsingPartition(
               partitionIndex,
               MAX_SL2RD_PARTITION_SIZE,
-              MAX_SL2RD_PARTITION_SIZE
-            )
+              MAX_SL2RD_PARTITION_SIZE,
+            ),
           ) /* addresses_ */,
           uniformCollaboratorsIds.slice(
             calculateSplitIndexUsingPartition(
               partitionIndex,
               MAX_SL2RD_PARTITION_SIZE,
-              0
+              0,
             ),
             calculateSplitIndexUsingPartition(
               partitionIndex,
               MAX_SL2RD_PARTITION_SIZE,
-              MAX_SL2RD_PARTITION_SIZE
-            )
-          ) /* tokenIds_ */
+              MAX_SL2RD_PARTITION_SIZE,
+            ),
+          ) /* tokenIds_ */,
         );
       }
       await splitContract.multipartInitializationEnd();
@@ -174,7 +174,7 @@ contract("SL2RD", (accounts) => {
       await splitContract.multipartInitializationBegin(
         0 /* communitySplitsBasisPoints_ */,
         shareContract.address /* shareContractAddress_ */,
-        operatorRegistry.address /* operatorRegistryAddress_ */
+        operatorRegistry.address /* operatorRegistryAddress_ */,
       );
       for (let partitionIndex = 0; partitionIndex < 100; partitionIndex += 1) {
         await splitContract.multipartAddPartition(
@@ -183,26 +183,26 @@ contract("SL2RD", (accounts) => {
             calculateSplitIndexUsingPartition(
               partitionIndex,
               MAX_SL2RD_PARTITION_SIZE,
-              0
+              0,
             ),
             calculateSplitIndexUsingPartition(
               partitionIndex,
               MAX_SL2RD_PARTITION_SIZE,
-              MAX_SL2RD_PARTITION_SIZE
-            )
+              MAX_SL2RD_PARTITION_SIZE,
+            ),
           ) /* addresses_ */,
           uniformCollaboratorsIds.slice(
             calculateSplitIndexUsingPartition(
               partitionIndex,
               MAX_SL2RD_PARTITION_SIZE,
-              0
+              0,
             ),
             calculateSplitIndexUsingPartition(
               partitionIndex,
               MAX_SL2RD_PARTITION_SIZE,
-              MAX_SL2RD_PARTITION_SIZE
-            )
-          ) /* tokenIds_ */
+              MAX_SL2RD_PARTITION_SIZE,
+            ),
+          ) /* tokenIds_ */,
         );
       }
       await splitContract.multipartInitializationEnd();
@@ -230,34 +230,34 @@ contract("SL2RD", (accounts) => {
         uniformCollaboratorsIds /* tokenIds_ */,
         communitySplitsBasisPoints /* communitySplitsBasisPoints_ */,
         shareContract.address /* shareContractAddress_ */,
-        operatorRegistry.address /* operatorRegistryAddress_ */
+        operatorRegistry.address /* operatorRegistryAddress_ */,
       );
 
       assert.equal(
         await splitContract.communitySplitsBasisPoints(),
-        communitySplitsBasisPoints
+        communitySplitsBasisPoints,
       );
 
       assert.equal(
         (await splitContract.initialSplitDistributionTable()).length,
-        ownerAddresses.length
+        ownerAddresses.length,
       );
 
       for (let i = 0; i < ownerAddresses.length; i++) {
         assert.equal(
           (await splitContract.initialSplitDistributionTable())[i],
-          ownerAddresses[i]
+          ownerAddresses[i],
         );
       }
 
       assert.equal(
         await splitContract.totalSlots(),
-        uniformCollaboratorsIds.length
+        uniformCollaboratorsIds.length,
       );
 
       assert.equal(
         await splitContract.totalCommunitySlots(),
-        (communitySplitsBasisPoints * ownerAddresses.length) / 10000
+        (communitySplitsBasisPoints * ownerAddresses.length) / 10000,
       );
 
       // Distribution helper function test
@@ -265,7 +265,7 @@ contract("SL2RD", (accounts) => {
 
       // Increment the current count of community slots.
       await splitContract.transferNextAvailable(
-        accounts[NON_OWNER_ADDRESS_INDEX]
+        accounts[NON_OWNER_ADDRESS_INDEX],
       );
 
       // Ensure the counter retrieves the correct count.
@@ -289,7 +289,7 @@ contract("SL2RD", (accounts) => {
       for (let i = 0; i < ownerAddresses.length; i++) {
         assert.equal(newDistribution[i], expectedNewDistribution[i]);
       }
-    }
+    },
   );
 
   specify(
@@ -308,7 +308,7 @@ contract("SL2RD", (accounts) => {
         uniformCollaboratorsIds /* tokenIds_ */,
         0 /* communitySplitsBasisPoints_ */,
         shareContract.address /* shareContractAddress_ */,
-        operatorRegistry.address /* operatorRegistryAddress_ */
+        operatorRegistry.address /* operatorRegistryAddress_ */,
       );
 
       /* ------- slotTransferTimestamps() test -------*/
@@ -322,7 +322,7 @@ contract("SL2RD", (accounts) => {
           ownerAddresses[0],
           receiptAddress,
           i, // tokenId
-          { from: ownerAddresses[0] }
+          { from: ownerAddresses[0] },
         );
       }
 
@@ -334,7 +334,7 @@ contract("SL2RD", (accounts) => {
         assert(
           Math.abs(transferTimestamps[i].toNumber() - recordedTimestamps[i]) <=
             negligibleTimeDifference,
-          `Invalid transfer timestamp for tokenId ${i}`
+          `Invalid transfer timestamp for tokenId ${i}`,
         );
       }
 
@@ -344,11 +344,11 @@ contract("SL2RD", (accounts) => {
       assert(
         Math.abs(
           (await splitContract.slotTransferTimestamp(0)).toNumber() -
-            recordedTimestamps[0]
+            recordedTimestamps[0],
         ) <= negligibleTimeDifference,
-        "Incorrect timestamp for tokenId 0."
+        "Incorrect timestamp for tokenId 0.",
       );
-    }
+    },
   );
 
   specify("Payable with rotating recipient", async () => {
@@ -372,7 +372,7 @@ contract("SL2RD", (accounts) => {
         uniformCollaboratorsIds /* tokenIds_ */,
         0 /* communitySplitsBasisPoints_ */,
         shareContract.address /* shareContractAddress_ */,
-        operatorRegistry.address /* operatorRegistryAddress_ */
+        operatorRegistry.address /* operatorRegistryAddress_ */,
       );
     } catch (error) {
       console.log(error);
@@ -408,13 +408,13 @@ contract("SL2RD", (accounts) => {
               assert.equal(events.length, i + 1);
               assert.equal(
                 normalizeAddress(
-                  mostRecentEvent.returnValues.recipient.toLowerCase()
+                  mostRecentEvent.returnValues.recipient.toLowerCase(),
                 ),
                 normalizeAddress(
                   uniformCollaboratorsMap.get(
-                    uniformCollaboratorsIds[i % uniformCollaboratorsIds.length]
-                  )
-                )
+                    uniformCollaboratorsIds[i % uniformCollaboratorsIds.length],
+                  ),
+                ),
               );
               assert.equal(mostRecentEvent.returnValues.value, 1);
             });
@@ -437,7 +437,7 @@ contract("SL2RD", (accounts) => {
         uniformCollaboratorsIds /* tokenIds_ */,
         0 /* communitySplitsBasisPoints_ */,
         shareContract.address /* shareContractAddress_ */,
-        operatorRegistry.address /* operatorRegistryAddress_ */
+        operatorRegistry.address /* operatorRegistryAddress_ */,
       );
     } catch (error) {
       console.log(error);
@@ -456,7 +456,7 @@ contract("SL2RD", (accounts) => {
       await splitContract.transferFrom(
         accounts[0],
         smartContractPFA.address,
-        1
+        1,
       );
     } catch (error) {
       console.log(error.message);
@@ -467,7 +467,7 @@ contract("SL2RD", (accounts) => {
       await splitContract.safeTransferFrom(
         accounts[0],
         smartContractPFA.address,
-        2
+        2,
       );
     } catch (error) {
       console.log(error.message);
@@ -491,14 +491,14 @@ contract("SL2RD", (accounts) => {
       300 /* grantTTL_ */,
       false /* supportsLicensing_ */,
       0 /* pricePerLicense_ */,
-      shareContract.address /* shareContractAddress_ */
+      shareContract.address /* shareContractAddress_ */,
     );
     await split.initialize(
       ownerAddresses /* addresses_ */,
       uniformCollaboratorsIds /* tokenIds_ */,
       0 /* communitySplitsBasisPoints_ */,
       shareContract.address /* shareContractAddress_ */,
-      operatorRegistry.address /* operatorRegistryAddress_ */
+      operatorRegistry.address /* operatorRegistryAddress_ */,
     );
     await pfa.transferOwnership(split.address);
     assert.equal(split.address, await pfa.owner());
@@ -524,14 +524,14 @@ contract("SL2RD", (accounts) => {
       300 /* grantTTL_ */,
       false /* supportsLicensing_ */,
       0 /* pricePerLicense_ */,
-      shareContract.address /* shareContractAddress_ */
+      shareContract.address /* shareContractAddress_ */,
     );
     await split.initialize(
       ownerAddresses /* addresses_ */,
       uniformCollaboratorsIds /* tokenIds_ */,
       0 /* communitySplitsBasisPoints_ */,
       shareContract.address /* shareContractAddress_ */,
-      operatorRegistry.address /* operatorRegistryAddress_ */
+      operatorRegistry.address /* operatorRegistryAddress_ */,
     );
     await pfa.transferOwnership(split.address);
     assert.equal(split.address, await pfa.owner());
@@ -570,7 +570,7 @@ contract("SL2RD", (accounts) => {
         uniformCollaboratorsIds /* tokenIds_ */,
         0 /* communitySplitsBasisPoints_ */,
         shareContract.address /* shareContractAddress_ */,
-        operatorRegistry.address /* operatorRegistryAddress_ */
+        operatorRegistry.address /* operatorRegistryAddress_ */,
       );
     } catch (error) {
       console.log(error);
@@ -620,13 +620,13 @@ contract("SL2RD", (accounts) => {
               assert.equal(events.length, i + 1);
               assert.equal(
                 normalizeAddress(
-                  mostRecentEvent.returnValues.recipient.toLowerCase()
+                  mostRecentEvent.returnValues.recipient.toLowerCase(),
                 ),
                 normalizeAddress(
                   uniformCollaboratorsMap.get(
-                    uniformCollaboratorsIds[i % uniformCollaboratorsIds.length]
-                  )
-                )
+                    uniformCollaboratorsIds[i % uniformCollaboratorsIds.length],
+                  ),
+                ),
               );
               assert.equal(mostRecentEvent.returnValues.value, 1);
             });
@@ -655,19 +655,19 @@ contract("SL2RD", (accounts) => {
       await splitContract.multipartInitializationBegin(
         0 /* communitySplitsBasisPoints_ */,
         shareContract.address /* shareContractAddress_ */,
-        operatorRegistry.address /* operatorRegistryAddress_ */
+        operatorRegistry.address /* operatorRegistryAddress_ */,
       );
       for (let partitionIndex = 0; partitionIndex < 5; partitionIndex += 1) {
         await splitContract.multipartAddPartition(
           partitionIndex /* partitionIndex_ */,
           ownerAddresses.slice(
             calculateSplitIndexUsingPartition(partitionIndex, 4, 0),
-            calculateSplitIndexUsingPartition(partitionIndex, 4, 4)
+            calculateSplitIndexUsingPartition(partitionIndex, 4, 4),
           ) /* addresses_ */,
           uniformCollaboratorsIds.slice(
             calculateSplitIndexUsingPartition(partitionIndex, 4, 0),
-            calculateSplitIndexUsingPartition(partitionIndex, 4, 4)
-          ) /* tokenIds_ */
+            calculateSplitIndexUsingPartition(partitionIndex, 4, 4),
+          ) /* tokenIds_ */,
         );
       }
       await splitContract.multipartInitializationEnd();
@@ -719,13 +719,13 @@ contract("SL2RD", (accounts) => {
               assert.equal(events.length, i + 1);
               assert.equal(
                 normalizeAddress(
-                  mostRecentEvent.returnValues.recipient.toLowerCase()
+                  mostRecentEvent.returnValues.recipient.toLowerCase(),
                 ),
                 normalizeAddress(
                   uniformCollaboratorsMap.get(
-                    uniformCollaboratorsIds[i % uniformCollaboratorsIds.length]
-                  )
-                )
+                    uniformCollaboratorsIds[i % uniformCollaboratorsIds.length],
+                  ),
+                ),
               );
               assert.equal(mostRecentEvent.returnValues.value, 1);
             });
@@ -747,7 +747,7 @@ contract("SL2RD", (accounts) => {
       uniformCollaboratorsIds /* tokenIds_ */,
       communitySplitsBasisPoints /* communitySplitsBasisPoints_ */,
       shareContract.address /* shareContractAddress_ */,
-      operatorRegistry.address /* operatorRegistryAddress_ */
+      operatorRegistry.address /* operatorRegistryAddress_ */,
     );
 
     // Transfer the reserved community allocation (first 4 slots) to community
@@ -764,7 +764,7 @@ contract("SL2RD", (accounts) => {
       assert.equal(
         ownerAddresses[0],
         await splitContract.ownerOf(i),
-        "Distributed past community allocation."
+        "Distributed past community allocation.",
       );
     }
   });
@@ -783,19 +783,19 @@ contract("SL2RD", (accounts) => {
       await splitContract.multipartInitializationBegin(
         communitySplitsBasisPoints /* communitySplitsBasisPoints_ */,
         shareContract.address /* shareContractAddress_ */,
-        operatorRegistry.address /* operatorRegistryAddress_ */
+        operatorRegistry.address /* operatorRegistryAddress_ */,
       );
       for (let partitionIndex = 0; partitionIndex < 5; partitionIndex += 1) {
         await splitContract.multipartAddPartition(
           partitionIndex /* partitionIndex_ */,
           ownerAddresses.slice(
             calculateSplitIndexUsingPartition(partitionIndex, 2, 0),
-            calculateSplitIndexUsingPartition(partitionIndex, 2, 2)
+            calculateSplitIndexUsingPartition(partitionIndex, 2, 2),
           ) /* addresses_ */,
           uniformCollaboratorsIds.slice(
             calculateSplitIndexUsingPartition(partitionIndex, 2, 0),
-            calculateSplitIndexUsingPartition(partitionIndex, 2, 2)
-          ) /* tokenIds_ */
+            calculateSplitIndexUsingPartition(partitionIndex, 2, 2),
+          ) /* tokenIds_ */,
         );
       }
       await splitContract.multipartInitializationEnd();
@@ -813,10 +813,10 @@ contract("SL2RD", (accounts) => {
         assert.equal(
           ownerAddresses[0],
           await splitContract.ownerOf(i),
-          "Distributed past community allocation."
+          "Distributed past community allocation.",
         );
       }
-    }
+    },
   );
 
   specify(
@@ -833,19 +833,19 @@ contract("SL2RD", (accounts) => {
       await splitContract.multipartInitializationBegin(
         communitySplitsBasisPoints /* communitySplitsBasisPoints_ */,
         shareContract.address /* shareContractAddress_ */,
-        operatorRegistry.address /* operatorRegistryAddress_ */
+        operatorRegistry.address /* operatorRegistryAddress_ */,
       );
       for (let partitionIndex = 0; partitionIndex < 5; partitionIndex += 1) {
         await splitContract.multipartAddPartition(
           partitionIndex /* partitionIndex_ */,
           ownerAddresses.slice(
             calculateSplitIndexUsingPartition(partitionIndex, 2, 0),
-            calculateSplitIndexUsingPartition(partitionIndex, 2, 2)
+            calculateSplitIndexUsingPartition(partitionIndex, 2, 2),
           ) /* addresses_ */,
           uniformCollaboratorsIds.slice(
             calculateSplitIndexUsingPartition(partitionIndex, 2, 0),
-            calculateSplitIndexUsingPartition(partitionIndex, 2, 2)
-          ) /* tokenIds_ */
+            calculateSplitIndexUsingPartition(partitionIndex, 2, 2),
+          ) /* tokenIds_ */,
         );
       }
       await splitContract.multipartInitializationEnd();
@@ -863,10 +863,10 @@ contract("SL2RD", (accounts) => {
         assert.equal(
           ownerAddresses[0],
           await splitContract.ownerOf(i),
-          "Distributed past community allocation."
+          "Distributed past community allocation.",
         );
       }
-    }
+    },
   );
 
   specify(
@@ -885,7 +885,7 @@ contract("SL2RD", (accounts) => {
         tokenIds /* tokenIds_ */,
         communitySplitsBasisPoints /* communitySplitsBasisPoints_ */,
         shareContract.address /* shareContractAddress_ */,
-        operatorRegistry.address /* operatorRegistryAddress_ */
+        operatorRegistry.address /* operatorRegistryAddress_ */,
       );
 
       await splitContract.transferTokenIds(recipientAddress, [0, 1], {
@@ -895,7 +895,7 @@ contract("SL2RD", (accounts) => {
       for (let i = 0; i < 2; i++) {
         assert.equal(recipientAddress, await splitContract.ownerOf(i));
       }
-    }
+    },
   );
 
   specify("Transfer slot past community allocation failure", async () => {
@@ -912,7 +912,7 @@ contract("SL2RD", (accounts) => {
       uniformCollaboratorsIds /* tokenIds_ */,
       communitySplitsBasisPoints /* communitySplitsBasisPoints_ */,
       shareContract.address /* shareContractAddress_ */,
-      operatorRegistry.address /* operatorRegistryAddress_ */
+      operatorRegistry.address /* operatorRegistryAddress_ */,
     );
 
     // Transfer the reserved community allocation (first 4 slots) to community
@@ -949,7 +949,7 @@ contract("SL2RD", (accounts) => {
       uniformCollaboratorsIds /* tokenIds_ */,
       communitySplitsBasisPoints /* communitySplitsBasisPoints_ */,
       shareContract.address /* shareContractAddress_ */,
-      operatorRegistry.address /* operatorRegistryAddress_ */
+      operatorRegistry.address /* operatorRegistryAddress_ */,
     );
 
     // Transfer one of the community slots to non-owner address, before distribution.
@@ -981,7 +981,7 @@ contract("SL2RD", (accounts) => {
         uniformCollaboratorsIds /* tokenIds_ */,
         communitySplitsBasisPoints /* communitySplitsBasisPoints_ */,
         shareContract.address /* shareContractAddress_ */,
-        operatorRegistry.address /* operatorRegistryAddress_ */
+        operatorRegistry.address /* operatorRegistryAddress_ */,
       );
 
       // Try and initiate distribution with non-operator && non-owner address
@@ -993,7 +993,7 @@ contract("SL2RD", (accounts) => {
       } catch (error) {
         console.log(error.message);
       }
-    }
+    },
   );
 
   specify(
@@ -1015,16 +1015,16 @@ contract("SL2RD", (accounts) => {
         uniformCollaboratorsIds /* tokenIds_ */,
         communitySplitsBasisPoints /* communitySplitsBasisPoints_ */,
         shareContract.address /* shareContractAddress_ */,
-        operatorRegistry.address /* operatorRegistryAddress_ */
+        operatorRegistry.address /* operatorRegistryAddress_ */,
       );
 
       assert(
         await splitContract.transferNextAvailable(recipientAddress, {
           from: operatorAddresses[0],
         }),
-        "Non-operator trying to initiate community distribution process."
+        "Non-operator trying to initiate community distribution process.",
       );
-    }
+    },
   );
 
   specify("Owner can set ERC20 contract address", async () => {
@@ -1033,7 +1033,7 @@ contract("SL2RD", (accounts) => {
       mockERC20Address,
       {
         from: accounts[DEFAULT_ADDRESS_INDEX],
-      }
+      },
     );
 
     // Verify the ERC20 contract address
@@ -1041,7 +1041,7 @@ contract("SL2RD", (accounts) => {
     assert.equal(
       normalizeAddress(result),
       normalizeAddress(mockERC20Address),
-      "The ERC20 contract address was not set correctly."
+      "The ERC20 contract address was not set correctly.",
     );
   });
 
@@ -1052,14 +1052,14 @@ contract("SL2RD", (accounts) => {
         mockERC20Address,
         {
           from: accounts[NON_OWNER_ADDRESS_INDEX],
-        }
+        },
       );
       assert.fail("Expected revert, but transaction succeeded.");
     } catch (error) {
       assert(
         error.message.includes("caller is not the owner"),
         "Expected revert with 'caller is not the owner', but got: " +
-          error.message
+          error.message,
       );
     }
   });
@@ -1070,7 +1070,7 @@ contract("SL2RD", (accounts) => {
       mockERC20Address,
       {
         from: accounts[DEFAULT_ADDRESS_INDEX],
-      }
+      },
     );
 
     // Verify the getter returns the correct address
@@ -1079,7 +1079,7 @@ contract("SL2RD", (accounts) => {
     assert.equal(
       erc20Address.toLowerCase(),
       mockERC20Address.toLowerCase(),
-      "getERC20ContractAddress did not return the correct address."
+      "getERC20ContractAddress did not return the correct address.",
     );
   });
 
@@ -1106,7 +1106,7 @@ contract("SL2RD", (accounts) => {
         uniformCollaboratorsIds /* tokenIds_ */,
         0 /* communitySplitsBasisPoints_ */,
         shareContract.address /* shareContractAddress_ */,
-        operatorRegistry.address /* operatorRegistryAddress_ */
+        operatorRegistry.address /* operatorRegistryAddress_ */,
       );
     } catch (error) {
       console.log(error);
@@ -1151,13 +1151,15 @@ contract("SL2RD", (accounts) => {
                   ];
                 assert.equal(
                   normalizeAddress(event.returnValues.recipient.toLowerCase()),
-                  normalizeAddress(uniformCollaboratorsMap.get(expectedTokenId))
+                  normalizeAddress(
+                    uniformCollaboratorsMap.get(expectedTokenId),
+                  ),
                 );
                 console.log(event.returnValues.value);
                 assert.equal(
                   event.returnValues.value,
                   PAYMENT_VALUE / BATCH_SIZE, // Each recipient gets an equal share
-                  "Incorrect payment value"
+                  "Incorrect payment value",
                 );
               }
             });
@@ -1176,7 +1178,7 @@ contract("SL2RD", (accounts) => {
       uniformCollaboratorsIds /* tokenIds_ */,
       0 /* communitySplitsBasisPoints_ */,
       shareContract.address /* shareContractAddress_ */,
-      operatorRegistry.address /* operatorRegistryAddress_ */
+      operatorRegistry.address /* operatorRegistryAddress_ */,
     );
 
     for (let i = 0; i < 10; i++) {
@@ -1184,7 +1186,7 @@ contract("SL2RD", (accounts) => {
     }
   });
 
-  specify("Owner can set NFT name", async () => {
+  specify("Owner can set token name", async () => {
     const newName = "New SL2RD Collection Name";
 
     // Check default name
@@ -1198,10 +1200,10 @@ contract("SL2RD", (accounts) => {
 
     // Verify the name was updated
     const updatedName = await this._singletonSplitContract.name();
-    assert.equal(updatedName, newName, "The NFT name was not set correctly.");
+    assert.equal(updatedName, newName, "The token name was not set correctly.");
   });
 
-  specify("Non-owner cannot set NFT name", async () => {
+  specify("Non-owner cannot set token name", async () => {
     const newName = "Unauthorized Name";
 
     try {
@@ -1213,12 +1215,12 @@ contract("SL2RD", (accounts) => {
       assert(
         error.message.includes("caller is not the owner"),
         "Expected revert with 'caller is not the owner', but got: " +
-          error.message
+          error.message,
       );
     }
   });
 
-  specify("Owner can set NFT symbol", async () => {
+  specify("Owner can set token symbol", async () => {
     const newSymbol = "NEWSL2RD";
 
     // Check default symbol
@@ -1232,10 +1234,14 @@ contract("SL2RD", (accounts) => {
 
     // Verify the symbol was updated
     const updatedSymbol = await this._singletonSplitContract.symbol();
-    assert.equal(updatedSymbol, newSymbol, "The NFT symbol was not set correctly.");
+    assert.equal(
+      updatedSymbol,
+      newSymbol,
+      "The token symbol was not set correctly.",
+    );
   });
 
-  specify("Non-owner cannot set NFT symbol", async () => {
+  specify("Non-owner cannot set token symbol", async () => {
     const newSymbol = "HACK";
 
     try {
@@ -1247,7 +1253,7 @@ contract("SL2RD", (accounts) => {
       assert(
         error.message.includes("caller is not the owner"),
         "Expected revert with 'caller is not the owner', but got: " +
-          error.message
+          error.message,
       );
     }
   });
@@ -1266,7 +1272,7 @@ contract("SL2RD", (accounts) => {
     assert.equal(
       tokenURI,
       baseURI + tokenId,
-      "The tokenURI was not constructed correctly."
+      "The tokenURI was not constructed correctly.",
     );
   });
 
@@ -1282,12 +1288,16 @@ contract("SL2RD", (accounts) => {
       uniformCollaboratorsIds /* tokenIds_ */,
       0 /* communitySplitsBasisPoints_ */,
       shareContract.address /* shareContractAddress_ */,
-      operatorRegistry.address /* operatorRegistryAddress_ */
+      operatorRegistry.address /* operatorRegistryAddress_ */,
     );
 
     // Get tokenURI without setting base URI
     const tokenURI = await splitContract.tokenURI(0);
-    assert.equal(tokenURI, "", "The tokenURI should be empty when base URI is not set.");
+    assert.equal(
+      tokenURI,
+      "",
+      "The tokenURI should be empty when base URI is not set.",
+    );
   });
 
   specify("Non-owner cannot set base token URI", async () => {
@@ -1302,7 +1312,7 @@ contract("SL2RD", (accounts) => {
       assert(
         error.message.includes("caller is not the owner"),
         "Expected revert with 'caller is not the owner', but got: " +
-          error.message
+          error.message,
       );
     }
   });
@@ -1316,7 +1326,7 @@ contract("SL2RD", (accounts) => {
     } catch (error) {
       assert(
         error.message.includes("SHARE054"),
-        "Expected revert with 'SHARE054', but got: " + error.message
+        "Expected revert with 'SHARE054', but got: " + error.message,
       );
     }
   });
