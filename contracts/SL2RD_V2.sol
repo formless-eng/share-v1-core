@@ -46,6 +46,7 @@ contract SL2RD_V2 is LimitedOwnable, ERC20, ERC20Payable {
     uint8 private _decimals = 0;
     string private _name;
     string private _symbol;
+    string private _contractURI;
     uint256 private _totalShares = 0;
     uint256 private _totalPublicShares = 0;
     uint256 private _publicSharesDistributed = 0;
@@ -505,5 +506,29 @@ contract SL2RD_V2 is LimitedOwnable, ERC20, ERC20Payable {
         address contractAddress_
     ) external onlyOwner {
         _setERC20ContractAddress(contractAddress_);
+    }
+
+    /// @notice Sets the token name.
+    /// @param name_ The new name for the token.
+    function setName(string memory name_) external onlyOwner {
+        _name = name_;
+    }
+
+    /// @notice Sets the token symbol.
+    /// @param symbol_ The new symbol for the token.
+    function setSymbol(string memory symbol_) external onlyOwner {
+        _symbol = symbol_;
+    }
+
+    /// @notice Sets the contract-level metadata URI.
+    /// @param contractURI_ The URI pointing to contract-level metadata.
+    function setContractURI(string memory contractURI_) external onlyOwner {
+        _contractURI = contractURI_;
+    }
+
+    /// @notice Returns the contract-level metadata URI.
+    /// @return The contract metadata URI.
+    function contractURI() public view returns (string memory) {
+        return _contractURI;
     }
 }

@@ -64,6 +64,9 @@ contract SL2RD is
     OperatorRegistry private _shareOperatorRegistry;
     SHARE private _protocol;
     uint256 private _paymentBatchSize = 1;
+    string private _name;
+    string private _symbol;
+    string private _baseTokenURI;
 
     /// @notice Modifier to allow only the owner or a verified operator
     /// to call the function
@@ -76,7 +79,10 @@ contract SL2RD is
         _;
     }
 
-    constructor() public LimitedOwnable(true /* WALLET */, false /* SPLIT */) {}
+    constructor() public LimitedOwnable(true /* WALLET */, false /* SPLIT */) {
+        _name = "Swift Liquid Rotating Royalty Distributor";
+        _symbol = "SL2RD";
+    }
 
     /// @notice Initializes this contract.
     /// @dev Recipient tokenId table is constructed off-chain and is
@@ -548,5 +554,70 @@ contract SL2RD is
         address contractAddress_
     ) external onlyOwner {
         _setERC20ContractAddress(contractAddress_);
+    }
+
+    /// @notice Returns the token name.
+    /// @dev Overrides ERC721 to return mutable name.
+    function name() public view virtual override returns (string memory) {
+        return _name;
+    }
+
+    /// @notice Returns the token symbol.
+    /// @dev Overrides ERC721 to return mutable symbol.
+    function symbol() public view virtual override returns (string memory) {
+        return _symbol;
+    }
+
+    /// @notice Sets the token name.
+    /// @param name_ The new name for the token collection.
+    function setName(string memory name_) external onlyOwner {
+        _name = name_;
+    }
+
+    /// @notice Sets the token symbol.
+    /// @param symbol_ The new symbol for the token collection.
+    function setSymbol(string memory symbol_) external onlyOwner {
+        _symbol = symbol_;
+    }
+
+    /// @notice Sets the base URI for token metadata.
+    /// @param baseTokenURI_ The base URI prefix for all tokens.
+    function setBaseTokenURI(string memory baseTokenURI_) external onlyOwner {
+        _baseTokenURI = baseTokenURI_;
+    }
+
+    /// @notice Returns the token URI for a given token ID.
+    /// @param tokenId_ The token ID to query.
+    /// @return The complete token URI.
+    function tokenURI(
+        uint256 tokenId_
+    ) public view virtual override returns (string memory) {
+        require(_exists(tokenId_), "SHARE054");
+        return
+            bytes(_baseTokenURI).length > 0
+                ? string(abi.encodePacked(_baseTokenURI, _toString(tokenId_)))
+                : "";
+    }
+
+    /// @notice Converts a uint256 to its ASCII string representation.
+    /// @param value_ The number to convert.
+    /// @return The string representation.
+    function _toString(uint256 value_) internal pure returns (string memory) {
+        if (value_ == 0) {
+            return "0";
+        }
+        uint256 temp = value_;
+        uint256 digits;
+        while (temp != 0) {
+            digits++;
+            temp /= 10;
+        }
+        bytes memory buffer = new bytes(digits);
+        while (value_ != 0) {
+            digits -= 1;
+            buffer[digits] = bytes1(uint8(48 + uint256(value_ % 10)));
+            value_ /= 10;
+        }
+        return string(buffer);
     }
 }
