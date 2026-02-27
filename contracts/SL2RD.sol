@@ -12,6 +12,7 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/common/ERC2981.sol";
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import "./libraries/Immutable.sol";
 import "./LimitedOwnable.sol";
@@ -30,6 +31,7 @@ import "./ERC20Payable.sol";
 contract SL2RD is
     LimitedOwnable,
     ERC721("Swift Liquid Rotating Royalty Distributor", "SL2RD"),
+    ERC2981,
     ERC20Payable
 {
     /// @notice Emitted when a payment is sent to a stakeholder
@@ -166,6 +168,10 @@ contract SL2RD is
                 _tokenOwners[_tokenIds.value[i]] = _addresses.value[i];
             }
         }
+
+        // Set default royalty to 10% (1000 basis points out of 10000)
+        _setDefaultRoyalty(addresses_[0], 1000);
+
         setInitialized();
     }
 
@@ -269,6 +275,10 @@ contract SL2RD is
         _totalCommunitySlots =
             (_totalSlots.value * _communitySplitsBasisPoints.value) /
             MAX_BASIS_POINTS;
+
+        // Set default royalty to 10% (1000 basis points out of 10000)
+        _setDefaultRoyalty(_initialOwner.value, 1000);
+
         setInitialized();
     }
 
@@ -534,11 +544,12 @@ contract SL2RD is
 
     function supportsInterface(
         bytes4 interfaceId
-    ) public view virtual override(ERC721) returns (bool) {
+    ) public view virtual override(ERC721, ERC2981) returns (bool) {
         return
             interfaceId == type(IERC165).interfaceId ||
             interfaceId == type(IERC721).interfaceId ||
-            interfaceId == type(IERC20Payable).interfaceId;
+            interfaceId == type(IERC20Payable).interfaceId ||
+            super.supportsInterface(interfaceId);
     }
 
     /// @notice Sets the batch size for payment distribution.
@@ -554,6 +565,21 @@ contract SL2RD is
         address contractAddress_
     ) external onlyOwner {
         _setERC20ContractAddress(contractAddress_);
+    }
+
+    /// @notice Sets the default royalty for all tokens.
+    /// @param receiver_ The address that will receive royalty payments.
+    /// @param feeNumerator_ The royalty fee in basis points (e.g., 1000 = 10%).
+    function setDefaultRoyalty(
+        address receiver_,
+        uint96 feeNumerator_
+    ) external onlyOwner {
+        _setDefaultRoyalty(receiver_, feeNumerator_);
+    }
+
+    /// @notice Removes the default royalty.
+    function deleteDefaultRoyalty() external onlyOwner {
+        _deleteDefaultRoyalty();
     }
 
     /// @notice Returns the token name.

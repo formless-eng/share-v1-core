@@ -12,6 +12,7 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/common/ERC2981.sol";
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import "./LimitedOwnable.sol";
 import "./OperatorRegistry.sol";
@@ -29,7 +30,7 @@ import "./ERC20Payable.sol";
 /// implementation results in the ability to add and remove shareholders
 /// in constant computational cost, while maintaining constant cost
 /// payment distribution.
-contract SL2RD_V2 is LimitedOwnable, ERC20, ERC20Payable {
+contract SL2RD_V2 is LimitedOwnable, ERC20, ERC2981, ERC20Payable {
     /// @notice Emitted when a payment is sent to a shareholder
     /// listed within this payment distribution contract.
     event Payment(
@@ -137,6 +138,10 @@ contract SL2RD_V2 is LimitedOwnable, ERC20, ERC20Payable {
         _shareholdersTailNodeId = primaryShareholderAddress_;
         _shareholdersSelectedNodeId = primaryShareholderAddress_;
         _shareholderNodes[primaryShareholderAddress_] = root;
+
+        // Set default royalty to 10% (1000 basis points out of 10000)
+        _setDefaultRoyalty(primaryShareholderAddress_, 1000);
+
         setInitialized();
     }
 
@@ -490,15 +495,16 @@ contract SL2RD_V2 is LimitedOwnable, ERC20, ERC20Payable {
     }
 
     /// @notice Returns whether the contract implements a given interface
-    /// @dev Overrides ERC721's supportsInterface to include IERC20Payable interface
+    /// @dev Overrides ERC721's supportsInterface to include IERC20Payable and ERC2981 interfaces
     /// @param interfaceId The interface identifier, as specified in ERC-165
     /// @return bool True if the contract implements the interface, false otherwise.
     function supportsInterface(
         bytes4 interfaceId
-    ) public view virtual returns (bool) {
+    ) public view virtual override(ERC2981) returns (bool) {
         return
             interfaceId == type(IERC165).interfaceId ||
-            interfaceId == type(IERC20Payable).interfaceId;
+            interfaceId == type(IERC20Payable).interfaceId ||
+            super.supportsInterface(interfaceId);
     }
 
     /// @notice Sets the ERC20 contract address (e.g., for USDC payments).
@@ -530,5 +536,20 @@ contract SL2RD_V2 is LimitedOwnable, ERC20, ERC20Payable {
     /// @return The contract metadata URI.
     function contractURI() public view returns (string memory) {
         return _contractURI;
+    }
+
+    /// @notice Sets the default royalty for all tokens.
+    /// @param receiver_ The address that will receive royalty payments.
+    /// @param feeNumerator_ The royalty fee in basis points (e.g., 1000 = 10%).
+    function setDefaultRoyalty(
+        address receiver_,
+        uint96 feeNumerator_
+    ) external onlyOwner {
+        _setDefaultRoyalty(receiver_, feeNumerator_);
+    }
+
+    /// @notice Removes the default royalty.
+    function deleteDefaultRoyalty() external onlyOwner {
+        _deleteDefaultRoyalty();
     }
 }
