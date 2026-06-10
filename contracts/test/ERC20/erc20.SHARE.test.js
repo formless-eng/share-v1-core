@@ -114,12 +114,12 @@ contract("SHARE payable with ERC20", (accounts) => {
   });
 
   specify(
-    "Access grant with 50% distribution fee enabled on PFA using ERC20",
+    "Access grant with valid distribution fee enabled on PFA using ERC20",
     async () => {
       await _assetContract.setDistributor(
         accounts[3],
         1 /* distributionFeeNumerator_ */,
-        2 /* distributionFeeDenominator_ */,
+        42 /* distributionFeeDenominator_ */,
         {
           from: _defaultOwner,
         }
@@ -201,7 +201,7 @@ contract("SHARE payable with ERC20", (accounts) => {
       await _assetContract.setDistributor(
         accounts[3],
         1 /* distributionFeeNumerator_ */,
-        2 /* distributionFeeDenominator_ */,
+        42 /* distributionFeeDenominator_ */,
         {
           from: _defaultOwner,
         }

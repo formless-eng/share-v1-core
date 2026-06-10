@@ -749,7 +749,7 @@ contract("License grant", (accounts) => {
     }
   });
 
-  specify("Access grant with 50% distribution fee enabled on PFA", async () => {
+  specify("Access grant with valid distribution fee enabled on PFA", async () => {
     const shareContract = await SHARE.deployed();
     const assetContract = await PFAUnit.new();
     const verifier = await CodeVerification.deployed();
@@ -771,7 +771,7 @@ contract("License grant", (accounts) => {
     await assetContract.setDistributor(
       accounts[3],
       1 /* distributionFeeNumerator_ */,
-      2 /* distributionFeeDenominator_ */,
+      42 /* distributionFeeDenominator_ */,
       {
         from: accounts[DEFAULT_ADDRESS_INDEX],
       }
@@ -808,6 +808,51 @@ contract("License grant", (accounts) => {
       ).length,
       1
     );
+  });
+
+  specify("Distributor fee must not exceed protocol fee", async () => {
+    const shareContract = await SHARE.new();
+    const assetContract = await PFAUnit.new();
+    const verifier = await CodeVerification.deployed();
+    await shareContract.addApprovedBuild(
+      await verifier.readCodeHash(assetContract.address),
+      /* codeHash = keccak256(PFA code) */ 2 /* buildType_ = PFA_UNIT  */,
+      "solc" /* compilerBinaryTarget_ */,
+      "0.8.11+commit.d7f03943" /* compilerVersion_ */,
+      accounts[NON_OWNER_ADDRESS_INDEX] /* authorAddress_ */
+    );
+    await assetContract.initialize(
+      "/test/token/uri" /* tokenURI_ */,
+      "1000000000" /* pricePerAccess_ */,
+      300 /* grantTTL_ */,
+      true /* supportsLicensing_ */,
+      0 /* pricePerLicense_ */,
+      shareContract.address /* shareContractAddress_ */
+    );
+    await assetContract.setDistributor(
+      accounts[3],
+      1 /* distributionFeeNumerator_ */,
+      20 /* distributionFeeDenominator_ */,
+      {
+        from: accounts[DEFAULT_ADDRESS_INDEX],
+      }
+    );
+
+    try {
+      await shareContract.access(
+        assetContract.address,
+        UNIT_TOKEN_INDEX,
+        accounts[NON_OWNER_ADDRESS_INDEX],
+        {
+          from: accounts[NON_OWNER_ADDRESS_INDEX],
+          value: "1050000000",
+        }
+      );
+    } catch (error) {
+      assert(error.message.includes("SHARE055"));
+      return;
+    }
+    throw Error("Expected error");
   });
 
   specify("addApprovedBuilds approves multiple build hashes", async () => {
