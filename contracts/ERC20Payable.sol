@@ -84,6 +84,13 @@ abstract contract ERC20Payable is IERC20Payable {
         );
     }
 
+
+    /// @notice Returns the ERC20 token allowance granted by the message sender to this contract
+    /// @return uint256 The spendable token amount approved for this contract
+    function _erc20AllowanceFromSender() internal view returns (uint256) {
+        return _erc20Token.allowance(msg.sender, address(this));
+    }
+
     /// @notice Transfers tokens from message sender to a recipient
     /// @param tokenRecipient_ Address that will receive the tokens
     /// @param tokenAmount_ Amount of tokens to transfer

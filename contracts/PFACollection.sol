@@ -252,10 +252,12 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
             // value and call the payable `access` function on the
             // child contract.
             uint256 itemPayment = item.pricePerAccess();
+            uint256 paymentAmount = _erc20AllowanceFromSender();
+            require(paymentAmount >= _pricePerAccess.value, "SHARE050");
             _transferERC20ThenApprove(
                 msg.sender /* tokenOwner_ */,
                 address(this) /* tokenSpender_ */,
-                _pricePerAccess.value /* totalTokenAmount_ */,
+                paymentAmount /* totalTokenAmount_ */,
                 itemAddress /* callableContractAddress_ */,
                 itemPayment /* callableTokenAmount_ */
             );
@@ -282,13 +284,8 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
             }
             // Distribute the remaining payment to the collection owner
             // and update the grant timestamp.
-            require(
-                _erc20Token.transfer(
-                    owner,
-                    _pricePerAccess.value - itemPayment
-                ),
-                "SHARE048"
-            );
+            uint256 ownerPayment = _erc20Token.balanceOf(address(this));
+            require(_erc20Token.transfer(owner, ownerPayment), "SHARE048");
             (bool ownerPaymentSuccess, ) = payable(owner).call{
                 value: ERC20_PAYABLE_CALL_VALUE
             }("");
@@ -299,7 +296,7 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
                 msg.sender,
                 owner,
                 _currentAddressIndex,
-                _pricePerAccess.value - item.pricePerAccess()
+                ownerPayment
             );
 
             _grantTimestamps[recipient_] = block.timestamp;
