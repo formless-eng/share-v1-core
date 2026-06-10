@@ -312,14 +312,14 @@ contract("SHARE payable with ERC20", (accounts) => {
       await _assetContract.transferOwnership(_splitContract.address);
 
       // Execute bulk ERC20 payments to PFA asset contract.
+      const grossPricePerAccess = await _shareContract.grossPricePerAccess(
+        _assetContract.address,
+        UNIT_TOKEN_INDEX
+      );
       for (let i = 0; i < transactionCount; i += 1) {
-        await _mockERC20.approve(
-          _shareContract.address,
-          usdcToWei(Math.ceil(1.05 * paymentValue)),
-          {
-            from: _defaultOwner,
-          }
-        );
+        await _mockERC20.approve(_shareContract.address, grossPricePerAccess, {
+          from: _defaultOwner,
+        });
         await _shareContract.access(
           _assetContract.address,
           UNIT_TOKEN_INDEX,
@@ -340,22 +340,19 @@ contract("SHARE payable with ERC20", (accounts) => {
           ).length,
           1
         );
-        _splitContract
-          .getPastEvents("Payment", {
-            fromBlock: 0,
-            toBlock: "latest",
-          })
-          .then((events) => {
-            assert.equal(events.length, (i + 1) * batchSize);
-            for (let j = 0; j < batchSize; j++) {
-              const event = events[events.length - batchSize + j];
-              assert.equal(
-                event.returnValues.value,
-                usdcToWei(paymentValue) / batchSize, // Each recipient gets an equal share
-                "Incorrect payment value"
-              );
-            }
-          });
+        const events = await _splitContract.getPastEvents("Payment", {
+          fromBlock: 0,
+          toBlock: "latest",
+        });
+        assert.equal(events.length, (i + 1) * batchSize);
+        for (let j = 0; j < batchSize; j++) {
+          const event = events[events.length - batchSize + j];
+          assert.equal(
+            event.returnValues.value,
+            usdcToWei(paymentValue) / batchSize, // Each recipient gets an equal share
+            "Incorrect payment value"
+          );
+        }
       }
     }
   );
