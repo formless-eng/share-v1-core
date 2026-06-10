@@ -98,8 +98,11 @@ contract PFAUnit is ERC721, PFA {
         // then transfer the tokens from the PFA to the payee.
         // Note that the one additional hop here is for
         // accounting and provenance purposes.
-        _transferERC20FromSender(address(this), _pricePerAccess.value);
-        _erc20Token.transfer(payeeAddress, _pricePerAccess.value);
+        uint256 paymentAmount = _erc20AllowanceFromSender();
+        require(paymentAmount >= _pricePerAccess.value, "SHARE050");
+        _transferERC20FromSender(address(this), paymentAmount);
+        uint256 payeeAmount = _erc20Token.balanceOf(address(this));
+        require(_erc20Token.transfer(payeeAddress, payeeAmount), "SHARE048");
 
         // If the payee is a split contract (rather than a simple wallet),
         // additional processing is required to distribute the payment.
@@ -123,7 +126,7 @@ contract PFAUnit is ERC721, PFA {
         _grantTimestamps[recipient_] = block.timestamp;
 
         // Emit events to log the payment and access grant
-        emit PaymentToOwner(payeeAddress, _pricePerAccess.value);
+        emit PaymentToOwner(payeeAddress, payeeAmount);
         emit Grant(recipient_, tokenId_);
         _transactionCount++;
     }

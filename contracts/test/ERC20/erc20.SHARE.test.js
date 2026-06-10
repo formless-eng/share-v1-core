@@ -81,6 +81,85 @@ contract("SHARE payable with ERC20", (accounts) => {
     );
   });
 
+  specify("Direct PFA access accepts pay-what-you-want ERC20 payments", async () => {
+    const buyer = accounts[1];
+    const paymentAmount = usdcToWei(2);
+    await _mockERC20.transfer(buyer, paymentAmount, {
+      from: _defaultOwner,
+    });
+
+    const ownerBalanceBefore = web3.utils.toBN(
+      await _mockERC20.balanceOf(_defaultOwner)
+    );
+    await _mockERC20.approve(_assetContract.address, paymentAmount, {
+      from: buyer,
+    });
+    await _assetContract.access(UNIT_TOKEN_INDEX, buyer, {
+      from: buyer,
+      value: 0,
+    });
+
+    const ownerBalanceAfter = web3.utils.toBN(
+      await _mockERC20.balanceOf(_defaultOwner)
+    );
+    assert.equal(
+      ownerBalanceAfter.sub(ownerBalanceBefore).toString(),
+      paymentAmount.toString()
+    );
+  });
+
+  specify("SHARE access accepts pay-what-you-want ERC20 payments", async () => {
+    const buyer = accounts[1];
+    const paymentAmount = web3.utils.toBN(usdcToWei(2));
+    const grossPrice = web3.utils.toBN(
+      await _shareContract.grossPricePerAccess(
+        _assetContract.address,
+        UNIT_TOKEN_INDEX
+      )
+    );
+    const netPrice = web3.utils.toBN(await _assetContract.pricePerAccess());
+    const protocolFee = grossPrice.sub(netPrice);
+    const expectedAssetPayment = paymentAmount.sub(protocolFee);
+
+    await _mockERC20.transfer(buyer, paymentAmount, {
+      from: _defaultOwner,
+    });
+
+    const ownerBalanceBefore = web3.utils.toBN(
+      await _mockERC20.balanceOf(_defaultOwner)
+    );
+    const shareBalanceBefore = web3.utils.toBN(
+      await _mockERC20.balanceOf(_shareContract.address)
+    );
+    await _mockERC20.approve(_shareContract.address, paymentAmount, {
+      from: buyer,
+    });
+    await _shareContract.access(
+      _assetContract.address,
+      UNIT_TOKEN_INDEX,
+      buyer,
+      {
+        from: buyer,
+        value: 0,
+      }
+    );
+
+    const ownerBalanceAfter = web3.utils.toBN(
+      await _mockERC20.balanceOf(_defaultOwner)
+    );
+    const shareBalanceAfter = web3.utils.toBN(
+      await _mockERC20.balanceOf(_shareContract.address)
+    );
+    assert.equal(
+      ownerBalanceAfter.sub(ownerBalanceBefore).toString(),
+      expectedAssetPayment.toString()
+    );
+    assert.equal(
+      shareBalanceAfter.sub(shareBalanceBefore).toString(),
+      protocolFee.toString()
+    );
+  });
+
   specify("Access grant with ERC20 payment", async () => {
     await _mockERC20.approve(
       _shareContract.address,
