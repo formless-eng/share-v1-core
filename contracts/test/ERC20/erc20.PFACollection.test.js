@@ -134,11 +134,14 @@ contract("PFACollection with ERC20 payments", (accounts) => {
   specify("Collection access accepts pay-what-you-want ERC20 payments", async () => {
     await _shareContract.setCodeVerificationEnabled(false);
     const collection = await PFACollection.new();
+    const childItemPrice = usdcToWei(0.5);
+    const collectionPrice = usdcToWei(1);
+    const underPricedPayment = usdcToWei(0.5);
     const paymentAmount = usdcToWei(1.5);
     await collection.initialize(
       [_assetContract.address] /* addresses_ */,
       "/test/collection/uri" /* tokenURI_ */,
-      usdcToWei(1) /* pricePerAccess_ */,
+      collectionPrice /* pricePerAccess_ */,
       300 /* grantTTL_ */,
       false /* supportsLicensing_ */,
       0 /* pricePerLicense_ */,
@@ -147,10 +150,26 @@ contract("PFACollection with ERC20 payments", (accounts) => {
 
     await _assetContract.setERC20ContractAddress(_mockERC20.address);
     await collection.setERC20ContractAddress(_mockERC20.address);
-    await _mockERC20.approve(_assetContract.address, usdcToWei(0.5), {
+    await _mockERC20.approve(_assetContract.address, childItemPrice, {
       from: _defaultOwner,
     });
     await _assetContract.license(collection.address);
+
+    let underPricedPaymentRejected = false;
+    try {
+      await _mockERC20.approve(collection.address, underPricedPayment, {
+        from: _defaultOwner,
+      });
+      await collection.access(UNIT_TOKEN_INDEX, _defaultOwner, {
+        from: _defaultOwner,
+        value: 0,
+      });
+    } catch (error) {
+      underPricedPaymentRejected = true;
+    }
+    assert.isTrue(underPricedPaymentRejected);
+    assert.isTrue(paymentAmount > collectionPrice);
+
     await _mockERC20.approve(collection.address, paymentAmount, {
       from: _defaultOwner,
     });
@@ -167,10 +186,10 @@ contract("PFACollection with ERC20 payments", (accounts) => {
       fromBlock: 0,
       toBlock: "latest",
     });
-    assert.equal(popEventFIFO(assetEvents).returnValues.value, usdcToWei(0.5));
+    assert.equal(popEventFIFO(assetEvents).returnValues.value, childItemPrice);
     assert.equal(
       popEventFIFO(collectionEvents, 1).returnValues.value,
-      usdcToWei(1)
+      paymentAmount - childItemPrice
     );
   });
 
