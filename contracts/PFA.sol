@@ -91,7 +91,8 @@ abstract contract PFA is ERC20Payable, IPFA, LimitedOwnable {
 
     /// @notice Returns the numerator of the distribution fee if
     /// applicable. The distribution fee is a percentage of the
-    /// gross price paid by the consumer.
+    /// the transaction fee paid by the consumer, not not a percentage
+    /// of the price paid to the contract owner.
     function distributionFeeNumerator()
         public
         view
@@ -103,7 +104,8 @@ abstract contract PFA is ERC20Payable, IPFA, LimitedOwnable {
 
     /// @notice Returns the denominator of the distribution fee if
     /// applicable. The distribution fee is a percentage of the
-    /// gross price paid by the consumer.
+    /// the transaction fee paid by the consumer, not not a percentage
+    /// of the price paid to the contract owner.
     function distributionFeeDenominator()
         public
         view

@@ -78,11 +78,13 @@ interface IPFA {
 
     /// @notice Returns the numerator of the distribution fee if
     /// applicable. The distribution fee is a percentage of the
-    /// gross price paid by the consumer.
+    /// the transaction fee paid by the consumer, not not a percentage
+    /// of the price paid to the contract owner.
     function distributionFeeNumerator() external view returns (uint256);
 
     /// @notice Returns the denominator of the distribution fee if
     /// applicable. The distribution fee is a percentage of the
-    /// gross price paid by the consumer.
+    /// the transaction fee paid by the consumer, not not a percentage
+    /// of the price paid to the contract owner.
     function distributionFeeDenominator() external view returns (uint256);
 }

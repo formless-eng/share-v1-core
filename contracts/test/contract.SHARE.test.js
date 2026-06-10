@@ -749,7 +749,7 @@ contract("License grant", (accounts) => {
     }
   });
 
-  specify("Access grant with valid distribution fee enabled on PFA", async () => {
+  specify("Access grant with 50% distribution fee enabled on PFA", async () => {
     const shareContract = await SHARE.deployed();
     const assetContract = await PFAUnit.new();
     const verifier = await CodeVerification.deployed();
@@ -771,7 +771,7 @@ contract("License grant", (accounts) => {
     await assetContract.setDistributor(
       accounts[3],
       1 /* distributionFeeNumerator_ */,
-      42 /* distributionFeeDenominator_ */,
+      2 /* distributionFeeDenominator_ */,
       {
         from: accounts[DEFAULT_ADDRESS_INDEX],
       }
@@ -810,7 +810,7 @@ contract("License grant", (accounts) => {
     );
   });
 
-  specify("Distributor fee must not exceed protocol fee", async () => {
+  specify("Distributor fee must be less than protocol fee", async () => {
     const shareContract = await SHARE.new();
     const assetContract = await PFAUnit.new();
     const verifier = await CodeVerification.deployed();
@@ -832,7 +832,7 @@ contract("License grant", (accounts) => {
     await assetContract.setDistributor(
       accounts[3],
       1 /* distributionFeeNumerator_ */,
-      20 /* distributionFeeDenominator_ */,
+      1 /* distributionFeeDenominator_ */,
       {
         from: accounts[DEFAULT_ADDRESS_INDEX],
       }
