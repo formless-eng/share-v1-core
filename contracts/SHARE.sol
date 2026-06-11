@@ -208,14 +208,19 @@ contract SHARE is ERC20Payable, Ownable, ReentrancyGuard {
 
         if (useERC20) {
             require(msg.value == ERC20_PAYABLE_CALL_VALUE, "SHARE051");
+            uint256 paymentAmount = _erc20AllowanceFromSender();
+            require(paymentAmount >= grossPrice, "SHARE050");
+            uint256 assetPayment = paymentAmount - (grossPrice - netPrice);
             _transferERC20ThenApprove(
                 msg.sender /* tokenOwner_ */,
                 address(this) /* tokenSpender_ */,
-                grossPrice /* totalTokenAmount_ */,
+                paymentAmount /* totalTokenAmount_ */,
                 address(asset) /* callableContractAddress_ */,
-                netPrice /* callableTokenAmount_ */
+                assetPayment /* callableTokenAmount_ */
             );
             asset.access{value: ERC20_PAYABLE_CALL_VALUE}(tokenId_, recipient_);
+            grossPrice = paymentAmount;
+            netPrice = assetPayment;
         } else {
             require(msg.value >= grossPrice, "SHARE011");
             asset.access{value: netPrice}(tokenId_, recipient_);
