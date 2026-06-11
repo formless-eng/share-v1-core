@@ -149,8 +149,10 @@ contract SHARE is ERC20Payable, Ownable, ReentrancyGuard {
                     .distributionFeeNumerator();
                 uint256 distributionFeeDenominator = asset
                     .distributionFeeDenominator();
-                uint256 distributionFee = ((grossPrice_ - netPrice_) *
+                uint256 protocolFee = grossPrice_ - netPrice_;
+                uint256 distributionFee = (protocolFee *
                     distributionFeeNumerator) / distributionFeeDenominator;
+                require(distributionFee < protocolFee, "SHARE055");
                 if (useERC20_) {
                     require(
                         _erc20Token.transfer(distributor, distributionFee),

@@ -174,6 +174,8 @@ The command above deploys the contracts as specified in `2_SL2RD_migration.js`.
 - `SHARE051` : `Value sent to contract must be zero when using ERC20.`
 - `SHARE052` : `Failed to transfer ERC20 to distributor address.`
 - `SHARE053` : `Slot index is out of bounds.`
+- `SHARE054` : `Token ID does not exist.`
+- `SHARE055` : `Distributor fee must be less than protocol fee.`
 
 ## Audits and Formal Verification
 
