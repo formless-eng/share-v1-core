@@ -283,8 +283,10 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
                 emit ItemPaymentSkipped(itemOwner, address(item));
             }
             // Distribute the remaining payment to the collection owner
-            // and update the grant timestamp.
-            uint256 ownerPayment = _erc20Token.balanceOf(address(this));
+            // and update the grant timestamp. The item receives exactly
+            // its access price; the rest of the buyer-supplied payment
+            // belongs to the collection owner.
+            uint256 ownerPayment = paymentAmount - itemPayment;
             require(_erc20Token.transfer(owner, ownerPayment), "SHARE048");
             (bool ownerPaymentSuccess, ) = payable(owner).call{
                 value: ERC20_PAYABLE_CALL_VALUE
