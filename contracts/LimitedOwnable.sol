@@ -37,7 +37,7 @@ import "./SHARE.sol";
 /// critical that the caller complete a state transition and not
 /// revert during the call.
 abstract contract LimitedOwnable is Ownable, ReentrancyGuard {
-    string public constant VERSION = "1.0.0";
+    string public constant VERSION = "1.0.1";
     CodeVerification.BuildType[] private _validBuildTypes;
     Immutable.Address internal _shareContractAddress;
     bool private _initialized;
