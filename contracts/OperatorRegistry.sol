@@ -13,12 +13,13 @@ pragma solidity >=0.8.0 <0.9.0;
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "./ERC20Payable.sol";
 
 /// @title Share Operator Registry contract.
 /// @notice A living canonical registry of all SHARE protocol operator
 /// EOAs (Externally Owned Accounts).
 /// @author john-paul@formless.xyz
-contract OperatorRegistry is Ownable, ReentrancyGuard {
+contract OperatorRegistry is Ownable, ReentrancyGuard, ERC20Payable {
     using EnumerableSet for EnumerableSet.AddressSet;
 
     // Private set of operator addresses
@@ -71,6 +72,24 @@ contract OperatorRegistry is Ownable, ReentrancyGuard {
         }
     }
 
+    /// @notice Sets the ERC20 contract address (e.g., for USDC payments).
+    function setERC20ContractAddress(
+        address contractAddress_
+    ) external onlyOwner {
+        _setERC20ContractAddress(contractAddress_);
+    }
+
+    function fundAddressesUsingERC20Token(
+        address[] memory addresses_,
+        uint256 fundingPerAddress_
+    ) public nonReentrant {
+        require(addresses_.length > 0, "SHARE056");
+        require(fundingPerAddress_ > 0, "SHARE057");
+        for (uint256 i = 0; i < addresses_.length; i++) {
+            _transferERC20FromSender(addresses_[i], fundingPerAddress_);
+        }
+    }
+
     function countOperatorAddresses() public view returns (uint256) {
         return _operatorAddresses.length();
     }
@@ -85,9 +104,7 @@ contract OperatorRegistry is Ownable, ReentrancyGuard {
     /// @notice List all of the operators in the current registry.
     /// @return array containing the operator addresses.
     function listOperatorAddresses() public view returns (address[] memory) {
-        uint256 length = _operatorAddresses.length();
         address[] memory operators = _operatorAddresses.values();
-
         return operators;
     }
 }

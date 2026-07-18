@@ -63,7 +63,7 @@ truffle test -g "License denial non-approved collection build"
 To interact with deployed contracts you can use the truffle console:
 
 ```shell
-MNEMONIC_PHRASE=$MNEMONIC RPC_ENDPIONT_BASE_MAINNET=$RPC_ENDPOINT_BASE_MAINNET truffle console --network=base
+MNEMONIC_PHRASE=$MNEMONIC RPC_ENDPOINT_BASE_MAINNET=$RPC_ENDPOINT_BASE_MAINNET truffle console --network=base
 ```
 
 From the console you can then call "migrate" which will execute the code in `migrations/1_initial_migration.js` and deploy the respective contracts to the selected blockchain. From the console you can instantiate a reference to the contract using:
@@ -176,6 +176,45 @@ The command above deploys the contracts as specified in `2_SL2RD_migration.js`.
 - `SHARE053` : `Slot index is out of bounds.`
 - `SHARE054` : `Token ID does not exist.`
 - `SHARE055` : `Distributor fee must be less than protocol fee.`
+- `SHARE056` : `Cannot distribute ERC20 tokens to an empty address list.`
+- `SHARE057` : `ERC20 funds per destination address must be greater than zero for distribution.`
+
+## Distributing USDC funds to system wallets using operator registry
+
+For example, sending $0.50 USDC to two wallets:
+
+```bash
+let registry = await OperatorRegistry.at("0x102Aa12FFAFaf805B690bb0b6aF2Ccd893113f07")
+```
+
+```bash
+await registry.setERC20ContractAddress("0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913")
+```
+
+```bash
+let usdc = await BTERC20.at("0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913")
+```
+
+```bash
+await usdc.approve("0x102Aa12FFAFaf805B690bb0b6aF2Ccd893113f07", 1000000)
+```
+
+```bash
+await registry.fundAddressesUsingERC20Token(["0x1d767eCC99bE8cBD369c371e4f117385869Bf0E3", "0xA76c13f9513649838dFA56E7CbfaeA5f834Be09c"], 500000)
+```
+
+Funding 40 EOAs:
+
+```bash
+await registry.fundAddressesUsingERC20Token(["0x1d767eCC99bE8cBD369c371e4f117385869Bf0E3","0xA76c13f9513649838dFA56E7CbfaeA5f834Be09c","0x33dDF32Fa507ADF33f7Af907d8AC3b68692Ea67d","0xb899Cc123B9c95C7c2D765d570781A308f1B4c64","0x550eDad
+06A1e8213bd055bAEBfB0A2b6aA91C770","0xAFCac89258727813cE0C9F7A9EC29faE1a4c0C69","0xcf013F37f430E72d89251E9AAE32fd1F59735677","0xbfE9b91D4C616f6cDfc1E9E81a80b67E51b619C7","0x79f030bFc21F990b0dF9c05737E91Fc84dade551","0x8854c37E09ec634E17c8B82Cc8DA1906
+e0BAc5B9","0x656Ef7aA49c272538e0E2Db6504608188e57F051","0x9916F51B693a15CA813bb863ad0fB3B088D198Bd","0xbd8df6F6dA0062ff748Cf0b50083E0b3fa2C6924","0x41d8cC9F62b2Dc10A0657Ca50ab4f02C678E3eCb","0x0Aa8f9e90E975b5B4117aA81cE21b44Ef208EeED","0x3399654488BD
+B2a66aaC1f790474edF7F0CD64aB","0x3d7aa751affDd14A2A1E247c66A0f419Ea7A097b","0x21676FE2cb6dDb5d6bDAFEea126f9eb7178E0670","0x9238A1f0547C017b85917ED6Be91545644A3c0DB","0x764E70f6BaaB11189BcB0b28F5a60e3Fc9f3a9a8","0x992aE282Ea8492e03282180988C545cB7934B
+83e","0x187D00015AfFbb3b622815fC40321341cae95188","0x129A16f25dCc56E3bF1C238A6C8B569f85235af3","0x544274cDEF31290880697AD99012435C690BE3A7","0xaF25D061fCDbB8a4CC5e51395758A2D07d7127e4","0x625BFE6D45840C8E5478FF4a6638E1B70f89E0c2","0x77Fc73c48dAC08ae7
+a48d6cB357A08B1905C7734","0xD62EDE6F4Bf725F9e30C74C649d507b419e6A93C","0xdAeCf480BeB27D47C9b3d2591b09d6824608f75b","0x3DDd9733bd976cDCebABD514A896214a6302D051","0xc45dD3220e652697bDeadf3e81CFa6a617c84170","0x17282F82402f8b417c4Ccb01F7c786C084DD5016",
+"0x89D0A8a7FCA90580d9F0574b707E259B888972FE","0x1fA1CFDe8E00b77f95aEA900716f66326C172749","0xBDfc58d5B901C9331Be7b540A6B78Baf86A41df4","0x75721aE8d309C4d762a08c59a574F53e7eC28526","0xfda1477Cc4b5aB124acA73327F70cF73320caBEE","0x6bEb9acCBA9352949DFEA8
+D52bdE24c430719c28","0x893419f7D0e21D55164df549a507164fb2483B29","0x336361C642f50e00548fBe97B0664F7Fc9E0b3C9"],2400000);
+```
 
 ## Audits and Formal Verification
 
