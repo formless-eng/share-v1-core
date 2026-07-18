@@ -1,5 +1,8 @@
 const OperatorRegistry = artifacts.require("OperatorRegistry");
 const { DEFAULT_ADDRESS_INDEX } = require("./helper");
+const MockERC20 = artifacts.require("MockERC20");
+exports.MockERC20 = MockERC20;
+const { usdcToWei } = require("./helper");
 
 contract("OperatorRegistry", (accounts) => {
   const verifiedShareOperatorEOAs = [
@@ -12,11 +15,11 @@ contract("OperatorRegistry", (accounts) => {
     const operatorRegistry = await OperatorRegistry.new();
 
     await operatorRegistry.initialize(
-      verifiedShareOperatorEOAs /* shareEOAOperators_ */
+      verifiedShareOperatorEOAs /* shareEOAOperators_ */,
     );
     assert.equal(
       accounts[DEFAULT_ADDRESS_INDEX],
-      await operatorRegistry.owner()
+      await operatorRegistry.owner(),
     );
   });
 
@@ -25,13 +28,13 @@ contract("OperatorRegistry", (accounts) => {
     const newShareVerifiedOperator = accounts[5];
 
     await operatorRegistry.initialize(
-      verifiedShareOperatorEOAs /* shareEOAOperators_ */
+      verifiedShareOperatorEOAs /* shareEOAOperators_ */,
     );
     operatorRegistry.addVerifiedOperator(newShareVerifiedOperator);
 
     assert(
       operatorRegistry.isOperator(newShareVerifiedOperator),
-      "New SHARE operator address not properly added to registry."
+      "New SHARE operator address not properly added to registry.",
     );
   });
 
@@ -39,12 +42,12 @@ contract("OperatorRegistry", (accounts) => {
     const operatorRegistry = await OperatorRegistry.deployed();
     const addressToRemove = accounts[5];
     await operatorRegistry.initialize(
-      verifiedShareOperatorEOAs /* shareEOAOperators_ */
+      verifiedShareOperatorEOAs /* shareEOAOperators_ */,
     );
 
     assert(
       operatorRegistry.isOperator(addressToRemove),
-      `Operator address ${addressToRemove} does not exist in registry`
+      `Operator address ${addressToRemove} does not exist in registry`,
     );
 
     const success = operatorRegistry.removeVerifiedOperator(addressToRemove);
@@ -59,7 +62,7 @@ contract("OperatorRegistry", (accounts) => {
     const initialBalance = new Array(verifiedShareOperatorEOAs.length);
 
     await operatorRegistry.initialize(
-      verifiedShareOperatorEOAs /* shareEOAOperators_ */
+      verifiedShareOperatorEOAs /* shareEOAOperators_ */,
     );
 
     const amountOfOperators = (
@@ -71,7 +74,7 @@ contract("OperatorRegistry", (accounts) => {
     assert.equal(
       amountOfOperators,
       verifiedShareOperatorEOAs.length,
-      "Number of registry addresses is not accurate to initializting array."
+      "Number of registry addresses is not accurate to initializting array.",
     );
 
     const fundsPerOperator = web3.utils
@@ -80,7 +83,7 @@ contract("OperatorRegistry", (accounts) => {
 
     for (let i = 0; i < verifiedShareOperatorEOAs.length; i++) {
       initialBalance[i] = web3.utils.toBN(
-        await web3.eth.getBalance(verifiedShareOperatorEOAs[i])
+        await web3.eth.getBalance(verifiedShareOperatorEOAs[i]),
       );
     }
 
@@ -91,18 +94,18 @@ contract("OperatorRegistry", (accounts) => {
       {
         from: accounts[0],
         value: totalFundingAmount,
-      }
+      },
     );
 
     // Check that each operator address has the correct balance
     for (let i = 0; i < verifiedShareOperatorEOAs.length; i++) {
       const newBalance = web3.utils.toBN(
-        await web3.eth.getBalance(verifiedShareOperatorEOAs[i])
+        await web3.eth.getBalance(verifiedShareOperatorEOAs[i]),
       );
 
       const fundsDelta = newBalance.sub(initialBalance[i]);
       console.log(
-        `\nNew balance: ${newBalance}\nInitial balance: ${initialBalance[i]}\nFunds delta: ${fundsDelta}`
+        `\nNew balance: ${newBalance}\nInitial balance: ${initialBalance[i]}\nFunds delta: ${fundsDelta}`,
       );
 
       // If this assertion is producing errors, try restarting ganache
@@ -110,7 +113,7 @@ contract("OperatorRegistry", (accounts) => {
       assert(
         Math.abs(fundsPerOperator - fundsDelta) <=
           weiDeltaGranularity /* prevents dust from invalidating test */,
-        `Operator ${i} was not correctly funded.`
+        `Operator ${i} was not correctly funded.`,
       );
     }
   });
@@ -119,7 +122,7 @@ contract("OperatorRegistry", (accounts) => {
     const operatorRegistry = await OperatorRegistry.deployed();
 
     await operatorRegistry.initialize(
-      verifiedShareOperatorEOAs /* shareEOAOperators_ */
+      verifiedShareOperatorEOAs /* shareEOAOperators_ */,
     );
 
     const registeredOperators = await operatorRegistry.listOperatorAddresses();
@@ -129,7 +132,7 @@ contract("OperatorRegistry", (accounts) => {
     assert.equal(
       registeredOperators.length,
       verifiedShareOperatorEOAs.length,
-      "Number of registered operators does not match."
+      "Number of registered operators does not match.",
     );
 
     // The registeredOperators array should be identical to
@@ -138,8 +141,29 @@ contract("OperatorRegistry", (accounts) => {
       assert.equal(
         registeredOperators[i],
         verifiedShareOperatorEOAs[i],
-        "The verified operator addresses do not match."
+        "The verified operator addresses do not match.",
       );
+    }
+  });
+
+  specify("Fund addresses using ERC20 token", async () => {
+    let _mockERC20 = await MockERC20.new();
+    const operatorRegistry = await OperatorRegistry.new();
+    await operatorRegistry.setERC20ContractAddress(_mockERC20.address);
+    const fundsPerOperator = usdcToWei(1);
+    await _mockERC20.approve(operatorRegistry.address, usdcToWei(4), {
+      from: accounts[0],
+    });
+    await operatorRegistry.fundAddressesUsingERC20Token(
+      [accounts[1], accounts[2], accounts[3], accounts[4]],
+      fundsPerOperator,
+      {
+        from: accounts[0],
+      },
+    );
+    for (let i = 0; i < 4; i++) {
+      const balance = await _mockERC20.balanceOf(accounts[i + 1]);
+      assert.equal(balance, fundsPerOperator, "Operator not funded correctly.");
     }
   });
 });
