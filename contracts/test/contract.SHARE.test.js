@@ -59,7 +59,7 @@ contract("SHARE", (accounts) => {
       300 /* grantTTL_ */,
       true /* supportsLicensing */,
       0 /* pricePerLicense_ */,
-      shareContract.address /* shareContractAddress_ */
+      shareContract.address /* shareContractAddress_ */,
     );
 
     const transactionFee =
@@ -70,10 +70,10 @@ contract("SHARE", (accounts) => {
       (
         await shareContract.grossPricePerAccess(
           assetContract.address,
-          UNIT_TOKEN_INDEX
+          UNIT_TOKEN_INDEX,
         )
       ).toNumber(),
-      1000000000 * (1 + transactionFee)
+      1000000000 * (1 + transactionFee),
     );
   });
 
@@ -86,7 +86,7 @@ contract("SHARE", (accounts) => {
       300 /* grantTTL_ */,
       true /* supportsLicensing */,
       "1000000000" /* pricePerLicense_ */,
-      shareContract.address /* shareContractAddress_ */
+      shareContract.address /* shareContractAddress_ */,
     );
 
     const transactionFee =
@@ -97,7 +97,7 @@ contract("SHARE", (accounts) => {
       (
         await shareContract.grossPricePerLicense(assetContract.address)
       ).toNumber(),
-      1000000000 * (1 + transactionFee)
+      1000000000 * (1 + transactionFee),
     );
   });
 
@@ -117,7 +117,7 @@ contract("SHARE", (accounts) => {
         {
           from: accounts[DEFAULT_ADDRESS_INDEX],
           value: insufficientValueWei,
-        }
+        },
       );
     } catch (error) {
       insufficientValueWeiExceptionThrown = true;
@@ -131,14 +131,14 @@ contract("SHARE", (accounts) => {
         {
           from: accounts[DEFAULT_ADDRESS_INDEX],
           value: exceedsValueWei,
-        }
+        },
       );
     } catch (error) {
       exceedsValueWeiExceptionThrown = true;
     }
 
     assert.isTrue(
-      insufficientValueWeiExceptionThrown && exceedsValueWeiExceptionThrown
+      insufficientValueWeiExceptionThrown && exceedsValueWeiExceptionThrown,
     );
   });
 
@@ -151,7 +151,7 @@ contract("SHARE", (accounts) => {
       /* codeHash = keccak256(PFA code) */ 2 /* buildType_ = PFA_UNIT  */,
       "solc" /* compilerBinaryTarget_ */,
       "0.8.11+commit.d7f03943" /* compilerVersion_ */,
-      accounts[NON_OWNER_ADDRESS_INDEX] /* authorAddress_ */
+      accounts[NON_OWNER_ADDRESS_INDEX] /* authorAddress_ */,
     );
     await shareContract.access(
       assetContract.address,
@@ -160,7 +160,7 @@ contract("SHARE", (accounts) => {
       {
         from: accounts[NON_OWNER_ADDRESS_INDEX],
         value: "1050000000",
-      }
+      },
     );
     assert.equal(
       (
@@ -171,7 +171,7 @@ contract("SHARE", (accounts) => {
           },
         })
       ).length,
-      1
+      1,
     );
   });
 
@@ -184,7 +184,7 @@ contract("SHARE", (accounts) => {
       /* codeHash = keccak256(PFA code) */ 2 /* buildType_ = PFA_UNIT  */,
       "solc" /* compilerBinaryTarget_ */,
       "0.8.11+commit.d7f03943" /* compilerVersion_ */,
-      accounts[NON_OWNER_ADDRESS_INDEX] /* authorAddress_ */
+      accounts[NON_OWNER_ADDRESS_INDEX] /* authorAddress_ */,
     );
     await shareContract.access(
       assetContract.address,
@@ -193,15 +193,15 @@ contract("SHARE", (accounts) => {
       {
         from: accounts[NON_OWNER_ADDRESS_INDEX],
         value: "1050000000",
-      }
+      },
     );
     const grantTimestamp = await shareContract.grantTimestamp(
       assetContract.address,
-      accounts[NON_OWNER_ADDRESS_INDEX]
+      accounts[NON_OWNER_ADDRESS_INDEX],
     );
     assert.isBelow(
       Math.abs(grantTimestamp - Math.round(Date.now() / 1000)),
-      GRANT_TTL_PRECISION_SEC
+      GRANT_TTL_PRECISION_SEC,
     );
   });
 
@@ -215,21 +215,21 @@ contract("SHARE", (accounts) => {
       /* codeHash = keccak256(empty) */ 0 /* buildType_ = WALLET  */,
       "solc" /* compilerBinaryTarget_ */,
       "0.8.11+commit.d7f03943" /* compilerVersion_ */,
-      accounts[NON_OWNER_ADDRESS_INDEX] /* authorAddress_ */
+      accounts[NON_OWNER_ADDRESS_INDEX] /* authorAddress_ */,
     );
     await shareContract.addApprovedBuild(
       await verifier.readCodeHash(splitContract.address),
       /* codeHash = keccak256(S2RD code) */ 1 /* buildType_ = SPLIT  */,
       "solc" /* compilerBinaryTarget_ */,
       "0.8.11+commit.d7f03943" /* compilerVersion_ */,
-      accounts[NON_OWNER_ADDRESS_INDEX] /* authorAddress_ */
+      accounts[NON_OWNER_ADDRESS_INDEX] /* authorAddress_ */,
     );
     await shareContract.addApprovedBuild(
       await verifier.readCodeHash(assetContract.address),
       /* codeHash = keccak256(PFA code) */ 2 /* buildType_ = PFA_UNIT  */,
       "solc" /* compilerBinaryTarget_ */,
       "0.8.11+commit.d7f03943" /* compilerVersion_ */,
-      accounts[NON_OWNER_ADDRESS_INDEX] /* authorAddress_ */
+      accounts[NON_OWNER_ADDRESS_INDEX] /* authorAddress_ */,
     );
     const uniformCollaborators = [
       accounts[0],
@@ -240,7 +240,7 @@ contract("SHARE", (accounts) => {
     ];
     await splitContract.initialize(
       uniformCollaborators /* addrs = 5 uniform collaborators (EOA wallets) */,
-      shareContract.address /* shareContractAddress_ */
+      shareContract.address /* shareContractAddress_ */,
     );
 
     // S2RD split contract is pre-initialized with recipient addresses.
@@ -255,7 +255,7 @@ contract("SHARE", (accounts) => {
         {
           from: accounts[NON_OWNER_ADDRESS_INDEX],
           value: "1050000000",
-        }
+        },
       );
 
       const events = await splitContract.getPastEvents("Payment", {
@@ -266,11 +266,11 @@ contract("SHARE", (accounts) => {
       console.log(events[mostRecentEventIndex]);
       assert.equal(
         events[mostRecentEventIndex].args.addressIndex.toNumber(),
-        i
+        i,
       );
       assert.equal(
         events[mostRecentEventIndex].args.value.toString(),
-        "1000000000"
+        "1000000000",
       );
     }
   });
@@ -285,19 +285,19 @@ contract("SHARE", (accounts) => {
       {
         from: accounts[NON_OWNER_ADDRESS_INDEX],
         value: "1050000000",
-      }
+      },
     );
 
     const grantTimestamp = await assetContract.grantTimestamp(
       accounts[NON_OWNER_ADDRESS_INDEX],
       {
         from: accounts[NON_OWNER_ADDRESS_INDEX],
-      }
+      },
     );
 
     assert.isBelow(
       Math.abs(grantTimestamp.toString() - Math.round(Date.now() / 1000)),
-      GRANT_TTL_PRECISION_SEC
+      GRANT_TTL_PRECISION_SEC,
     );
   });
 
@@ -308,12 +308,12 @@ contract("SHARE", (accounts) => {
     const verifier = await CodeVerification.deployed();
     await shareContract.addApprovedBuild(
       await verifier.readCodeHash(
-        assetContract.address
+        assetContract.address,
       ) /* codeHash = keccak256(PFA code) */,
       2 /* buildType_ = PFA_UNIT  */,
       "solc" /* compilerBinaryTarget_ */,
       "0.8.11+commit.d7f03943" /* compilerVersion_ */,
-      accounts[DEFAULT_ADDRESS_INDEX] /* authorAddress_ */
+      accounts[DEFAULT_ADDRESS_INDEX] /* authorAddress_ */,
     );
     try {
       await shareContract.license(
@@ -321,13 +321,80 @@ contract("SHARE", (accounts) => {
         collectionContract.address /* licensee */,
         {
           from: accounts[DEFAULT_ADDRESS_INDEX],
-        }
+        },
       );
       throw Error("Expected error");
     } catch (error) {
       console.log(error);
       assert(error.message.includes("SHARE000"));
     }
+  });
+
+  specify("License grant with distributor and no licensing fee", async () => {
+    const shareContract = await SHARE.deployed();
+    const assetContract = await PFAUnit.new();
+    const verifier = await CodeVerification.deployed();
+    await assetContract.initialize(
+      "/test/token/uri" /* tokenURI_ */,
+      "2100000" /* pricePerAccess_ */,
+      300 /* grantTTL_ */,
+      true /* supportsLicensing_ */,
+      0 /* pricePerLicense_ */,
+      shareContract.address /* shareContractAddress_ */,
+    );
+    await assetContract.setDistributor(
+      accounts[3],
+      1 /* distributionFeeNumerator_ */,
+      2 /* distributionFeeDenominator_ */,
+      {
+        from: accounts[DEFAULT_ADDRESS_INDEX],
+      },
+    );
+    const collectionContract = await PFACollection.new();
+    await shareContract.addApprovedBuild(
+      await verifier.readCodeHash(
+        assetContract.address,
+      ) /* codeHash = keccak256(PFA code) */,
+      2 /* buildType_ = PFA_UNIT  */,
+      "solc" /* compilerBinaryTarget_ */,
+      "0.8.11+commit.d7f03943" /* compilerVersion_ */,
+      accounts[DEFAULT_ADDRESS_INDEX] /* authorAddress_ */,
+    );
+    await shareContract.addApprovedBuild(
+      await verifier.readCodeHash(
+        collectionContract.address,
+      ) /* codeHash = keccak256(collection code) */,
+      3 /* buildType_ = COLLECTION  */,
+      "solc" /* compilerBinaryTarget_ */,
+      "0.8.11+commit.d7f03943" /* compilerVersion_ */,
+      accounts[DEFAULT_ADDRESS_INDEX] /* authorAddress_ */,
+    );
+    await collectionContract.initialize(
+      [assetContract.address] /* addresses_ */,
+      "/test/token/uri" /* tokenURI_ */,
+      "1000000000" /* pricePerAccess (wei) */,
+      300 /* grantTTL_ */,
+      true /* supportsLicensing */,
+      0 /* pricePerLicense_ */,
+      shareContract.address /* shareContractAddress_ */,
+    );
+    await shareContract.license(
+      assetContract.address /* licensor */,
+      collectionContract.address /* licensee */,
+      {
+        from: accounts[DEFAULT_ADDRESS_INDEX],
+      },
+    );
+    assert.equal(
+      (
+        await assetContract.getPastEvents("License", {
+          filter: {
+            recipient: collectionContract.address,
+          },
+        })
+      ).length,
+      1,
+    );
   });
 
   specify("License denial missing proof of inclusion", async () => {
@@ -342,25 +409,25 @@ contract("SHARE", (accounts) => {
       300 /* grantTTL_ */,
       true /* supportsLicensing */,
       0 /* pricePerLicense_ */,
-      shareContract.address /* shareContractAddress_ */
+      shareContract.address /* shareContractAddress_ */,
     );
     await shareContract.addApprovedBuild(
       await verifier.readCodeHash(
-        collectionContract.address
+        collectionContract.address,
       ) /* codeHash = keccak256(collection code) */,
       3 /* buildType_ = COLLECTION  */,
       "solc" /* compilerBinaryTarget_ */,
       "0.8.11+commit.d7f03943" /* compilerVersion_ */,
-      accounts[DEFAULT_ADDRESS_INDEX] /* authorAddress_ */
+      accounts[DEFAULT_ADDRESS_INDEX] /* authorAddress_ */,
     );
     await shareContract.addApprovedBuild(
       await verifier.readCodeHash(
-        assetContract.address
+        assetContract.address,
       ) /* codeHash = keccak256(PFA code) */,
       2 /* buildType_ = PFA_UNIT  */,
       "solc" /* compilerBinaryTarget_ */,
       "0.8.11+commit.d7f03943" /* compilerVersion_ */,
-      accounts[DEFAULT_ADDRESS_INDEX] /* authorAddress_ */
+      accounts[DEFAULT_ADDRESS_INDEX] /* authorAddress_ */,
     );
     try {
       await shareContract.license(
@@ -368,7 +435,7 @@ contract("SHARE", (accounts) => {
         collectionContract.address /* licensee */,
         {
           from: accounts[DEFAULT_ADDRESS_INDEX],
-        }
+        },
       );
       throw Error("Expected error");
     } catch (error) {
@@ -379,7 +446,7 @@ contract("SHARE", (accounts) => {
   specify("Withdraw from owner", async () => {
     const shareContract = await SHARE.deployed();
     const shareContractBalancePreWithdrawal = await web3.eth.getBalance(
-      shareContract.address
+      shareContract.address,
     );
     await shareContract.withdraw();
     assert.notEqual(shareContractBalancePreWithdrawal, 0);
@@ -392,7 +459,7 @@ contract("SHARE", (accounts) => {
       console.log(
         await shareContract.withdraw({
           from: accounts[NON_OWNER_ADDRESS_INDEX],
-        })
+        }),
       );
     } catch (error) {
       return;
@@ -409,21 +476,21 @@ contract("License denial collection with price < single PFA", (accounts) => {
     const verifier = await CodeVerification.deployed();
     await shareContract.addApprovedBuild(
       await verifier.readCodeHash(
-        assetContract.address
+        assetContract.address,
       ) /* codeHash = keccak256(S2RD code) */,
       2 /* buildType_ = PFA_UNIT  */,
       "solc" /* compilerBinaryTarget_ */,
       "0.8.11+commit.d7f03943" /* compilerVersion_ */,
-      accounts[DEFAULT_ADDRESS_INDEX] /* authorAddress_ */
+      accounts[DEFAULT_ADDRESS_INDEX] /* authorAddress_ */,
     );
     await shareContract.addApprovedBuild(
       await verifier.readCodeHash(
-        collectionContract.address
+        collectionContract.address,
       ) /* codeHash = keccak256(S2RD code) */,
       3 /* buildType_ = COLLECTION  */,
       "solc" /* compilerBinaryTarget_ */,
       "0.8.11+commit.d7f03943" /* compilerVersion_ */,
-      accounts[DEFAULT_ADDRESS_INDEX] /* authorAddress_ */
+      accounts[DEFAULT_ADDRESS_INDEX] /* authorAddress_ */,
     );
     await assetContract.initialize(
       "/test/token/uri" /* tokenURI_ */,
@@ -431,7 +498,7 @@ contract("License denial collection with price < single PFA", (accounts) => {
       300 /* grantTTL_ */,
       true /* supportsLicensing */,
       0 /* pricePerLicense_ */,
-      shareContract.address /* shareContractAddress_ */
+      shareContract.address /* shareContractAddress_ */,
     );
     try {
       await collectionContract.initialize(
@@ -441,7 +508,7 @@ contract("License denial collection with price < single PFA", (accounts) => {
         300 /* grantTTL_ */,
         true /* supportsLicensing */,
         0 /* pricePerLicense_ */,
-        shareContract.address /* shareContractAddress_ */
+        shareContract.address /* shareContractAddress_ */,
       );
       throw Error("Expected error");
     } catch (error) {
@@ -458,21 +525,21 @@ contract("License denial licensing not supported", (accounts) => {
     const verifier = await CodeVerification.deployed();
     await shareContract.addApprovedBuild(
       await verifier.readCodeHash(
-        assetContract.address
+        assetContract.address,
       ) /* codeHash = keccak256(S2RD code) */,
       2 /* buildType_ = PFA_UNIT  */,
       "solc" /* compilerBinaryTarget_ */,
       "0.8.11+commit.d7f03943" /* compilerVersion_ */,
-      accounts[DEFAULT_ADDRESS_INDEX] /* authorAddress_ */
+      accounts[DEFAULT_ADDRESS_INDEX] /* authorAddress_ */,
     );
     await shareContract.addApprovedBuild(
       await verifier.readCodeHash(
-        collectionContract.address
+        collectionContract.address,
       ) /* codeHash = keccak256(S2RD code) */,
       3 /* buildType_ = COLLECTION  */,
       "solc" /* compilerBinaryTarget_ */,
       "0.8.11+commit.d7f03943" /* compilerVersion_ */,
-      accounts[DEFAULT_ADDRESS_INDEX] /* authorAddress_ */
+      accounts[DEFAULT_ADDRESS_INDEX] /* authorAddress_ */,
     );
     await assetContract.initialize(
       "/test/token/uri" /* tokenURI_ */,
@@ -480,7 +547,7 @@ contract("License denial licensing not supported", (accounts) => {
       300 /* grantTTL_ */,
       false /* supportsLicensing */,
       0 /* pricePerLicense_ */,
-      shareContract.address /* shareContractAddress_ */
+      shareContract.address /* shareContractAddress_ */,
     );
     await collectionContract.initialize(
       [] /* addresses_ */,
@@ -489,7 +556,7 @@ contract("License denial licensing not supported", (accounts) => {
       300 /* grantTTL_ */,
       true /* supportsLicensing */,
       0 /* pricePerLicense_ */,
-      shareContract.address /* shareContractAddress_ */
+      shareContract.address /* shareContractAddress_ */,
     );
     try {
       await shareContract.license(
@@ -497,7 +564,7 @@ contract("License denial licensing not supported", (accounts) => {
         collectionContract.address /* licensee */,
         {
           from: accounts[DEFAULT_ADDRESS_INDEX],
-        }
+        },
       );
       throw Error("Expected error");
     } catch (error) {
@@ -514,21 +581,21 @@ contract("License grant", (accounts) => {
     const verifier = await CodeVerification.deployed();
     await shareContract.addApprovedBuild(
       await verifier.readCodeHash(
-        assetContract.address
+        assetContract.address,
       ) /* codeHash = keccak256(S2RD code) */,
       2 /* buildType_ = PFA_UNIT  */,
       "solc" /* compilerBinaryTarget_ */,
       "0.8.11+commit.d7f03943" /* compilerVersion_ */,
-      accounts[DEFAULT_ADDRESS_INDEX] /* authorAddress_ */
+      accounts[DEFAULT_ADDRESS_INDEX] /* authorAddress_ */,
     );
     await shareContract.addApprovedBuild(
       await verifier.readCodeHash(
-        collectionContract.address
+        collectionContract.address,
       ) /* codeHash = keccak256(S2RD code) */,
       3 /* buildType_ = COLLECTION  */,
       "solc" /* compilerBinaryTarget_ */,
       "0.8.11+commit.d7f03943" /* compilerVersion_ */,
-      accounts[DEFAULT_ADDRESS_INDEX] /* authorAddress_ */
+      accounts[DEFAULT_ADDRESS_INDEX] /* authorAddress_ */,
     );
     await assetContract.initialize(
       "/test/token/uri" /* tokenURI_ */,
@@ -536,7 +603,7 @@ contract("License grant", (accounts) => {
       300 /* grantTTL_ */,
       true /* supportsLicensing */,
       0 /* pricePerLicense_ */,
-      shareContract.address /* shareContractAddress_ */
+      shareContract.address /* shareContractAddress_ */,
     );
     await collectionContract.initialize(
       [assetContract.address] /* addresses_ */,
@@ -545,14 +612,14 @@ contract("License grant", (accounts) => {
       300 /* grantTTL_ */,
       true /* supportsLicensing */,
       0 /* pricePerLicense_ */,
-      shareContract.address /* shareContractAddress_ */
+      shareContract.address /* shareContractAddress_ */,
     );
     await shareContract.license(
       assetContract.address /* licensor */,
       collectionContract.address /* licensee */,
       {
         from: accounts[DEFAULT_ADDRESS_INDEX],
-      }
+      },
     );
     assert.equal(
       (
@@ -562,7 +629,7 @@ contract("License grant", (accounts) => {
           },
         })
       ).length,
-      1
+      1,
     );
   });
 
@@ -578,7 +645,7 @@ contract("License grant", (accounts) => {
       300 /* grantTTL_ */,
       true /* supportsLicensing */,
       99999999999 /* pricePerLicense_ */,
-      shareContract.address /* shareContractAddress_ */
+      shareContract.address /* shareContractAddress_ */,
     );
     await collectionContract.initialize(
       [assetContract.address] /* addresses_ */,
@@ -587,10 +654,10 @@ contract("License grant", (accounts) => {
       300 /* grantTTL_ */,
       true /* supportsLicensing */,
       999999999999 /* pricePerLicense_ */,
-      shareContract.address /* shareContractAddress_ */
+      shareContract.address /* shareContractAddress_ */,
     );
     const grossPricePerLicense = await shareContract.grossPricePerLicense(
-      assetContract.address
+      assetContract.address,
     );
     await shareContract.license(
       assetContract.address /* licensor */,
@@ -598,7 +665,7 @@ contract("License grant", (accounts) => {
       {
         from: accounts[DEFAULT_ADDRESS_INDEX],
         value: grossPricePerLicense,
-      }
+      },
     );
     assert.equal(
       (
@@ -608,7 +675,7 @@ contract("License grant", (accounts) => {
           },
         })
       ).length,
-      1
+      1,
     );
   });
 
@@ -623,7 +690,7 @@ contract("License grant", (accounts) => {
       300 /* grantTTL_ */,
       true /* supportsLicensing */,
       0 /* pricePerLicense_ */,
-      shareContract.address /* shareContractAddress_ */
+      shareContract.address /* shareContractAddress_ */,
     );
     await collectionContract.initialize(
       [assetContract.address] /* addresses_ */,
@@ -632,14 +699,14 @@ contract("License grant", (accounts) => {
       300 /* grantTTL_ */,
       true /* supportsLicensing */,
       0 /* pricePerLicense_ */,
-      shareContract.address /* shareContractAddress_ */
+      shareContract.address /* shareContractAddress_ */,
     );
     await shareContract.license(
       assetContract.address /* licensor */,
       collectionContract.address /* licensee */,
       {
         from: accounts[DEFAULT_ADDRESS_INDEX],
-      }
+      },
     );
     assert.equal(
       (
@@ -649,7 +716,7 @@ contract("License grant", (accounts) => {
           },
         })
       ).length,
-      1
+      1,
     );
     assert.equal(
       (
@@ -660,15 +727,15 @@ contract("License grant", (accounts) => {
           },
         })
       ).length,
-      1
+      1,
     );
     const licenseTimestamp = await shareContract.licenseTimestamp(
       assetContract.address,
-      collectionContract.address
+      collectionContract.address,
     );
     assert.isBelow(
       Math.abs(licenseTimestamp - Math.round(Date.now() / 1000)),
-      LICENSE_TTL_PRECISION_SEC
+      LICENSE_TTL_PRECISION_SEC,
     );
   });
 
@@ -679,11 +746,11 @@ contract("License grant", (accounts) => {
       collectionContract.address,
       {
         from: accounts[DEFAULT_ADDRESS_INDEX],
-      }
+      },
     );
     assert.isBelow(
       Math.abs(licenseTimestamp.toString() - Math.round(Date.now() / 1000)),
-      LICENSE_TTL_PRECISION_SEC
+      LICENSE_TTL_PRECISION_SEC,
     );
   });
 
@@ -696,7 +763,7 @@ contract("License grant", (accounts) => {
       /* codeHash = keccak256(PFA code) */ 2 /* buildType_ = PFA_UNIT  */,
       "solc" /* compilerBinaryTarget_ */,
       "0.8.11+commit.d7f03943" /* compilerVersion_ */,
-      accounts[NON_OWNER_ADDRESS_INDEX] /* authorAddress_ */
+      accounts[NON_OWNER_ADDRESS_INDEX] /* authorAddress_ */,
     );
     for (let i = 0; i < 50; i++) {
       await shareContract.access(
@@ -706,7 +773,7 @@ contract("License grant", (accounts) => {
         {
           from: accounts[NON_OWNER_ADDRESS_INDEX],
           value: "1050000000",
-        }
+        },
       );
       const txCount = await shareContract._transactionCount.call();
       console.log(`tx count: ${txCount}`);
@@ -724,14 +791,14 @@ contract("License grant", (accounts) => {
       300 /* grantTTL_ */,
       true /* supportsLicensing_ */,
       0 /* pricePerLicense_ */,
-      shareContract.address /* shareContractAddress_ */
+      shareContract.address /* shareContractAddress_ */,
     );
     await shareContract.addApprovedBuild(
       await verifier.readCodeHash(assetContract.address),
       /* codeHash = keccak256(PFA code) */ 2 /* buildType_ = PFA_UNIT  */,
       "solc" /* compilerBinaryTarget_ */,
       "0.8.11+commit.d7f03943" /* compilerVersion_ */,
-      accounts[NON_OWNER_ADDRESS_INDEX] /* authorAddress_ */
+      accounts[NON_OWNER_ADDRESS_INDEX] /* authorAddress_ */,
     );
     for (let i = 0; i < 50; i++) {
       await shareContract.access(
@@ -741,7 +808,7 @@ contract("License grant", (accounts) => {
         {
           from: accounts[NON_OWNER_ADDRESS_INDEX],
           value: "1050000000",
-        }
+        },
       );
       const txVolume = await shareContract._transactionVolume.call();
       console.log(`tx volume: ${txVolume}`);
@@ -758,7 +825,7 @@ contract("License grant", (accounts) => {
       /* codeHash = keccak256(PFA code) */ 2 /* buildType_ = PFA_UNIT  */,
       "solc" /* compilerBinaryTarget_ */,
       "0.8.11+commit.d7f03943" /* compilerVersion_ */,
-      accounts[NON_OWNER_ADDRESS_INDEX] /* authorAddress_ */
+      accounts[NON_OWNER_ADDRESS_INDEX] /* authorAddress_ */,
     );
     await assetContract.initialize(
       "/test/token/uri" /* tokenURI_ */,
@@ -766,7 +833,7 @@ contract("License grant", (accounts) => {
       300 /* grantTTL_ */,
       true /* supportsLicensing_ */,
       0 /* pricePerLicense_ */,
-      shareContract.address /* shareContractAddress_ */
+      shareContract.address /* shareContractAddress_ */,
     );
     await assetContract.setDistributor(
       accounts[3],
@@ -774,7 +841,7 @@ contract("License grant", (accounts) => {
       2 /* distributionFeeDenominator_ */,
       {
         from: accounts[DEFAULT_ADDRESS_INDEX],
-      }
+      },
     );
     await shareContract.access(
       assetContract.address,
@@ -783,7 +850,7 @@ contract("License grant", (accounts) => {
       {
         from: accounts[NON_OWNER_ADDRESS_INDEX],
         value: "1050000000",
-      }
+      },
     );
     assert.equal(
       (
@@ -794,7 +861,7 @@ contract("License grant", (accounts) => {
           },
         })
       ).length,
-      1
+      1,
     );
     assert.equal(
       (
@@ -806,7 +873,7 @@ contract("License grant", (accounts) => {
           },
         })
       ).length,
-      1
+      1,
     );
   });
 
@@ -819,23 +886,23 @@ contract("License grant", (accounts) => {
       /* codeHash = keccak256(PFA code) */ 2 /* buildType_ = PFA_UNIT  */,
       "solc" /* compilerBinaryTarget_ */,
       "0.8.11+commit.d7f03943" /* compilerVersion_ */,
-      accounts[NON_OWNER_ADDRESS_INDEX] /* authorAddress_ */
+      accounts[NON_OWNER_ADDRESS_INDEX] /* authorAddress_ */,
     );
     await assetContract.initialize(
       "/test/token/uri" /* tokenURI_ */,
       "1000000000" /* pricePerAccess_ */,
       300 /* grantTTL_ */,
       true /* supportsLicensing_ */,
-      0 /* pricePerLicense_ */,
-      shareContract.address /* shareContractAddress_ */
+      "1000000" /* pricePerLicense_ */,
+      shareContract.address /* shareContractAddress_ */,
     );
     await assetContract.setDistributor(
       accounts[3],
-      1 /* distributionFeeNumerator_ */,
+      2 /* distributionFeeNumerator_ */,
       1 /* distributionFeeDenominator_ */,
       {
         from: accounts[DEFAULT_ADDRESS_INDEX],
-      }
+      },
     );
 
     try {
@@ -846,7 +913,7 @@ contract("License grant", (accounts) => {
         {
           from: accounts[NON_OWNER_ADDRESS_INDEX],
           value: "1050000000",
-        }
+        },
       );
     } catch (error) {
       assert(error.message.includes("SHARE055"));
@@ -874,28 +941,28 @@ contract("License grant", (accounts) => {
       ],
       "solc" /* compilerBinaryTarget_ */,
       "0.8.11+commit.d7f03943" /* compilerVersion_ */,
-      accounts[NON_OWNER_ADDRESS_INDEX] /* authorAddress_ */
+      accounts[NON_OWNER_ADDRESS_INDEX] /* authorAddress_ */,
     );
     assert.equal(
       await shareContract.isApprovedBuildHash(
         "0xad59d6d30c9ff1de09eafeb8d56fe229ed9b039438cdb2ed7a6be38ae048595c",
-        2
+        2,
       ),
-      true
+      true,
     );
     assert.equal(
       await shareContract.isApprovedBuildHash(
         "0xb871475882c793c90bd6fdc2d769d9480fa5f6fb44d85652e18dc4173925aec8",
-        1
+        1,
       ),
-      true
+      true,
     );
     assert.equal(
       await shareContract.isApprovedBuildHash(
         "0x964d9e7ba0886f4f9a654256a1d8887498e7f1d65b7c57a6ad9bb47acdd73d61",
-        2
+        2,
       ),
-      true
+      true,
     );
   });
 });
