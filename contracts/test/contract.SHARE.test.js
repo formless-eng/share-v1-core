@@ -350,7 +350,7 @@ contract("SHARE", (accounts) => {
         from: accounts[DEFAULT_ADDRESS_INDEX],
       },
     );
-    const collectionContract = await PFACollection.deployed();
+    const collectionContract = await PFACollection.new();
     await shareContract.addApprovedBuild(
       await verifier.readCodeHash(
         assetContract.address,
