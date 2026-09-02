@@ -893,12 +893,12 @@ contract("License grant", (accounts) => {
       "1000000000" /* pricePerAccess_ */,
       300 /* grantTTL_ */,
       true /* supportsLicensing_ */,
-      0 /* pricePerLicense_ */,
+      "1000000" /* pricePerLicense_ */,
       shareContract.address /* shareContractAddress_ */,
     );
     await assetContract.setDistributor(
       accounts[3],
-      1 /* distributionFeeNumerator_ */,
+      2 /* distributionFeeNumerator_ */,
       1 /* distributionFeeDenominator_ */,
       {
         from: accounts[DEFAULT_ADDRESS_INDEX],
