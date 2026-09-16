@@ -1,7 +1,8 @@
 const ExecutionVault = artifacts.require("ExecutionVault");
 const OperatorRegistry = artifacts.require("OperatorRegistry");
 const MockERC20 = artifacts.require("MockERC20");
-const MockAccess = artifacts.require("MockAccess");
+const SHARE = artifacts.require("SHARE");
+const PFAUnit = artifacts.require("PFAUnit");
 
 async function expectRevert(promise, reason) {
   try {
@@ -22,6 +23,8 @@ contract("ExecutionVault", (accounts) => {
   let vault;
   let registry;
   let usdc;
+  let share;
+  let asset;
 
   beforeEach(async () => {
     registry = await OperatorRegistry.new();
@@ -30,43 +33,60 @@ contract("ExecutionVault", (accounts) => {
     vault = await ExecutionVault.new();
     await vault.initialize(registry.address, usdc.address);
     await usdc.transfer(vault.address, payment);
+
+    share = await SHARE.new();
+    await share.setCodeVerificationEnabled(false);
+    asset = await PFAUnit.new();
+    await asset.initialize("/test/token/uri", payment, 300, false, 0, share.address);
   });
 
-  specify("an operator approves and executes an ERC20 access payment", async () => {
-    const target = await MockAccess.new(usdc.address, payment);
+  specify("an operator executes a SHARE ERC20 access payment", async () => {
+    await share.setERC20ContractAddress(usdc.address);
+    await asset.setERC20ContractAddress(usdc.address);
+    const grossPrice = await share.grossPricePerAccess(asset.address, 0);
+    await usdc.transfer(vault.address, grossPrice.sub(payment));
+    const ownerBalanceBefore = web3.utils.toBN(await usdc.balanceOf(owner));
 
-    await vault.approve(usdc.address, target.address, payment, {
+    await vault.approve(usdc.address, share.address, grossPrice, {
       from: operator,
     });
-    await vault.access(target.address, 7, recipient, { from: operator });
+    await vault.access(share.address, asset.address, 0, recipient, {
+      from: operator,
+    });
 
-    assert.equal(await target.lastRecipient(), recipient);
-    assert.equal((await target.lastTokenId()).toString(), "7");
-    assert.equal((await usdc.balanceOf(target.address)).toString(), payment.toString());
+    assert.notEqual(
+      (await share.grantTimestamp(asset.address, recipient)).toString(),
+      "0",
+    );
+    const ownerBalanceAfter = web3.utils.toBN(await usdc.balanceOf(owner));
+    assert(ownerBalanceAfter.sub(ownerBalanceBefore).eq(payment));
   });
 
-  specify("forwards native value when executing access", async () => {
-    const target = await MockAccess.new(usdc.address, 0);
-    const value = web3.utils.toWei("1", "ether");
+  specify("forwards native value through SHARE when executing access", async () => {
+    const value = await share.grossPricePerAccess(asset.address, 0);
 
-    await vault.access(target.address, 0, recipient, {
+    await vault.access(share.address, asset.address, 0, recipient, {
       from: operator,
       value,
     });
 
-    assert.equal((await target.lastValue()).toString(), value);
+    assert.notEqual(
+      (await share.grantTimestamp(asset.address, recipient)).toString(),
+      "0",
+    );
   });
 
   specify("rejects unauthorized callers and the wrong token", async () => {
-    const target = await MockAccess.new(usdc.address, 0);
     const otherToken = await MockERC20.new();
 
     await expectRevert(
-      vault.access(target.address, 0, recipient, { from: outsider }),
+      vault.access(share.address, asset.address, 0, recipient, {
+        from: outsider,
+      }),
       "SHARE030",
     );
     await expectRevert(
-      vault.approve(otherToken.address, target.address, payment, {
+      vault.approve(otherToken.address, share.address, payment, {
         from: operator,
       }),
       "SHARE061",

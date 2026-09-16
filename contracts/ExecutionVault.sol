@@ -7,6 +7,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "./ERC20Payable.sol";
 import "./OperatorRegistry.sol";
+import "./SHARE.sol";
 
 /// @title ExecutionVault
 /// @notice Holds payment liquidity while registered operators execute protocol calls.
@@ -18,8 +19,9 @@ contract ExecutionVault is Ownable, ReentrancyGuard, ERC20Payable {
 
     event AccessExecuted(
         address indexed operator,
+        address indexed protocolAddress,
         address indexed contractAddress,
-        address indexed recipient,
+        address recipient,
         uint256 tokenId,
         uint256 value
     );
@@ -49,25 +51,25 @@ contract ExecutionVault is Ownable, ReentrancyGuard, ERC20Payable {
 
     /// @notice Calls `access` on a protocol contract using liquidity held here.
     function access(
+        address protocolAddress_,
         address contractAddress_,
         uint256 tokenId_,
         address recipient_
     ) external payable nonReentrant onlyOwnerOrOperator {
         require(_initialized, "SHARE041");
+        require(protocolAddress_.code.length > 0, "SHARE059");
         require(contractAddress_.code.length > 0, "SHARE059");
         require(recipient_ != address(0), "SHARE060");
 
-        (bool success, bytes memory returnData) = contractAddress_.call{
-            value: msg.value
-        }(abi.encodeWithSignature("access(uint256,address)", tokenId_, recipient_));
-        if (!success) {
-            assembly {
-                revert(add(returnData, 32), mload(returnData))
-            }
-        }
+        SHARE(protocolAddress_).access{value: msg.value}(
+            contractAddress_,
+            tokenId_,
+            recipient_
+        );
 
         emit AccessExecuted(
             msg.sender,
+            protocolAddress_,
             contractAddress_,
             recipient_,
             tokenId_,
