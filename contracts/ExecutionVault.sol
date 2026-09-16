@@ -56,7 +56,7 @@ contract ExecutionVault is Ownable, ReentrancyGuard, ERC20Payable {
         uint256 tokenId_,
         address recipient_
     ) external payable nonReentrant onlyOwnerOrOperator {
-        require(_initialized, "SHARE041");
+        require(_initialized, "SHARE014");
         require(protocolAddress_.code.length > 0, "SHARE059");
         require(contractAddress_.code.length > 0, "SHARE059");
         require(recipient_ != address(0), "SHARE060");
@@ -84,16 +84,16 @@ contract ExecutionVault is Ownable, ReentrancyGuard, ERC20Payable {
         address spenderAddress_,
         uint256 amount_
     ) external onlyOwnerOrOperator {
-        require(_initialized, "SHARE041");
+        require(_initialized, "SHARE014");
         require(tokenAddress_ == _erc20ContractAddress, "SHARE061");
         require(spenderAddress_ != address(0), "SHARE060");
-        _erc20Token.forceApprove(spenderAddress_, amount_);
+        require(_erc20Token.approve(spenderAddress_, amount_), "SHARE049");
         emit Approval(spenderAddress_, amount_);
     }
 
     /// @notice Withdraws the vault's complete USDC balance to its owner.
     function withdrawUSDC() external nonReentrant onlyOwner {
-        require(_initialized, "SHARE041");
+        require(_initialized, "SHARE014");
         uint256 balance = _erc20Token.balanceOf(address(this));
         _erc20Token.safeTransfer(owner(), balance);
         emit USDCWithdrawn(owner(), balance);

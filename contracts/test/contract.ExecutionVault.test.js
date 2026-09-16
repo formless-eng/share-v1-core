@@ -37,7 +37,14 @@ contract("ExecutionVault", (accounts) => {
     share = await SHARE.new();
     await share.setCodeVerificationEnabled(false);
     asset = await PFAUnit.new();
-    await asset.initialize("/test/token/uri", payment, 300, false, 0, share.address);
+    await asset.initialize(
+      "/test/token/uri",
+      payment,
+      300,
+      false,
+      0,
+      share.address,
+    );
   });
 
   specify("an operator executes a SHARE ERC20 access payment", async () => {
@@ -62,19 +69,44 @@ contract("ExecutionVault", (accounts) => {
     assert(ownerBalanceAfter.sub(ownerBalanceBefore).eq(payment));
   });
 
-  specify("forwards native value through SHARE when executing access", async () => {
-    const value = await share.grossPricePerAccess(asset.address, 0);
+  specify(
+    "forwards native value through SHARE when executing access",
+    async () => {
+      const value = await share.grossPricePerAccess(asset.address, 0);
 
-    await vault.access(share.address, asset.address, 0, recipient, {
-      from: operator,
-      value,
-    });
+      await vault.access(share.address, asset.address, 0, recipient, {
+        from: operator,
+        value,
+      });
 
-    assert.notEqual(
-      (await share.grantTimestamp(asset.address, recipient)).toString(),
-      "0",
-    );
-  });
+      assert.notEqual(
+        (await share.grantTimestamp(asset.address, recipient)).toString(),
+        "0",
+      );
+    },
+  );
+
+  specify(
+    "uses the uninitialized-contract error for vault operations",
+    async () => {
+      const uninitializedVault = await ExecutionVault.new();
+
+      await expectRevert(
+        uninitializedVault.access(vault.address, 0, recipient, { from: owner }),
+        "SHARE014",
+      );
+      await expectRevert(
+        uninitializedVault.approve(usdc.address, vault.address, payment, {
+          from: owner,
+        }),
+        "SHARE014",
+      );
+      await expectRevert(
+        uninitializedVault.withdrawUSDC({ from: owner }),
+        "SHARE014",
+      );
+    },
+  );
 
   specify("rejects unauthorized callers and the wrong token", async () => {
     const otherToken = await MockERC20.new();

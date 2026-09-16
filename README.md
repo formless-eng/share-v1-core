@@ -163,7 +163,6 @@ The command above deploys the contracts as specified in `2_SL2RD_migration.js`.
 - `SHARE041` : `The sender of this transaction is not approved for transferring tokens from the specified address and cannot be automatically approved.`
 - `SHARE042` : `The provided ERC20 contract address is invalid. Please provide a non-zero address.`
 - `SHARE043` : `Batch size must be greater than zero.`
-
 - `SHARE044` : `Failed to approve ERC20 transfer to PFA contract.`
 - `SHARE045` : `Failed to transfer ERC20 to PFA contract owner.`
 - `SHARE046` : `Failed to execute call function on downstream payee address.`
@@ -178,6 +177,10 @@ The command above deploys the contracts as specified in `2_SL2RD_migration.js`.
 - `SHARE055` : `Distributor fee must be less than protocol fee.`
 - `SHARE056` : `Cannot distribute ERC20 tokens to an empty address list.`
 - `SHARE057` : `ERC20 funds per destination address must be greater than zero for distribution.`
+- `SHARE058` : `The provided operator registry address is invalid. Please provide a non-zero address.`
+- `SHARE059` : `The provided protocol contract address does not contain deployed code.`
+- `SHARE060` : `The provided recipient or spender address is invalid. Please provide a non-zero address.`
+- `SHARE061` : `The provided token address does not match the configured ERC20 contract.`
 
 ## Distributing USDC funds to system wallets using operator registry
 
