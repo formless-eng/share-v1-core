@@ -77,6 +77,41 @@ contract ExecutionVault is Ownable, ReentrancyGuard, ERC20Payable {
         );
     }
 
+    /// @notice Approves exactly `amount_` USDC and calls `access` on a
+    /// protocol contract within a single call.
+    /// @dev SHARE spends the vault's entire allowance on each ERC20 access,
+    /// so separate approve and access transactions from concurrent operators
+    /// race on the shared allowance. Requiring the allowance to be fully
+    /// spent guarantees this access paid exactly `amount_`.
+    function accessWithApproval(
+        address protocolAddress_,
+        address contractAddress_,
+        uint256 tokenId_,
+        address recipient_,
+        uint256 amount_
+    ) external nonReentrant onlyOwnerOrOperator {
+        require(_initialized, "SHARE014");
+        require(protocolAddress_.code.length > 0, "SHARE059");
+        require(contractAddress_.code.length > 0, "SHARE059");
+        require(recipient_ != address(0), "SHARE060");
+
+        require(_erc20Token.approve(protocolAddress_, amount_), "SHARE049");
+        SHARE(protocolAddress_).access(contractAddress_, tokenId_, recipient_);
+        require(
+            _erc20Token.allowance(address(this), protocolAddress_) == 0,
+            "SHARE062"
+        );
+
+        emit AccessExecuted(
+            msg.sender,
+            protocolAddress_,
+            contractAddress_,
+            recipient_,
+            tokenId_,
+            amount_
+        );
+    }
+
     /// @notice Approves the configured USDC contract for a protocol payment.
     /// @dev The token parameter makes accidental approvals against the wrong deployment fail.
     function approve(
