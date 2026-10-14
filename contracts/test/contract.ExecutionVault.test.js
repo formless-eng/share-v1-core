@@ -70,6 +70,55 @@ contract("ExecutionVault", (accounts) => {
   });
 
   specify(
+    "accessWithApproval pays exactly the approved amount regardless of existing allowance",
+    async () => {
+      await share.setERC20ContractAddress(usdc.address);
+      await asset.setERC20ContractAddress(usdc.address);
+      const grossPrice = await share.grossPricePerAccess(asset.address, 0);
+      await usdc.transfer(vault.address, grossPrice.mul(web3.utils.toBN(2)));
+      // Simulates an approval left behind by a concurrent operator.
+      await vault.approve(
+        usdc.address,
+        share.address,
+        grossPrice.mul(web3.utils.toBN(2)),
+        { from: operator },
+      );
+      const ownerBalanceBefore = web3.utils.toBN(await usdc.balanceOf(owner));
+
+      await vault.accessWithApproval(
+        share.address,
+        asset.address,
+        0,
+        recipient,
+        grossPrice,
+        { from: operator },
+      );
+
+      assert.notEqual(
+        (await share.grantTimestamp(asset.address, recipient)).toString(),
+        "0",
+      );
+      const ownerBalanceAfter = web3.utils.toBN(await usdc.balanceOf(owner));
+      assert(ownerBalanceAfter.sub(ownerBalanceBefore).eq(payment));
+      assert.equal(
+        (await usdc.allowance(vault.address, share.address)).toString(),
+        "0",
+      );
+      await expectRevert(
+        vault.accessWithApproval(
+          share.address,
+          asset.address,
+          0,
+          recipient,
+          grossPrice,
+          { from: outsider },
+        ),
+        "SHARE030",
+      );
+    },
+  );
+
+  specify(
     "forwards native value through SHARE when executing access",
     async () => {
       const value = await share.grossPricePerAccess(asset.address, 0);
