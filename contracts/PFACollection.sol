@@ -49,11 +49,15 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
     string public constant SYMBOL = "SHARE";
     uint256 private constant MAX_SIZE = 200;
     uint256 private constant UNIT_TOKEN_INDEX = 0;
+    uint256 private constant MAX_PERCENTAGE = 100;
+    uint256 private constant DEFAULT_ZERO_PRICE_OWNER_PERCENTAGE = 50;
 
     Immutable.AddressArray private _addresses;
     Immutable.AddressToBooleanMap private _addressMap;
 
     uint256 private _currentAddressIndex = 0;
+    uint256 private _zeroPriceOwnerPercentage =
+        DEFAULT_ZERO_PRICE_OWNER_PERCENTAGE;
     string internal _tokenURI;
 
     constructor()
@@ -78,7 +82,10 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
     /// or equal to the maximum price per access of any item within
     /// the collection. If a PFA supports licensing, e.g. it may be
     /// added to a collection, then the PFAs TTL is upgraded to the
-    /// the grant TTL of the collection.
+    /// the grant TTL of the collection. If the collection price per
+    /// access is zero, the payment supplied by the buyer is instead
+    /// split between the collection owner and the current child item
+    /// according to `zeroPriceOwnerPercentage`.
     function initialize(
         address[] memory addresses_,
         string memory tokenURI_,
@@ -133,6 +140,43 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
         return _currentAddressIndex;
     }
 
+    /// @notice Returns the percentage (0-100) of each payment sent to
+    /// the collection owner if the collection price per access is
+    /// zero. The remainder is forwarded to the current child item.
+    function zeroPriceOwnerPercentage()
+        public
+        view
+        afterInit
+        returns (uint256)
+    {
+        return _zeroPriceOwnerPercentage;
+    }
+
+    /// @notice Sets the percentage (0-100) of each payment sent to
+    /// the collection owner if the collection price per access is
+    /// zero. The remainder is forwarded to the current child item.
+    function setZeroPriceOwnerPercentage(
+        uint256 percentage_
+    ) public nonReentrant onlyOwner afterInit {
+        require(percentage_ <= MAX_PERCENTAGE, "SHARE063");
+        _zeroPriceOwnerPercentage = percentage_;
+    }
+
+    /// @notice Returns the portion of `paymentAmount_` due to `item_`.
+    /// @dev Rounding dust of a zero-priced split goes to the collection
+    /// owner.
+    function _itemPayment(
+        PFA item_,
+        uint256 paymentAmount_
+    ) private view returns (uint256) {
+        if (_pricePerAccess.value > 0) {
+            return item_.pricePerAccess();
+        }
+        return
+            (paymentAmount_ * (MAX_PERCENTAGE - _zeroPriceOwnerPercentage)) /
+            MAX_PERCENTAGE;
+    }
+
     /// @notice If called with a value equal to the price per access
     /// of this contract, records a grant timestamp on chain which is
     /// read by decentralized distribution network (DDN) microservices
@@ -169,11 +213,7 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
             // caller state from updating, e.g. the counter
             // (_currentAddressIndex) _must_ increment in this
             // transaction.
-            // A zero-priced collection (e.g. passive streaming)
-            // forwards the full payment to the child item.
-            uint256 payment = _pricePerAccess.value == 0
-                ? msg.value
-                : item.pricePerAccess();
+            uint256 payment = _itemPayment(item, msg.value);
             (bool itemPaymentSuccess, ) = payable(address(item)).call{
                 value: payment
             }(
@@ -194,9 +234,18 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
                 emit ItemPaymentSkipped(itemOwner, address(item));
             }
 
-            // Pay the collection owner
+            // Pay the collection owner. A zero-priced collection pays
+            // the owner whatever was not forwarded to the child item,
+            // which is the full payment if the item payment failed.
+            uint256 ownerPayment = _pricePerAccess.value -
+                item.pricePerAccess();
+            if (_pricePerAccess.value == 0) {
+                ownerPayment = itemPaymentSuccess
+                    ? msg.value - payment
+                    : msg.value;
+            }
             (bool ownerPaymentSuccess, ) = payable(owner).call{
-                value: _pricePerAccess.value - item.pricePerAccess()
+                value: ownerPayment
             }("");
             require(ownerPaymentSuccess, "SHARE021");
 
@@ -204,7 +253,7 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
                 msg.sender,
                 owner,
                 _currentAddressIndex,
-                _pricePerAccess.value - item.pricePerAccess()
+                ownerPayment
             );
 
             _grantTimestamps[recipient_] = block.timestamp;
@@ -257,11 +306,7 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
             // child contract.
             uint256 paymentAmount = _erc20AllowanceFromSender();
             require(paymentAmount >= _pricePerAccess.value, "SHARE050");
-            // A zero-priced collection (e.g. passive streaming)
-            // forwards the full payment to the child item.
-            uint256 itemPayment = _pricePerAccess.value == 0
-                ? paymentAmount
-                : item.pricePerAccess();
+            uint256 itemPayment = _itemPayment(item, paymentAmount);
             _transferERC20ThenApprove(
                 msg.sender /* tokenOwner_ */,
                 address(this) /* tokenSpender_ */,

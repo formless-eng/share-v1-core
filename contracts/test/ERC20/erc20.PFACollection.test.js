@@ -5,6 +5,7 @@ const PFACollection = artifacts.require("PFACollection");
 const MockERC20 = artifacts.require("MockERC20");
 const MockPFARevertsOnAccess = artifacts.require("MockPFARevertsOnAccess");
 const SL2RD = artifacts.require("SL2RD");
+const OperatorRegistry = artifacts.require("OperatorRegistry");
 const CodeVerification = artifacts.require("CodeVerification");
 
 contract("PFACollection with ERC20 payments", (accounts) => {
@@ -195,7 +196,7 @@ contract("PFACollection with ERC20 payments", (accounts) => {
   });
 
   specify(
-    "Zero-priced collection forwards full ERC20 payment to child",
+    "Zero-priced collection splits ERC20 payment 50/50 by default",
     async () => {
       await _shareContract.setCodeVerificationEnabled(false);
       const zeroPricedAsset = await PFAUnit.new();
@@ -241,20 +242,90 @@ contract("PFACollection with ERC20 payments", (accounts) => {
         fromBlock: 0,
         toBlock: "latest",
       });
-      // The full payment (2 USD) is forwarded to the PFA and
-      // nothing is paid to the collection owner.
-      assert.equal(popEventFIFO(assetEvents).returnValues.value, paymentAmount);
+      // Half of the payment (2 USD) is forwarded to the PFA and the
+      // other half is paid to the collection owner.
+      assert.equal(popEventFIFO(assetEvents).returnValues.value, usdcToWei(1));
       assert.equal(
         popEventFIFO(collectionEvents).returnValues.value,
-        paymentAmount
+        usdcToWei(1)
       );
       assert.equal(
         popEventFIFO(collectionEvents).returnValues.recipient,
         zeroPricedAsset.address
       );
-      assert.equal(popEventFIFO(collectionEvents, 1).returnValues.value, 0);
+      assert.equal(
+        popEventFIFO(collectionEvents, 1).returnValues.value,
+        usdcToWei(1)
+      );
+      assert.equal(
+        popEventFIFO(collectionEvents, 1).returnValues.recipient,
+        _defaultOwner
+      );
       assert.equal(await _mockERC20.balanceOf(collection.address), 0);
       assert.equal(await _mockERC20.balanceOf(zeroPricedAsset.address), 0);
+    }
+  );
+
+  specify(
+    "Zero-priced collection pays fractional owners configured ERC20 share",
+    async () => {
+      await _shareContract.setCodeVerificationEnabled(false);
+      const zeroPricedAsset = await PFAUnit.new();
+      await zeroPricedAsset.initialize(
+        "/test/token/uri" /* tokenURI_ */,
+        0 /* pricePerAccess_ */,
+        300 /* grantTTL_ */,
+        true /* supportsLicensing_ */,
+        0 /* pricePerLicense_ */,
+        _shareContract.address /* shareContractAddress_ */
+      );
+      const collection = await PFACollection.new();
+      await collection.initialize(
+        [zeroPricedAsset.address] /* addresses_ */,
+        "/test/collection/uri" /* tokenURI_ */,
+        0 /* pricePerAccess_ */,
+        300 /* grantTTL_ */,
+        false /* supportsLicensing_ */,
+        0 /* pricePerLicense_ */,
+        _shareContract.address /* shareContractAddress_ */
+      );
+      const operatorRegistry = await OperatorRegistry.deployed();
+      const albumShareholder = accounts[5];
+      await _splitContract.initialize(
+        [albumShareholder] /* addresses_ */,
+        [0] /* tokenIds_ */,
+        0 /* communitySplitsBasisPoints_ */,
+        _shareContract.address /* shareContractAddress_ */,
+        operatorRegistry.address /* operatorRegistryAddress_ */
+      );
+      await _splitContract.setERC20ContractAddress(_mockERC20.address);
+      await zeroPricedAsset.setERC20ContractAddress(_mockERC20.address);
+      await collection.setERC20ContractAddress(_mockERC20.address);
+      await zeroPricedAsset.license(collection.address);
+      await collection.setZeroPriceOwnerPercentage(25);
+      await collection.transferOwnership(_splitContract.address);
+
+      await _mockERC20.approve(collection.address, usdcToWei(2), {
+        from: _defaultOwner,
+      });
+      const assetOwnerBalance = await _mockERC20.balanceOf(_defaultOwner);
+      await collection.access(UNIT_TOKEN_INDEX, _defaultOwner, {
+        from: _defaultOwner,
+        value: 0,
+      });
+
+      // The buyer owns the asset, so only the share of the payment
+      // paid to the album shareholder leaves the buyer's balance.
+      assert.equal(
+        await _mockERC20.balanceOf(albumShareholder),
+        usdcToWei(0.5)
+      );
+      assert.equal(
+        (await _mockERC20.balanceOf(_defaultOwner)).toString(),
+        assetOwnerBalance.sub(web3.utils.toBN(usdcToWei(0.5))).toString()
+      );
+      assert.equal(await _mockERC20.balanceOf(collection.address), 0);
+      assert.equal(await _mockERC20.balanceOf(_splitContract.address), 0);
     }
   );
 
