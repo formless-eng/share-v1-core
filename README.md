@@ -181,6 +181,8 @@ The command above deploys the contracts as specified in `2_SL2RD_migration.js`.
 - `SHARE059` : `The provided protocol contract address does not contain deployed code.`
 - `SHARE060` : `The provided recipient or spender address is invalid. Please provide a non-zero address.`
 - `SHARE061` : `The provided token address does not match the configured ERC20 contract.`
+- `SHARE062` : `The ERC20 allowance granted for this access must be fully spent by the access call.`
+- `SHARE063` : `Zero-priced collection owner percentage must be less than or equal to 100.`
 
 ## Distributing USDC funds to system wallets using operator registry
 

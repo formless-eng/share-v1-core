@@ -102,6 +102,242 @@ contract("PFACollection", (accounts) => {
     );
   });
 
+  specify("Zero-priced collection splits payment 50/50 by default", async () => {
+    const collection = await PFACollection.new();
+    const shareContract = await SHARE.deployed();
+    await shareContract.setCodeVerificationEnabled(false);
+    const pfa1 = await PFAUnit.new();
+    await pfa1.initialize(
+      "/test/asset/uri" /* tokenURI_ */,
+      0 /* pricePerAccess_ */,
+      300 /* grantTTL_ */,
+      true /* supportsLicensing_ */,
+      0 /* pricePerLicense_ */,
+      shareContract.address /* shareContractAddress_ */
+    );
+    await collection.initialize(
+      [pfa1.address] /* addresses_ */,
+      "/test/collection/uri" /* tokenURI_ */,
+      0 /* pricePerAccess_ */,
+      300 /* grantTTL_ */,
+      false /* supportsLicensing_ */,
+      0 /* pricePerLicense_ */,
+      shareContract.address /* shareContractAddress_ */
+    );
+    await pfa1.license(collection.address);
+    await collection.access(UNIT_TOKEN_INDEX, accounts[DEFAULT_ADDRESS_INDEX], {
+      from: accounts[DEFAULT_ADDRESS_INDEX],
+      value: "2000000000",
+    });
+    const pfaPaymentEvents = await pfa1.getPastEvents("PaymentToOwner", {
+      fromBlock: 0,
+      toBlock: "latest",
+    });
+    const collectionEvents = await collection.getPastEvents("Payment", {
+      fromBlock: 0,
+      toBlock: "latest",
+    });
+    // Half of the payment (2000000000 wei) is forwarded to the PFA
+    // and the other half is paid to the collection owner.
+    assert.equal(await collection.zeroPriceOwnerPercentage(), 50);
+    assert.equal(
+      popEventFIFO(pfaPaymentEvents).returnValues.value,
+      "1000000000"
+    );
+    assert.equal(
+      popEventFIFO(collectionEvents).returnValues.value,
+      "1000000000"
+    );
+    assert.equal(
+      popEventFIFO(collectionEvents).returnValues.recipient,
+      pfa1.address
+    );
+    assert.equal(
+      popEventFIFO(collectionEvents, 1).returnValues.value,
+      "1000000000"
+    );
+    assert.equal(
+      popEventFIFO(collectionEvents, 1).returnValues.recipient,
+      accounts[DEFAULT_ADDRESS_INDEX]
+    );
+    assert.equal(await web3.eth.getBalance(collection.address), "0");
+  });
+
+  // Deploys and licenses a zero-priced collection of a single PFA.
+  async function deployZeroPricedCollection(pfa) {
+    const collection = await PFACollection.new();
+    const shareContract = await SHARE.deployed();
+    await collection.initialize(
+      [pfa.address] /* addresses_ */,
+      "/test/collection/uri" /* tokenURI_ */,
+      0 /* pricePerAccess_ */,
+      300 /* grantTTL_ */,
+      false /* supportsLicensing_ */,
+      0 /* pricePerLicense_ */,
+      shareContract.address /* shareContractAddress_ */
+    );
+    await pfa.license(collection.address);
+    return collection;
+  }
+
+  async function deployZeroPricedPFA() {
+    const shareContract = await SHARE.deployed();
+    await shareContract.setCodeVerificationEnabled(false);
+    const pfa = await PFAUnit.new();
+    await pfa.initialize(
+      "/test/asset/uri" /* tokenURI_ */,
+      0 /* pricePerAccess_ */,
+      300 /* grantTTL_ */,
+      true /* supportsLicensing_ */,
+      0 /* pricePerLicense_ */,
+      shareContract.address /* shareContractAddress_ */
+    );
+    return pfa;
+  }
+
+  [
+    { percentage: 25, itemValue: "750", ownerValue: "251" },
+    { percentage: 0, itemValue: "1001", ownerValue: "0" },
+    { percentage: 100, itemValue: "0", ownerValue: "1001" },
+  ].forEach(({ percentage, itemValue, ownerValue }) => {
+    specify(
+      `Zero-priced collection pays owner configured ${percentage}%`,
+      async () => {
+        const pfa = await deployZeroPricedPFA();
+        const collection = await deployZeroPricedCollection(pfa);
+        await collection.setZeroPriceOwnerPercentage(percentage);
+        assert.equal(await collection.zeroPriceOwnerPercentage(), percentage);
+        await collection.access(
+          UNIT_TOKEN_INDEX,
+          accounts[DEFAULT_ADDRESS_INDEX],
+          {
+            from: accounts[DEFAULT_ADDRESS_INDEX],
+            value: "1001",
+          }
+        );
+        const pfaPaymentEvents = await pfa.getPastEvents("PaymentToOwner", {
+          fromBlock: 0,
+          toBlock: "latest",
+        });
+        const collectionEvents = await collection.getPastEvents("Payment", {
+          fromBlock: 0,
+          toBlock: "latest",
+        });
+        assert.equal(
+          popEventFIFO(pfaPaymentEvents).returnValues.value,
+          itemValue
+        );
+        assert.equal(
+          popEventFIFO(collectionEvents, 1).returnValues.value,
+          ownerValue
+        );
+        assert.equal(await web3.eth.getBalance(collection.address), "0");
+      }
+    );
+  });
+
+  specify("Zero-priced collection pays owner when child reverts", async () => {
+    const shareContract = await SHARE.deployed();
+    await shareContract.setCodeVerificationEnabled(false);
+    const pfa = await MockPFARevertsOnAccess.new();
+    await pfa.initialize(
+      0 /* pricePerAccess_ */,
+      300 /* grantTTL_ */,
+      true /* supportsLicensing_ */,
+      0 /* pricePerLicense_ */,
+      shareContract.address /* shareContractAddress_ */
+    );
+    const collection = await deployZeroPricedCollection(pfa);
+    await collection.access(UNIT_TOKEN_INDEX, accounts[DEFAULT_ADDRESS_INDEX], {
+      from: accounts[DEFAULT_ADDRESS_INDEX],
+      value: "2000000000",
+    });
+    const collectionEvents = await collection.getPastEvents("Payment", {
+      fromBlock: 0,
+      toBlock: "latest",
+    });
+    // The full payment goes to the collection owner rather than
+    // being stranded in the collection.
+    assert.equal(collectionEvents.length, 1);
+    assert.equal(
+      popEventFIFO(collectionEvents).returnValues.value,
+      "2000000000"
+    );
+    assert.equal(
+      popEventFIFO(collectionEvents).returnValues.recipient,
+      accounts[DEFAULT_ADDRESS_INDEX]
+    );
+    assert.equal(await web3.eth.getBalance(collection.address), "0");
+  });
+
+  specify("Priced collection ignores zero-price owner percentage", async () => {
+    const shareContract = await SHARE.deployed();
+    await shareContract.setCodeVerificationEnabled(false);
+    const pfa = await PFAUnit.new();
+    await pfa.initialize(
+      "/test/asset/uri" /* tokenURI_ */,
+      "1000000000" /* pricePerAccess_ */,
+      300 /* grantTTL_ */,
+      true /* supportsLicensing_ */,
+      0 /* pricePerLicense_ */,
+      shareContract.address /* shareContractAddress_ */
+    );
+    const collection = await PFACollection.new();
+    await collection.initialize(
+      [pfa.address] /* addresses_ */,
+      "/test/collection/uri" /* tokenURI_ */,
+      "3000000000" /* pricePerAccess_ */,
+      300 /* grantTTL_ */,
+      false /* supportsLicensing_ */,
+      0 /* pricePerLicense_ */,
+      shareContract.address /* shareContractAddress_ */
+    );
+    await pfa.license(collection.address);
+    await collection.setZeroPriceOwnerPercentage(100);
+    await collection.access(UNIT_TOKEN_INDEX, accounts[DEFAULT_ADDRESS_INDEX], {
+      from: accounts[DEFAULT_ADDRESS_INDEX],
+      value: "3000000000",
+    });
+    const collectionEvents = await collection.getPastEvents("Payment", {
+      fromBlock: 0,
+      toBlock: "latest",
+    });
+    assert.equal(
+      popEventFIFO(collectionEvents).returnValues.value,
+      "1000000000"
+    );
+    assert.equal(
+      popEventFIFO(collectionEvents, 1).returnValues.value,
+      "2000000000"
+    );
+  });
+
+  specify("Zero-price owner percentage above 100 reverts", async () => {
+    const pfa = await deployZeroPricedPFA();
+    const collection = await deployZeroPricedCollection(pfa);
+    try {
+      await collection.setZeroPriceOwnerPercentage(101);
+      assert.fail();
+    } catch (error) {
+      assert(error.message.includes("SHARE063"), error.message);
+    }
+    assert.equal(await collection.zeroPriceOwnerPercentage(), 50);
+  });
+
+  specify("Zero-price owner percentage is owner only", async () => {
+    const pfa = await deployZeroPricedPFA();
+    const collection = await deployZeroPricedCollection(pfa);
+    try {
+      await collection.setZeroPriceOwnerPercentage(10, {
+        from: accounts[NON_OWNER_ADDRESS_INDEX],
+      });
+      assert.fail();
+    } catch (error) {
+      assert(error.message.includes("Ownable"), error.message);
+    }
+    assert.equal(await collection.zeroPriceOwnerPercentage(), 50);
+  });
+
   specify("Licensing PFA with invalid licensing price reverts", async () => {
     const collection = await PFACollection.new();
     const shareContract = await SHARE.deployed();

@@ -87,7 +87,7 @@ module.exports = {
 
     base: {
       provider: () =>
-        new HDWalletProvider(mnemonicPhrase, RPC_ENDPOINT_BASE_MAINNET),
+        new HDWalletProvider({mnemonic: mnemonicPhrase, providerOrUrl: RPC_ENDPOINT_BASE_MAINNET, numberOfAddresses: 40}),
       network_id: 8453,
       gas: GAS_VALUE,
       gasPrice: 34000000,
