@@ -102,6 +102,59 @@ contract("PFACollection", (accounts) => {
     );
   });
 
+  specify("Zero-priced collection forwards full payment to child", async () => {
+    const collection = await PFACollection.new();
+    const shareContract = await SHARE.deployed();
+    await shareContract.setCodeVerificationEnabled(false);
+    const pfa1 = await PFAUnit.new();
+    await pfa1.initialize(
+      "/test/asset/uri" /* tokenURI_ */,
+      0 /* pricePerAccess_ */,
+      300 /* grantTTL_ */,
+      true /* supportsLicensing_ */,
+      0 /* pricePerLicense_ */,
+      shareContract.address /* shareContractAddress_ */
+    );
+    await collection.initialize(
+      [pfa1.address] /* addresses_ */,
+      "/test/collection/uri" /* tokenURI_ */,
+      0 /* pricePerAccess_ */,
+      300 /* grantTTL_ */,
+      false /* supportsLicensing_ */,
+      0 /* pricePerLicense_ */,
+      shareContract.address /* shareContractAddress_ */
+    );
+    await pfa1.license(collection.address);
+    await collection.access(UNIT_TOKEN_INDEX, accounts[DEFAULT_ADDRESS_INDEX], {
+      from: accounts[DEFAULT_ADDRESS_INDEX],
+      value: "2000000000",
+    });
+    const pfaPaymentEvents = await pfa1.getPastEvents("PaymentToOwner", {
+      fromBlock: 0,
+      toBlock: "latest",
+    });
+    const collectionEvents = await collection.getPastEvents("Payment", {
+      fromBlock: 0,
+      toBlock: "latest",
+    });
+    // The full payment (2000000000 wei) is forwarded to the PFA
+    // and nothing is paid to the collection owner.
+    assert.equal(
+      popEventFIFO(pfaPaymentEvents).returnValues.value,
+      "2000000000"
+    );
+    assert.equal(
+      popEventFIFO(collectionEvents).returnValues.value,
+      "2000000000"
+    );
+    assert.equal(
+      popEventFIFO(collectionEvents).returnValues.recipient,
+      pfa1.address
+    );
+    assert.equal(popEventFIFO(collectionEvents, 1).returnValues.value, "0");
+    assert.equal(await web3.eth.getBalance(collection.address), "0");
+  });
+
   specify("Licensing PFA with invalid licensing price reverts", async () => {
     const collection = await PFACollection.new();
     const shareContract = await SHARE.deployed();

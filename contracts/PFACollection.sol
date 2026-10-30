@@ -169,7 +169,11 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
             // caller state from updating, e.g. the counter
             // (_currentAddressIndex) _must_ increment in this
             // transaction.
-            uint256 payment = item.pricePerAccess();
+            // A zero-priced collection (e.g. passive streaming)
+            // forwards the full payment to the child item.
+            uint256 payment = _pricePerAccess.value == 0
+                ? msg.value
+                : item.pricePerAccess();
             (bool itemPaymentSuccess, ) = payable(address(item)).call{
                 value: payment
             }(
@@ -251,9 +255,13 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
             // then approve the child contract to spend the payment
             // value and call the payable `access` function on the
             // child contract.
-            uint256 itemPayment = item.pricePerAccess();
             uint256 paymentAmount = _erc20AllowanceFromSender();
             require(paymentAmount >= _pricePerAccess.value, "SHARE050");
+            // A zero-priced collection (e.g. passive streaming)
+            // forwards the full payment to the child item.
+            uint256 itemPayment = _pricePerAccess.value == 0
+                ? paymentAmount
+                : item.pricePerAccess();
             _transferERC20ThenApprove(
                 msg.sender /* tokenOwner_ */,
                 address(this) /* tokenSpender_ */,
@@ -283,10 +291,12 @@ contract PFACollection is PFA, IPFACollection, ERC721 {
                 emit ItemPaymentSkipped(itemOwner, address(item));
             }
             // Distribute the remaining payment to the collection owner
-            // and update the grant timestamp. The item receives exactly
-            // its access price; the rest of the buyer-supplied payment
-            // belongs to the collection owner.
-            uint256 ownerPayment = paymentAmount - itemPayment;
+            // and update the grant timestamp. If the item payment
+            // failed, the item did not pull its allowance, so the
+            // full payment belongs to the collection owner.
+            uint256 ownerPayment = itemPaymentSuccess
+                ? paymentAmount - itemPayment
+                : paymentAmount;
             require(_erc20Token.transfer(owner, ownerPayment), "SHARE048");
             (bool ownerPaymentSuccess, ) = payable(owner).call{
                 value: ERC20_PAYABLE_CALL_VALUE
